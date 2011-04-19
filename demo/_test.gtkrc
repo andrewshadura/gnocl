@@ -1,0 +1,25 @@
+style "entry"
+{
+xthickness = 5
+ythickness = 5
+fg[ACTIVE] = "#FF0000"
+fg[SELECTED] = "#003366"
+fg[NORMAL] = "#CCCCCC"
+fg[PRELIGHT] = "#FFFFFF"
+fg[INSENSITIVE] = "#999999"
+text[NORMAL] = { 0, 65536, 0}
+base[NORMAL] = { 65536, 65536, 0}
+
+bg[ACTIVE] = "#003366"
+bg[SELECTED] = "#FF0000"
+bg[NORMAL] = "#666666"
+bg[PRELIGHT] = "#003366"
+bg[INSENSITIVE] = "#666666"
+
+font_name = "Sans Bold 14"
+}
+
+
+
+class "GtkEntry" style "entry"
+
