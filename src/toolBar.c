@@ -411,10 +411,21 @@ int getTextAndIcon ( Tcl_Interp *interp, GtkToolbar *toolbar,
 
 	}
 
-	/* uncertain what's happening here */
+	/*
+		uncertain what's happening here
+		this isUnderline was
+	*/
 	if ( type & GNOCL_STR_UNDERLINE )
 	{
-		*isUnderline = 1;
+		if ( txt == NULL )
+		{
+			*isUnderline = 0;
+		}
+
+		else
+		{
+			*isUnderline = 1;
+		}
 	}
 
 	gtk_widget_show ( image );
@@ -434,10 +445,15 @@ int getTextAndIcon ( Tcl_Interp *interp, GtkToolbar *toolbar,
 **/
 static void setUnderline ( GtkWidget *item )
 {
+
 	/* FIXME: is there really only one label? */
 	GtkWidget *label = gnoclFindChild ( item, GTK_TYPE_LABEL );
-	assert ( label );
-	gtk_label_set_use_underline ( GTK_LABEL ( label ), 1 );
+
+	//assert ( label );
+	if ( label !=  NULL )
+	{
+		gtk_label_set_use_underline ( GTK_LABEL ( label ), 1 );
+	}
 }
 
 /**
@@ -1182,6 +1198,7 @@ int gnoclRegisterWidget ( Tcl_Interp *interp, GtkWidget *widget, Tcl_ObjCmdProc 
 **/
 static int addCheckButton ( GtkToolbar *toolbar, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[], int atEnd )
 {
+
 	int              ret;
 	GnoclToolBarCheckParams *para = NULL;
 	char             *txt = NULL;
@@ -1441,9 +1458,6 @@ static int addRadioButton ( GtkToolbar *toolbar, Tcl_Interp *interp, int objc, T
 
 	/* should this be moved elsewhere? */
 	g_signal_connect ( para->widget , "toggled", G_CALLBACK ( gnoclRadioToggledFunc ), para );
-
-
-
 
 	/* use custom icon and label widgets */
 	gtk_tool_button_set_icon_widget ( para->widget, icon );

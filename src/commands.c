@@ -12,6 +12,7 @@
 
 /*
    History:
+   2010-04: added gnocl::sound moved to gnome package
    2010-10: added gnocl::stockItem
    2010-08: added gnocl::pointer
    2010-07: added gnocl::sound
@@ -69,11 +70,6 @@
 **/
 
 /**
-\page page_sound gnocl::sound
-\htmlinclude sound.html
-**/
-
-/**
 \page page_stockitem gnocl::stockItem
 \htmlinclude stockitem.html
 **/
@@ -91,7 +87,6 @@
 #include "gnocl.h"
 #include <string.h>
 #include <ctype.h>
-#include <canberra-gtk.h>
 
 /**
 \brief      Manipulate the screen pointer.
@@ -345,140 +340,6 @@ int gnoclSignalEmitCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj
 }
 
 
-/**
-\brief	Callback function to handle response to end of sound play.
-**/
-static gboolean doSoundFinished ( ca_context * c, uint32_t id, int error_code, void * userdata )
-{
-	gint ret;
-
-	GnoclCommandData *cs = ( GnoclCommandData * ) userdata;
-
-#ifdef DEBUG_COMMANDS
-	g_print ( "cd->data = %s\n", cs->data );
-#endif
-
-	GnoclPercSubst ps[] =
-	{
-		{ 'f', GNOCL_STRING },  /* name of sound file */
-		{ 'e', GNOCL_INT },     /* errorcode */
-		{ 0 }
-	};
-
-	ps[0].val.str = cs->data;
-	ps[1].val.i = error_code;
-
-#ifdef DEBUG_COMMANDS
-	g_print ( "COMMAND = %s ERRORCODE %d\n", cs->command, error_code );
-#endif
-
-	ret = gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 0 );
-
-#ifdef DEBUG_COMMANDS
-	g_print ( "COMMAND = DONE! %d\n", ret );
-#endif
-
-	/* now that the job is done, delete the command structure */
-	g_free ( cs->command );
-	g_free ( cs );
-
-	return 0;
-}
-
-/**
-\brief      Play specified sound file.
-\note		http://library.gnome.org/devel/libcanberra/unstable/libcanberra-canberra.html#ca-context-play
-			This will only allow the creation of one audio context.
-			This will prevent multiple calls gnocl::sound creation multiple audio streams.
-
-			gnocl::sound <clipname> -onFinished {string...}
-			gnocl::souns cancel
-
-**/
-
-static ca_context *context = NULL;
-static ca_proplist *proplist = NULL;
-
-int gnoclSoundCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * const objv[] )
-{
-#ifdef DEBUG_COMMANDS
-	g_print ( "gnoclSoundCmd objc = %d\n", objc );
-#endif
-
-	GnoclCommandData *cs = g_new ( GnoclCommandData, 1 );
-	gchar *cmd;
-
-	/* what filename is passed to the command? */
-
-	if ( objc != 2 && objc != 4 )
-	{
-		Tcl_WrongNumArgs ( interp, 1, objv, NULL );
-		return TCL_ERROR;
-	}
-
-	if  ( strcmp ( Tcl_GetString ( objv[1] ), "cancel" ) == 0 )
-	{
-		if ( context != NULL )
-		{
-
-#ifdef DEBUG_COMMANDS
-			g_print ( "gnoclSoundCmd cancel\n" );
-#endif
-			ca_context_cancel ( context, 0 );
-			context = NULL;
-		}
-	}
-
-	char * sound = Tcl_GetString ( objv[1] );
-
-	if ( context == NULL )
-	{
-		ca_context_create ( &context );
-	}
-
-	else
-	{
-		ca_context_cancel ( context, 0 );
-	}
-
-
-	/* implement the callback fucntion */
-	if ( objc == 4 )
-	{
-
-#ifdef DEBUG_COMMANDS
-		g_print ( "gnoclSoundCmd implementing callback\n" );
-		g_print ( "option = %s\n", Tcl_GetString ( objv[2] ) );
-		g_print ( "command = %s\n", Tcl_GetString ( objv[3] ) );
-#endif
-
-		/* error check for -onFinished */
-		if ( strcmp ( Tcl_GetString ( objv[2] ), "-onFinished" ) != 0 )
-		{
-			Tcl_AppendResult ( interp, "Unknown option \"", Tcl_GetString ( objv[2] ), "\" must be -onFinished", NULL );
-			return TCL_ERROR;
-		}
-
-		cmd = Tcl_GetString ( objv[3] );
-		cs->command = g_strdup ( Tcl_GetString ( objv[3] ) );
-		cs->interp = interp;
-		cs->data = g_strdup ( Tcl_GetString ( objv[1] ) );
-
-		/* Set properties */
-		ca_proplist_create ( &proplist );
-		ca_proplist_sets ( proplist, CA_PROP_MEDIA_FILENAME, sound );
-		ca_context_play_full ( context, 0, proplist, doSoundFinished, cs );
-
-	}
-
-	else
-	{
-		/* otherwise, a simple play */
-		ca_context_play ( context, 0, CA_PROP_MEDIA_FILENAME, sound, NULL );
-	}
-
-	return TCL_OK;
-}
 
 /**
 \brief      Provide gnocl parallel to the Tk bind command

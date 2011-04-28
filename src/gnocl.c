@@ -753,7 +753,6 @@ static GnoclCmd commands[] =
 	{ "pointer", gnoclPointerCmd },
 	{ "signalEmit", gnoclSignalEmitCmd },
 	{ "beep", gnoclBeepCmd },
-	{ "sound", gnoclSoundCmd },
 	{ "inventory", gnoclGetInventory },
 	{ "stockItem", gnoclStockItemCmd },
 	{ "bind", gnoclBindCmd },

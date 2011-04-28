@@ -1,3 +1,7 @@
+2011-04-25
+	gnocl::sound
+		o command moved into the gnocl gnome package.
+
 2011-04-16
 	gnocl::plug/socket
 	 	o ZD's code enhancements for windows compilation added

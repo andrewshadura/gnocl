@@ -80,15 +80,10 @@ static int textFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *  
            If a match is found, add it to a list of row col indices.
            When search complete, return the list to the calling function.
 **/
-static int searchWord (
-	GtkTextBuffer *buffer,
-	Tcl_Interp *interp,
-	int objc,
-	Tcl_Obj *  const objv[],
-	int cmdNo,
-	int isTextWidget
-)
+static int searchWord ( GtkTextBuffer *buffer, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[], int cmdNo, int isTextWidget )
 {
+
+	listParameters ( objc,  objv, __FUNCTION__ );
 
 	int res, row1, col1, row2, col2;
 	GtkTextIter start, begin, end;
@@ -101,7 +96,7 @@ static int searchWord (
 
 	while ( gtk_text_iter_forward_search ( &start, ( gchar*  ) Tcl_GetString ( objv[cmdNo+2] ), 0, &begin, &end, NULL ) != NULL )
 	{
-#ifdef DEBUG_TEXT_TEXT
+#ifdef DEBUG_TEXT
 		g_print ( "*  search forwards %s\n", ( gchar*  ) Tcl_GetString ( objv[cmdNo+2] ) );
 #endif
 		/*  return the index of the found location */
@@ -2346,6 +2341,7 @@ int gnoclTextCommand (
 				gint applyTags;
 				char *  pch;
 				char *  tagList;
+				GtkTextTagTable *table;
 
 				if ( objc < cmdNo + 1 )
 				{
@@ -2353,32 +2349,43 @@ int gnoclTextCommand (
 					return -1;
 				}
 
-#ifdef DEBUG_TEXT
-				g_print ( "objc= %d SearchIDx 0 = %s 1 = %s 2 = %s 3 = %s\n",
-						  objc,
-						  Tcl_GetString ( objv[cmdNo+0] ) ,
-						  Tcl_GetString ( objv[cmdNo+1] ) ,
-						  Tcl_GetString ( objv[cmdNo+2] ) ,
-						  Tcl_GetString ( objv[cmdNo+3] ) );
-#endif
+				applyTags = 0;
 
-				if ( objc < cmdNo + 4 )
+				if ( objc == cmdNo + 4 )
 				{
 					if ( strcmp ( Tcl_GetString ( objv[cmdNo+2] ), "-tags" ) == 0 )
 					{
+						pch = strtok ( Tcl_GetString ( objv[cmdNo+3] ), " " );
+
+						table = gtk_text_buffer_get_tag_table ( buffer );
+
+						if ( gtk_text_tag_table_lookup ( table, pch ) == NULL )
+						{
+
+
+
+							Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "GNOCL ERROR! Specified tag not found.", -1 ) );
+
+							return TCL_ERROR;
+						}
+
 						applyTags = 1;
 					}
 
 					else
 					{
-						applyTags = 0;
+						Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "GNOCL ERROR! Invalid option given, it must be -tags <taglist>.", -1 ) );
+
+						return TCL_ERROR;
 					}
 				}
+
 
 				resList = Tcl_NewListObj ( 0, NULL );
 
 				/*  default with the start of the buffer */
 				gtk_text_buffer_get_start_iter ( buffer, &start );
+
 
 				while ( gtk_text_iter_forward_search ( &start, Tcl_GetString ( objv[cmdNo+1] ), 0, &begin, &end, NULL ) != NULL )
 				{
@@ -2390,17 +2397,10 @@ int gnoclTextCommand (
 					col2 = gtk_text_iter_get_line_offset ( &end );
 
 					/*  check if there is a taglist to apply */
-					/*  PROBLEMS HERE... THE TAGLIST IS ONLY APPLIED TO THE FIRST ITEM, WHY? */
-
-					if ( applyTags )
+					if ( applyTags == 1 )
 					{
-						pch = strtok ( Tcl_GetString ( objv[cmdNo+3] ), " " );
-
-						while ( pch != NULL )
-						{
-							gtk_text_buffer_apply_tag_by_name ( buffer, pch, &begin, &end );
-							pch = strtok ( NULL, " " );
-						}
+						/* currently supporting only one tag */
+						gtk_text_buffer_apply_tag_by_name ( buffer, pch, &begin, &end );
 
 					}
 
@@ -2412,6 +2412,7 @@ int gnoclTextCommand (
 					start = end;
 
 				}
+
 
 				Tcl_SetObjResult ( interp, resList );
 

@@ -307,8 +307,7 @@ error:
 
 			else
 			{
-				Tcl_AppendStringsToObj ( resultPtr, ", ", *entryPtr,
-										 ( char * ) NULL );
+				Tcl_AppendStringsToObj ( resultPtr, ", ", *entryPtr, ( char * ) NULL );
 			}
 		}
 	}

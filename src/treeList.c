@@ -165,6 +165,10 @@ static GnoclOption colOptions[] =
 	{ "-title", GNOCL_STRING, "title" },
 	{ "-visible", GNOCL_BOOL, "visible" },
 	{ "-onWidthChange", GNOCL_OBJ, "", gnoclOptNotify },
+
+	/* expiremental */
+	{ "-widthGroup", GNOCL_OBJ, "w", gnoclOptSizeGroup },
+
 	{ NULL }
 };
 
