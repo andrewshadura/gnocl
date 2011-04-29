@@ -783,9 +783,11 @@ int gnoclWinfoCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * co
 				GtkRequisition req;
 				gint x, y, w, h;
 
+				x = 0; y = 0; w = 0; h = 0;
+
 				widget = gnoclGetWidgetFromName (  Tcl_GetString ( objv[2] ), interp );
 
-				//gtk_widget_realize(widget);
+				gtk_widget_realize ( widget );
 
 				gdk_window_get_origin ( widget->window, &x, &y );
 
