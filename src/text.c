@@ -13,6 +13,7 @@
 
 /*
    History:
+   2011-04  added -justificationSet to tag options
    2011-04  added -inputMethod, -onPreeditChanged
    2011-02  added undo/redo functionality
    2010-05	added tag option -paragraph
@@ -1277,6 +1278,7 @@ int tagCmd ( GtkTextBuffer *buffer, Tcl_Interp *interp, int objc, Tcl_Obj *  con
 		{ "-underline", GNOCL_OBJ, "underline", gnoclOptUnderline },
 		{ "-invisible", GNOCL_BOOL, "invisible" },
 		{ "-editable", GNOCL_BOOL, "editable" },
+		{ "-justificationSet", GNOCL_BOOL, "justification-set" },
 
 		{ "-pixelsBelowLines", GNOCL_INT, "pixels-below-lines" },
 		{ "-pixelsAboveLines", GNOCL_INT, "pixels-above-lines" },
