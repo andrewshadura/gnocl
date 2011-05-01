@@ -13,7 +13,11 @@
 
 /*
    History:
-   2011-04  added -justificationSet to tag options
+   2011-04  added tag options
+				-marginAccumulate -backgroundFullHeight	-backgroundStipple
+				-direction -editable -foregroundStipple -indent -language
+				-leftMargin -name -pixelsInsideWrap -rightMargin -rise
+				-scale -tabs -variant -weight
    2011-04  added -inputMethod, -onPreeditChanged
    2011-02  added undo/redo functionality
    2010-05	added tag option -paragraph
@@ -152,6 +156,120 @@ static int gnoclOptTabs ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tc
 
 	return TCL_OK;
 }
+
+/**
+\brief	Set text tag attribute.
+**/
+static int gnoclOptTagBackgroundStipple ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
+{
+	GtkWidget *container;
+	container =  gtk_widget_get_parent ( obj );
+
+#ifdef DEBUG_TEXT
+	debugStep ( __FUNCTION__, 1.0 );
+	g_print ( "Feature not yet implemented\n" );
+#endif
+
+	return TCL_OK;
+}
+
+/**
+\brief	Set text tag attribute.
+**/
+static int gnoclOptTagTextDirection ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
+{
+
+#ifdef DEBUG_TEXT
+	debugStep ( __FUNCTION__, 1.0 );
+#endif
+
+	/* options: leftRight | rightLeft | none */
+
+	/*
+	typedef enum
+	{
+	  GTK_TEXT_DIR_NONE,
+	  GTK_TEXT_DIR_LTR,
+	  GTK_TEXT_DIR_RTL,
+	} GtkTextDirection;
+	*/
+
+	int idx;
+
+	const char *txt[] = { "none", "leftRight", "rightLeft", NULL };
+
+	if ( Tcl_GetIndexFromObj ( NULL, opt->val.obj, txt, NULL, TCL_EXACT, &idx ) != TCL_OK )
+	{
+		Tcl_AppendResult ( interp, "Unknown direction \"", Tcl_GetString ( opt->val.obj ), "\". Must be one of none, leftRight or rightLeft.", NULL );
+		return TCL_ERROR;
+	}
+
+	g_object_set ( obj, opt->propName, idx, NULL );
+
+	return TCL_OK;
+}
+
+/**
+\brief	Set text tag attribute.
+**/
+static int gnoclOptTextTagForegroundStipple ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
+{
+	GtkWidget *container;
+	container =  gtk_widget_get_parent ( obj );
+
+#ifdef DEBUG_TEXT
+	debugStep ( __FUNCTION__, 1.0 );
+	g_print ( "Feature not yet implemented\n" );
+#endif
+
+	return TCL_OK;
+}
+
+/**
+\brief	Set text tag attribute.
+**/
+static int gnocOptTextTagLanguage ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
+{
+
+
+#ifdef DEBUG_TEXT
+	debugStep ( __FUNCTION__, 1.0 );
+	g_print ( "Feature not yet implemented\n" );
+#endif
+
+	return TCL_OK;
+}
+
+/**
+\brief	Set text tag attribute.
+**/
+static int gnoclOptTextTagTabs ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
+{
+
+
+#ifdef DEBUG_TEXT
+	debugStep ( __FUNCTION__, 1.0 );
+	g_print ( "Feature not yet implemented\n" );
+#endif
+
+	return TCL_OK;
+}
+
+/**
+\brief	Set text tag attribute.
+**/
+static int gnoclOptTextTagVariant ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
+{
+
+
+#ifdef DEBUG_TEXT
+	debugStep ( __FUNCTION__, 1.0 );
+	g_print ( "Feature not yet implemented\n" );
+#endif
+
+	return TCL_OK;
+}
+
 
 /**
 \brief
@@ -1167,75 +1285,6 @@ static int markCmd ( GtkTextBuffer *buffer, Tcl_Interp *interp, int objc, Tcl_Ob
 
 /**
 \brief
-\author
-\date
-\note
- "accumulative-margin"      gboolean              : Read / Write
-  "background"               gchar*                : Write
-  "background-full-height"   gboolean              : Read / Write
-  "background-full-height-set" gboolean              : Read / Write
-  "background-gdk"           GdkColor*             : Read / Write
-  "background-set"           gboolean              : Read / Write
-  "background-stipple"       GdkPixmap*            : Read / Write
-  "background-stipple-set"   gboolean              : Read / Write
-  "direction"                GtkTextDirection      : Read / Write
-  "editable"                 gboolean              : Read / Write
-  "editable-set"             gboolean              : Read / Write
-  "family"                   gchar*                : Read / Write
-  "family-set"               gboolean              : Read / Write
-  "font"                     gchar*                : Read / Write
-  "font-desc"                PangoFontDescription*  : Read / Write
-  "foreground"               gchar*                : Write
-  "foreground-gdk"           GdkColor*             : Read / Write
-  "foreground-set"           gboolean              : Read / Write
-  "foreground-stipple"       GdkPixmap*            : Read / Write
-  "foreground-stipple-set"   gboolean              : Read / Write
-  "indent"                   gint                  : Read / Write
-  "indent-set"               gboolean              : Read / Write
-  "invisible"                gboolean              : Read / Write
-  "invisible-set"            gboolean              : Read / Write
-  "justification"            GtkJustification      : Read / Write
-  "justification-set"        gboolean              : Read / Write
-  "language"                 gchar*                : Read / Write
-  "language-set"             gboolean              : Read / Write
-  "left-margin"              gint                  : Read / Write
-  "left-margin-set"          gboolean              : Read / Write
-  "name"                     gchar*                : Read / Write / Construct Only
-  "paragraph-background"     gchar*                : Write
-  "paragraph-background-gdk" GdkColor*             : Read / Write
-  "paragraph-background-set" gboolean              : Read / Write
-  "pixels-above-lines"       gint                  : Read / Write
-  "pixels-above-lines-set"   gboolean              : Read / Write
-  "pixels-below-lines"       gint                  : Read / Write
-  "pixels-below-lines-set"   gboolean              : Read / Write
-  "pixels-inside-wrap"       gint                  : Read / Write
-  "pixels-inside-wrap-set"   gboolean              : Read / Write
-  "right-margin"             gint                  : Read / Write
-  "right-margin-set"         gboolean              : Read / Write
-  "rise"                     gint                  : Read / Write
-  "rise-set"                 gboolean              : Read / Write
-  "scale"                    gdouble               : Read / Write
-  "scale-set"                gboolean              : Read / Write
-  "size"                     gint                  : Read / Write
-  "size-points"              gdouble               : Read / Write
-  "size-set"                 gboolean              : Read / Write
-  "stretch"                  PangoStretch          : Read / Write
-  "stretch-set"              gboolean              : Read / Write
-  "strikethrough"            gboolean              : Read / Write
-  "strikethrough-set"        gboolean              : Read / Write
-  "style"                    PangoStyle            : Read / Write
-  "style-set"                gboolean              : Read / Write
-  "tabs"                     PangoTabArray*        : Read / Write
-  "tabs-set"                 gboolean              : Read / Write
-  "underline"                PangoUnderline        : Read / Write
-  "underline-set"            gboolean              : Read / Write
-  "variant"                  PangoVariant          : Read / Write
-  "variant-set"              gboolean              : Read / Write
-  "weight"                   gint                  : Read / Write
-  "weight-set"               gboolean              : Read / Write
-  "wrap-mode"                GtkWrapMode           : Read / Write
-  "wrap-mode-set"            gboolean              : Read / Write
-
 **/
 int tagCmd ( GtkTextBuffer *buffer, Tcl_Interp *interp, int objc, Tcl_Obj *  const objv[], int cmdNo )
 {
@@ -1247,21 +1296,44 @@ int tagCmd ( GtkTextBuffer *buffer, Tcl_Interp *interp, int objc, Tcl_Obj *  con
 	const char *cmds[] =
 	{
 		"cget", "create", "configure", "apply",
-		"delete", "remove", "get", "clear",
+		"delete", "remove", "get", "clear", "set",
 		NULL
 	};
 	enum cmdIdx
 	{
 		CgetIdx, CreateIdx, ConfigureIdx, ApplyIdx,
-		DeleteIdx, RemoveIdx, GetIdx, ClearIdx
+		DeleteIdx, RemoveIdx, GetIdx, ClearIdx, SetIdx
 	};
 
 	/*  see also list.c */
 
 	GnoclOption tagOptions[] =
 	{
-		{ "-paragraph", GNOCL_OBJ, "paragraph-background-gdk", gnoclOptGdkColor },
+
+		/* new options added 30/04/11, may need some revision */
+
+		{"-marginAccumulate", GNOCL_BOOL, "accumulative-margin"},
+		{"-backgroundFullHeight", GNOCL_BOOL, "background-full-height"},
+		{"-backgroundStipple", GNOCL_OBJ, gnoclOptTagBackgroundStipple},
+		{"-direction", GNOCL_OBJ, "direction", gnoclOptTagTextDirection},
+		{"-editable", GNOCL_BOOL, "editable"},
+		{"-foregroundStipple", GNOCL_OBJ, "foreground-stipple", gnoclOptTextTagForegroundStipple},
+		{"-indent", GNOCL_INT, "indent"},
+		{"-language", GNOCL_OBJ, "language", gnocOptTextTagLanguage},
+		{"-leftMargin", GNOCL_INT, "left-margin"},
+		{"-name", GNOCL_STRING, "name"},
+		{"-pixelsInsideWrap", GNOCL_INT, "pixels-inside-wrap"},
+		{"-rightMargin", GNOCL_INT, "right-margin"},
+		{"-rise", GNOCL_INT, "rise"},
+		{"-scale", GNOCL_DOUBLE, "scale"},
+		{"-tabs", GNOCL_OBJ, "tabs", gnoclOptTextTagTabs},
+		{"-variant", GNOCL_OBJ, "variant", gnoclOptTextTagVariant},
+		{"-weight", GNOCL_INT, "weight"},
+
+		/*--------------- existing options ---------------*/
+
 		{ "-background", GNOCL_OBJ, "background-gdk", gnoclOptGdkColor },
+		{ "-editable", GNOCL_BOOL, "editable" },
 		{ "-foreground", GNOCL_OBJ, "foreground-gdk", gnoclOptGdkColor },
 		{ "-font", GNOCL_STRING, "font" },
 		{ "-fontFamily", GNOCL_STRING, "family" },
@@ -1272,19 +1344,46 @@ int tagCmd ( GtkTextBuffer *buffer, Tcl_Interp *interp, int objc, Tcl_Obj *  con
 		{ "-fontStretch", GNOCL_OBJ, "stretch", gnoclOptPangoStretch },
 		{ "-fontSize", GNOCL_OBJ, "size", gnoclOptPangoScaledInt },
 		{ "-fontScale", GNOCL_OBJ, "scale", gnoclOptScale },
-		{ "-wrapMode", GNOCL_OBJ, "wrap-mode", gnoclOptWrapmode },
-		{ "-justification", GNOCL_OBJ, "justification", gnoclOptJustification },
-		{ "-strikethrough", GNOCL_BOOL, "strikethrough" },
-		{ "-underline", GNOCL_OBJ, "underline", gnoclOptUnderline },
 		{ "-invisible", GNOCL_BOOL, "invisible" },
-		{ "-editable", GNOCL_BOOL, "editable" },
-		{ "-justificationSet", GNOCL_BOOL, "justification-set" },
-
-		{ "-pixelsBelowLines", GNOCL_INT, "pixels-below-lines" },
+		{ "-justification", GNOCL_OBJ, "justification", gnoclOptJustification },
+		{ "-paragraph", GNOCL_OBJ, "paragraph-background-gdk", gnoclOptGdkColor },
 		{ "-pixelsAboveLines", GNOCL_INT, "pixels-above-lines" },
+		{ "-pixelsBelowLines", GNOCL_INT, "pixels-below-lines" },
 		{ "-size", GNOCL_INT, "size" },
+		{ "-strikethrough", GNOCL_BOOL, "strikethrough" },
 		{ "-sizePoints", GNOCL_DOUBLE, "size-points" },
+		{ "-underline", GNOCL_OBJ, "underline", gnoclOptUnderline },
+		{ "-wrapMode", GNOCL_OBJ, "wrap-mode", gnoclOptWrapmode },
 
+
+		/* settings, what to do with these? */
+
+		/*
+				{"-backgroundFullHeightSet", GNOCL_BOOL, "background-full-height-set"},
+				{"-backgroundSet", GNOCL_BOOL, "background-set"},
+				{"-backgroundStippleSet", GNOCL_BOOL, "background-stipple-set"},
+				{"-editableSet", GNOCL_BOOL, "editable-set"},
+				{"-fontFamiltSet", GNOCL_BOOL, "family-set"},
+				{"-foregroundStippleSet", GNOCL_BOOL, "foreground-stipple-set"},
+				{"-indentSet", GNOCL_BOOL, "indent-set"},
+				{"-invisibleSet", GNOCL_BOOL, "invisible-set"},
+				{"-justificationSet", GNOCL_BOOL, "justification-set"},
+				{"-languageSet", GNOCL_BOOL, "language-set"},
+				{"-leftMarginSet", GNOCL_BOOL, "left-margin-set"},
+				{"-paragraphBackgroundSet", GNOCL_BOOL, "paragraph-background-set"},
+				{"-pixelsAboveLinesSet", GNOCL_BOOL, "pixels-above-lines-set"},
+				{"-pixelsBelowLinesSet", GNOCL_BOOL, "pixels-below-lines-set"},
+				{"-pixelsInsideWrapSet", GNOCL_BOOL, "pixels-inside-wrap-set"},
+				{"-rightMarginSet", GNOCL_BOOL, "right-margin-set"},
+				{"-riseSet", GNOCL_BOOL, "rise-set"},
+				{"-scaleSet", GNOCL_BOOL, "scale-set"},
+				{"-sizeSet", GNOCL_BOOL, "size-set"},
+				{"-tabsSet", GNOCL_BOOL, "tabs-set"},
+				{"-underlineSet", GNOCL_BOOL, "underline-set"},
+				{"-variantSet", GNOCL_BOOL, "variant-set"},
+				{"-weightSet", GNOCL_BOOL, "weight-set"},
+				{"-wrapModeSet", GNOCL_BOOL, "wrap-mode-set"},
+		*/
 
 		/*  GtkTextTag signal */
 		{ "-onEvent", GNOCL_OBJ, "", gnoclOptOnEvent },
@@ -1306,6 +1405,10 @@ int tagCmd ( GtkTextBuffer *buffer, Tcl_Interp *interp, int objc, Tcl_Obj *  con
 
 	switch ( idx )
 	{
+		case SetIdx:
+			{
+				/* control tag option application settings */
+			}
 		case ClearIdx:
 			{
 				GtkTextTagTable *tagtable = gtk_text_buffer_get_tag_table ( buffer );

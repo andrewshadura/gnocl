@@ -1,3 +1,11 @@
+2011-05-30
+	gnocl::text
+		o new tag options
+			-marginAccumulate -backgroundFullHeight	-backgroundStipple
+			-direction -editable -foregroundStipple -indent -language
+			-leftMargin -name -pixelsInsideWrap -rightMargin -rise
+			-scale -tabs -variant -weight
+
 2011-04-25
 	gnocl::sound
 		o command moved into the gnocl gnome package.
