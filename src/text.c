@@ -231,11 +231,20 @@ static int gnoclOptTextTagForegroundStipple ( Tcl_Interp *interp, GnoclOption *o
 static int gnocOptTextTagLanguage ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
 
+	gchar *lang;
+	gint i;
+
+	lang = Tcl_GetStringFromObj ( opt->val.obj, NULL );
 
 #ifdef DEBUG_TEXT
 	debugStep ( __FUNCTION__, 1.0 );
-	g_print ( "Feature not yet implemented\n" );
+	g_print ( "Language = %s\n", lang );
 #endif
+
+	i = getLanguage ( lang );
+
+	g_print ( "idx = %d\n", i );
+
 
 	return TCL_OK;
 }

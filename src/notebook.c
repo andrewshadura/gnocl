@@ -59,39 +59,38 @@ static int doOnCreateWindow ( GtkNotebook *source_notebook, GtkWidget *child, gi
 
 	GnoclCommandData *cs = ( GnoclCommandData * ) data;
 
-	if ( *cs->interp->result == '\0' )
+	//if ( *cs->interp->result == '\0' )
+	//{
+	GnoclPercSubst ps[] =
 	{
-		GnoclPercSubst ps[] =
-		{
-			{ 'w', GNOCL_STRING },  /* window */
-			{ 'g', GNOCL_STRING },  /* window gladeName */
-			{ 'n', GNOCL_STRING },  /* notebook */
-			{ 'c', GNOCL_STRING },  /* child */
-			{ 's', GNOCL_STRING },  /* child */
-			{ 'x', GNOCL_INT },     /* x coordinate */
-			{ 'y', GNOCL_INT },     /* y coordinate */
-			{ 0 }
-		};
+		{ 'w', GNOCL_STRING },  /* window */
+		{ 'g', GNOCL_STRING },  /* window gladeName */
+		{ 'n', GNOCL_STRING },  /* notebook */
+		{ 'c', GNOCL_STRING },  /* child */
+		{ 's', GNOCL_STRING },  /* child */
+		{ 'x', GNOCL_INT },     /* x coordinate */
+		{ 'y', GNOCL_INT },     /* y coordinate */
+		{ 0 }
+	};
 
-		/* register the new main window */
-		const char *windowName = gnoclGetAutoWidgetId();
-		gnoclMemNameAndWidget ( windowName, window );
+	/* register the new main window */
+	const char *windowName = gnoclGetAutoWidgetId();
+	gnoclMemNameAndWidget ( windowName, window );
 
-		/* register the new notebook */
-		const char *notebookName = gnoclGetAutoWidgetId();
-		gnoclMemNameAndWidget ( notebookName, notebook );
+	/* register the new notebook */
+	const char *notebookName = gnoclGetAutoWidgetId();
+	gnoclMemNameAndWidget ( notebookName, notebook );
 
-		ps[0].val.str = gnoclGetNameFromWidget ( window );
-		ps[1].val.str = gtk_widget_get_name ( window );
-		ps[2].val.str = gnoclGetNameFromWidget ( notebook );
-		ps[3].val.str = gnoclGetNameFromWidget ( child );
-		ps[4].val.str = gnoclGetNameFromWidget ( notebook );
-		ps[5].val.i = x;
-		ps[6].val.i = y;
+	ps[0].val.str = gnoclGetNameFromWidget ( window );
+	ps[1].val.str = gtk_widget_get_name ( window );
+	ps[2].val.str = gnoclGetNameFromWidget ( notebook );
+	ps[3].val.str = gnoclGetNameFromWidget ( child );
+	ps[4].val.str = gnoclGetNameFromWidget ( notebook );
+	ps[5].val.i = x;
+	ps[6].val.i = y;
 
-		gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
-	}
-
+	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
+	//}
 
 	return GTK_NOTEBOOK ( notebook );
 
@@ -106,28 +105,28 @@ static void _doOnCreateWindow ( GtkNotebook *notebook, GtkWidget *page, gint x, 
 	   error handling. In this case don't call any callbacks
 	   (especially onDestroy!) because this overrides the result. */
 
-	if ( *cs->interp->result == '\0' )
+	//if ( *cs->interp->result == '\0' )
+	//{
+	GnoclPercSubst ps[] =
 	{
-		GnoclPercSubst ps[] =
-		{
-			{ 'W', GNOCL_STRING },  /* notebook */
-			{ 'G', GNOCL_STRING },  /* notebook gladeName */
-			{ 'w', GNOCL_STRING },  /* widget */
-			{ 'g', GNOCL_STRING },  /* widget gladename */
-			{ 'x', GNOCL_INT },     /* x coordinate */
-			{ 'y', GNOCL_INT },     /* y coordinate */
-			{ 0 }
-		};
+		{ 'W', GNOCL_STRING },  /* notebook */
+		{ 'G', GNOCL_STRING },  /* notebook gladeName */
+		{ 'w', GNOCL_STRING },  /* widget */
+		{ 'g', GNOCL_STRING },  /* widget gladename */
+		{ 'x', GNOCL_INT },     /* x coordinate */
+		{ 'y', GNOCL_INT },     /* y coordinate */
+		{ 0 }
+	};
 
-		ps[0].val.str = gnoclGetNameFromWidget ( notebook );
-		ps[1].val.str = gtk_widget_get_name ( notebook );
-		ps[2].val.str = gnoclGetNameFromWidget ( page );
-		ps[3].val.str = gtk_widget_get_name ( page );
-		ps[4].val.i = x;
-		ps[5].val.i = y;
+	ps[0].val.str = gnoclGetNameFromWidget ( notebook );
+	ps[1].val.str = gtk_widget_get_name ( notebook );
+	ps[2].val.str = gnoclGetNameFromWidget ( page );
+	ps[3].val.str = gtk_widget_get_name ( page );
+	ps[4].val.i = x;
+	ps[5].val.i = y;
 
-		gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
-	}
+	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
+	//}
 }
 
 

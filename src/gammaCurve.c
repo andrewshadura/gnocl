@@ -11,17 +11,17 @@ static void  doOnCurveChanged ( GtkIconView *iconview, GtkTreePath *path, gpoint
 {
 	GnoclCommandData *cs = ( GnoclCommandData * ) user_data;
 
-	if ( *cs->interp->result == '\0' )
+	//if ( *cs->interp->result == '\0' )
+	//{
+	GnoclPercSubst ps[] =
 	{
-		GnoclPercSubst ps[] =
-		{
-			{ 'w', GNOCL_STRING },  /* printiconview */
-			{ 0 }
-		};
+		{ 'w', GNOCL_STRING },  /* printiconview */
+		{ 0 }
+	};
 
-		ps[0].val.str = gnoclGetNameFromWidget ( iconview );
-		gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
-	}
+	ps[0].val.str = gnoclGetNameFromWidget ( iconview );
+	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
+	//}
 }
 
 /**

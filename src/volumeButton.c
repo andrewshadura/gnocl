@@ -16,21 +16,21 @@ static gboolean doOnPop ( GtkScaleButton *button, gpointer user_data )
 {
 	GnoclCommandData *cs = ( GnoclCommandData * ) user_data;
 
-	if ( *cs->interp->result == '\0' )
+	//if ( *cs->interp->result == '\0' )
+	//{
+	GnoclPercSubst ps[] =
 	{
-		GnoclPercSubst ps[] =
-		{
-			{ 'w', GNOCL_STRING },
-			{ 'g', GNOCL_STRING },  /* glade name */
-			{ 'v', GNOCL_DOUBLE },  /* glade name */
-			{ 0 }
-		};
+		{ 'w', GNOCL_STRING },
+		{ 'g', GNOCL_STRING },  /* glade name */
+		{ 'v', GNOCL_DOUBLE },  /* glade name */
+		{ 0 }
+	};
 
-		ps[0].val.str = gnoclGetNameFromWidget ( button );
-		ps[1].val.str = gtk_widget_get_name ( button );
-		ps[2].val.d = gtk_scale_button_get_value ( button );
-		gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
-	}
+	ps[0].val.str = gnoclGetNameFromWidget ( button );
+	ps[1].val.str = gtk_widget_get_name ( button );
+	ps[2].val.d = gtk_scale_button_get_value ( button );
+	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
+	//}
 }
 
 /**

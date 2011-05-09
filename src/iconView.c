@@ -59,17 +59,17 @@ static gboolean doOnActivateCursorItem ( GtkIconView *iconview, gpointer user_da
 {
 	GnoclCommandData *cs = ( GnoclCommandData * ) user_data;
 
-	if ( *cs->interp->result == '\0' )
+	//if ( *cs->interp->result == '\0' )
+	//{
+	GnoclPercSubst ps[] =
 	{
-		GnoclPercSubst ps[] =
-		{
-			{ 'w', GNOCL_STRING },  /* printiconview */
-			{ 0 }
-		};
+		{ 'w', GNOCL_STRING },  /* printiconview */
+		{ 0 }
+	};
 
-		ps[0].val.str = gnoclGetNameFromWidget ( iconview );
-		gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
-	}
+	ps[0].val.str = gnoclGetNameFromWidget ( iconview );
+	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
+	//}
 }
 
 /**
@@ -89,39 +89,39 @@ static void  doOnItemActivated ( GtkIconView *iconview, GtkTreePath *path, gpoin
 {
 	GnoclCommandData *cs = ( GnoclCommandData * ) user_data;
 
-	if ( *cs->interp->result == '\0' )
+	//if ( *cs->interp->result == '\0' )
+	//{
+	GnoclPercSubst ps[] =
 	{
-		GnoclPercSubst ps[] =
-		{
-			{ 'w', GNOCL_STRING },  /* widget name */
-			{ 'l', GNOCL_STRING },  /* text */
-			{ 'f', GNOCL_STRING },  /* filename */
-			{ 't', GNOCL_STRING },  /* tooltip */
-			{ 0 }
-		};
+		{ 'w', GNOCL_STRING },  /* widget name */
+		{ 'l', GNOCL_STRING },  /* text */
+		{ 'f', GNOCL_STRING },  /* filename */
+		{ 't', GNOCL_STRING },  /* tooltip */
+		{ 0 }
+	};
 
-		/*-------*/
+	/*-------*/
 
-		GtkTreeIter iter;
-		GtkTreeModel *model;
-		gchar *label, *fname, *tooltip;
-		GdkPixbuf *pbuf, *tnail;
+	GtkTreeIter iter;
+	GtkTreeModel *model;
+	gchar *label, *fname, *tooltip;
+	GdkPixbuf *pbuf, *tnail;
 
-		model = gtk_icon_view_get_model ( iconview );
+	model = gtk_icon_view_get_model ( iconview );
 
-		gtk_tree_model_get_iter ( model, &iter, path );
-		gtk_tree_model_get ( model, &iter, COL_TNAIL, &tnail, COL_LABEL, &label, COL_FNAME, &fname, COL_TOOLTIP, &tooltip, - 1 );
+	gtk_tree_model_get_iter ( model, &iter, path );
+	gtk_tree_model_get ( model, &iter, COL_TNAIL, &tnail, COL_LABEL, &label, COL_FNAME, &fname, COL_TOOLTIP, &tooltip, - 1 );
 
-		/*-------*/
+	/*-------*/
 
-		//g_print ( "item = %s\n", text);
+	//g_print ( "item = %s\n", text);
 
-		ps[0].val.str = gnoclGetNameFromWidget ( gtk_widget_get_parent ( iconview ) );
-		ps[1].val.str = label;
-		ps[2].val.str = fname;
-		ps[3].val.str = tooltip;
-		gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
-	}
+	ps[0].val.str = gnoclGetNameFromWidget ( gtk_widget_get_parent ( iconview ) );
+	ps[1].val.str = label;
+	ps[2].val.str = fname;
+	ps[3].val.str = tooltip;
+	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
+	//}
 }
 
 /**
@@ -142,32 +142,32 @@ static gboolean doOnMoveCursor ( GtkIconView *iconview, GtkMovementStep step, gi
 	GnoclCommandData *cs = ( GnoclCommandData * ) user_data;
 	GList *list;
 
-	if ( *cs->interp->result == '\0' )
+	//if ( *cs->interp->result == '\0' )
+	//{
+	GnoclPercSubst ps[] =
 	{
-		GnoclPercSubst ps[] =
-		{
-			{ 'w', GNOCL_STRING },  /* printiconview */
-			{ 0 }
-		};
+		{ 'w', GNOCL_STRING },  /* printiconview */
+		{ 0 }
+	};
 
-		list = gtk_icon_view_get_selected_items ( iconview );
-		/*
-		      GtkTreePath *path = (GtkTreePath *) (list->data);
+	list = gtk_icon_view_get_selected_items ( iconview );
+	/*
+	      GtkTreePath *path = (GtkTreePath *) (list->data);
 
 
-		      gchar *text_path;
-		      image = eog_thumb_view_get_image_from_path (tb, path);
-		      text_path = gtk_tree_path_to_string (path);
-		      g_free (text_path);
+	      gchar *text_path;
+	      image = eog_thumb_view_get_image_from_path (tb, path);
+	      text_path = gtk_tree_path_to_string (path);
+	      g_free (text_path);
 
-		      g_list_foreach (list, (GFunc) gtk_tree_path_free , NULL);
-		      g_list_free (list);
-		*/
+	      g_list_foreach (list, (GFunc) gtk_tree_path_free , NULL);
+	      g_list_free (list);
+	*/
 
-		/* return name of container */
-		ps[0].val.str = gnoclGetNameFromWidget ( gtk_widget_get_parent ( iconview ) );
-		gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
-	}
+	/* return name of container */
+	ps[0].val.str = gnoclGetNameFromWidget ( gtk_widget_get_parent ( iconview ) );
+	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
+	//}
 }
 
 
@@ -191,17 +191,17 @@ static void doOnSelectAll ( GtkIconView *iconview, gpointer user_data )
 {
 	GnoclCommandData *cs = ( GnoclCommandData * ) user_data;
 
-	if ( *cs->interp->result == '\0' )
+	//if ( *cs->interp->result == '\0' )
+	//{
+	GnoclPercSubst ps[] =
 	{
-		GnoclPercSubst ps[] =
-		{
-			{ 'w', GNOCL_STRING },  /* printiconview */
-			{ 0 }
-		};
+		{ 'w', GNOCL_STRING },  /* printiconview */
+		{ 0 }
+	};
 
-		ps[0].val.str = gnoclGetNameFromWidget ( iconview );
-		gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
-	}
+	ps[0].val.str = gnoclGetNameFromWidget ( iconview );
+	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
+	//}
 }
 
 /**
@@ -221,17 +221,17 @@ static void  doOnSelectCursorItem ( GtkIconView *iconview, gpointer user_data )
 {
 	GnoclCommandData *cs = ( GnoclCommandData * ) user_data;
 
-	if ( *cs->interp->result == '\0' )
+	//if ( *cs->interp->result == '\0' )
+	//{
+	GnoclPercSubst ps[] =
 	{
-		GnoclPercSubst ps[] =
-		{
-			{ 'w', GNOCL_STRING },  /* printiconview */
-			{ 0 }
-		};
+		{ 'w', GNOCL_STRING },  /* printiconview */
+		{ 0 }
+	};
 
-		ps[0].val.str = gnoclGetNameFromWidget ( iconview );
-		gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
-	}
+	ps[0].val.str = gnoclGetNameFromWidget ( iconview );
+	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
+	//}
 }
 
 /**
@@ -257,58 +257,58 @@ static void doOnSelectionChanged ( GtkIconView *iconview, gpointer user_data )
 
 	GnoclCommandData *cs = ( GnoclCommandData * ) user_data;
 
-	if ( *cs->interp->result == '\0' )
+	//if ( *cs->interp->result == '\0' )
+	//{
+	GnoclPercSubst ps[] =
 	{
-		GnoclPercSubst ps[] =
-		{
-			{ 'w', GNOCL_STRING },  /* widget name */
-			{ 'l', GNOCL_STRING },  /* text */
-			{ 'f', GNOCL_STRING },  /* filename */
-			{ 't', GNOCL_STRING },  /* tooltip */
-			{ 0 }
-		};
+		{ 'w', GNOCL_STRING },  /* widget name */
+		{ 'l', GNOCL_STRING },  /* text */
+		{ 'f', GNOCL_STRING },  /* filename */
+		{ 't', GNOCL_STRING },  /* tooltip */
+		{ 0 }
+	};
 
-		/* get default display and screen */
+	/* get default display and screen */
 
-		gint x, y;
-		GdkDisplay *display = NULL;
-		GdkScreen *screen = NULL;
+	gint x, y;
+	GdkDisplay *display = NULL;
+	GdkScreen *screen = NULL;
 
-		GtkTreeIter iter;
-		GtkTreeModel *model;
-		gchar *label, *fname, *tooltip;
-		GdkPixbuf *tnail;
-		GtkTreePath *path;
+	GtkTreeIter iter;
+	GtkTreeModel *model;
+	gchar *label, *fname, *tooltip;
+	GdkPixbuf *tnail;
+	GtkTreePath *path;
 
-		g_print ( "%s 1\n", __FUNCTION__ );
+	g_print ( "%s 1\n", __FUNCTION__ );
 
-		display = gdk_display_get_default ();
-		screen = gdk_display_get_default_screen ( display );
+	display = gdk_display_get_default ();
+	screen = gdk_display_get_default_screen ( display );
 
-		/* get cursor position */
-		gdk_display_get_pointer ( display, NULL, &x, &y, NULL );
+	/* get cursor position */
+	gdk_display_get_pointer ( display, NULL, &x, &y, NULL );
 
-		g_print ( "%s\n 2\n", __FUNCTION__ );
+	g_print ( "%s\n 2\n", __FUNCTION__ );
 
-		path = gtk_icon_view_get_path_at_pos ( iconview, x, y );
-		model = gtk_icon_view_get_model ( iconview );
+	path = gtk_icon_view_get_path_at_pos ( iconview, x, y );
+	model = gtk_icon_view_get_model ( iconview );
 
-		g_print ( "%s 3\n", __FUNCTION__ );
+	g_print ( "%s 3\n", __FUNCTION__ );
 
-		gtk_tree_model_get_iter ( model, &iter, path );
-		/* problems here with this one */
-		//gtk_tree_model_get ( model, &iter, COL_TNAIL, &tnail, COL_LABEL, &label, COL_FNAME, &fname, COL_TOOLTIP, &tooltip, - 1 );
+	gtk_tree_model_get_iter ( model, &iter, path );
+	/* problems here with this one */
+	//gtk_tree_model_get ( model, &iter, COL_TNAIL, &tnail, COL_LABEL, &label, COL_FNAME, &fname, COL_TOOLTIP, &tooltip, - 1 );
 
 
-		g_print ( "%s 4\n", __FUNCTION__ );
-		ps[0].val.str = gnoclGetNameFromWidget ( gtk_widget_get_parent ( iconview ) );
-		ps[1].val.str = label;
-		ps[2].val.str = fname;
-		ps[3].val.str = tooltip;
+	g_print ( "%s 4\n", __FUNCTION__ );
+	ps[0].val.str = gnoclGetNameFromWidget ( gtk_widget_get_parent ( iconview ) );
+	ps[1].val.str = label;
+	ps[2].val.str = fname;
+	ps[3].val.str = tooltip;
 
-		g_print ( "%s 5\n", __FUNCTION__ );
-		gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
-	}
+	g_print ( "%s 5\n", __FUNCTION__ );
+	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
+	//}
 }
 
 /**
@@ -358,17 +358,17 @@ static void dotOnToggleCursorItem ( GtkIconView *iconview, gpointer user_data )
 {
 	GnoclCommandData *cs = ( GnoclCommandData * ) user_data;
 
-	if ( *cs->interp->result == '\0' )
+	//if ( *cs->interp->result == '\0' )
+	//{
+	GnoclPercSubst ps[] =
 	{
-		GnoclPercSubst ps[] =
-		{
-			{ 'w', GNOCL_STRING },  /* printiconview */
-			{ 0 }
-		};
+		{ 'w', GNOCL_STRING },  /* printiconview */
+		{ 0 }
+	};
 
-		ps[0].val.str = gnoclGetNameFromWidget ( iconview );
-		gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
-	}
+	ps[0].val.str = gnoclGetNameFromWidget ( iconview );
+	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
+	//}
 }
 
 /**
@@ -388,17 +388,17 @@ static void doOnUnselectAll ( GtkIconView *iconview, gpointer user_data )
 {
 	GnoclCommandData *cs = ( GnoclCommandData * ) user_data;
 
-	if ( *cs->interp->result == '\0' )
+	//if ( *cs->interp->result == '\0' )
+	//{
+	GnoclPercSubst ps[] =
 	{
-		GnoclPercSubst ps[] =
-		{
-			{ 'w', GNOCL_STRING },  /* printiconview */
-			{ 0 }
-		};
+		{ 'w', GNOCL_STRING },  /* printiconview */
+		{ 0 }
+	};
 
-		ps[0].val.str = gnoclGetNameFromWidget ( iconview );
-		gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
-	}
+	ps[0].val.str = gnoclGetNameFromWidget ( iconview );
+	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
+	//}
 }
 
 /**

@@ -151,17 +151,17 @@ void doOnReady ( GtkPrintOperationPreview *preview, GtkPrintContext *context, gp
 {
 	GnoclCommandData *cs = ( GnoclCommandData * ) user_data;
 
-	if ( *cs->interp->result == '\0' )
+	//if ( *cs->interp->result == '\0' )
+	//{
+	GnoclPercSubst ps[] =
 	{
-		GnoclPercSubst ps[] =
-		{
-			{ 'w', GNOCL_STRING },  /* printOperation */
-			{ 0 }
-		};
+		{ 'w', GNOCL_STRING },  /* printOperation */
+		{ 0 }
+	};
 
-		//ps[0].val.str = gnoclGetNameFromWidget ( operation );
-		gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
-	}
+	//ps[0].val.str = gnoclGetNameFromWidget ( operation );
+	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
+	//}
 }
 
 /**
@@ -181,17 +181,17 @@ void doOnGotPageSize ( GtkPrintOperationPreview *preview, GtkPrintContext *conte
 {
 	GnoclCommandData *cs = ( GnoclCommandData * ) user_data;
 
-	if ( *cs->interp->result == '\0' )
+	//if ( *cs->interp->result == '\0' )
+	//{
+	GnoclPercSubst ps[] =
 	{
-		GnoclPercSubst ps[] =
-		{
-			{ 'w', GNOCL_STRING },  /* printOperation */
-			{ 0 }
-		};
+		{ 'w', GNOCL_STRING },  /* printOperation */
+		{ 0 }
+	};
 
-		//ps[0].val.str = gnoclGetNameFromWidget ( operation );
-		gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
-	}
+	//ps[0].val.str = gnoclGetNameFromWidget ( operation );
+	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
+	//}
 }
 
 
@@ -212,17 +212,17 @@ void doOnStatusChanged ( GtkPrintOperation *operation, gpointer user_data )
 {
 	GnoclCommandData *cs = ( GnoclCommandData * ) user_data;
 
-	if ( *cs->interp->result == '\0' )
+	//if ( *cs->interp->result == '\0' )
+	//{
+	GnoclPercSubst ps[] =
 	{
-		GnoclPercSubst ps[] =
-		{
-			{ 'w', GNOCL_STRING },  /* printOperation */
-			{ 0 }
-		};
+		{ 'w', GNOCL_STRING },  /* printOperation */
+		{ 0 }
+	};
 
-		ps[0].val.str = gnoclGetNameFromWidget ( operation );
-		gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
-	}
+	ps[0].val.str = gnoclGetNameFromWidget ( operation );
+	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
+	//}
 }
 
 /**
@@ -244,17 +244,17 @@ void doOnRequestPageSetup ( GtkPrintOperation *operation, GtkPrintContext *conte
 {
 	GnoclCommandData *cs = ( GnoclCommandData * ) user_data;
 
-	if ( *cs->interp->result == '\0' )
+	//if ( *cs->interp->result == '\0' )
+	//{
+	GnoclPercSubst ps[] =
 	{
-		GnoclPercSubst ps[] =
-		{
-			{ 'w', GNOCL_STRING },  /* printOperation */
-			{ 0 }
-		};
+		{ 'w', GNOCL_STRING },  /* printOperation */
+		{ 0 }
+	};
 
-		ps[0].val.str = gnoclGetNameFromWidget ( operation );
-		gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
-	}
+	ps[0].val.str = gnoclGetNameFromWidget ( operation );
+	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
+	//}
 }
 
 /**
@@ -274,17 +274,17 @@ gboolean doOnPreview ( GtkPrintOperation *operation, GtkPrintOperationPreview *p
 {
 	GnoclCommandData *cs = ( GnoclCommandData * ) user_data;
 
-	if ( *cs->interp->result == '\0' )
+	//if ( *cs->interp->result == '\0' )
+	//{
+	GnoclPercSubst ps[] =
 	{
-		GnoclPercSubst ps[] =
-		{
-			{ 'w', GNOCL_STRING },  /* printOperation */
-			{ 0 }
-		};
+		{ 'w', GNOCL_STRING },  /* printOperation */
+		{ 0 }
+	};
 
-		ps[0].val.str = gnoclGetNameFromWidget ( operation );
-		gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
-	}
+	ps[0].val.str = gnoclGetNameFromWidget ( operation );
+	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
+	//}
 }
 
 /**
@@ -306,17 +306,17 @@ gboolean doOnPaginate ( GtkPrintOperation *operation, GtkPrintContext *context, 
 {
 	GnoclCommandData *cs = ( GnoclCommandData * ) user_data;
 
-	if ( *cs->interp->result == '\0' )
+	//if ( *cs->interp->result == '\0' )
+	//{
+	GnoclPercSubst ps[] =
 	{
-		GnoclPercSubst ps[] =
-		{
-			{ 'w', GNOCL_STRING },  /* printOperation */
-			{ 0 }
-		};
+		{ 'w', GNOCL_STRING },  /* printOperation */
+		{ 0 }
+	};
 
-		ps[0].val.str = gnoclGetNameFromWidget ( operation );
-		gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
-	}
+	ps[0].val.str = gnoclGetNameFromWidget ( operation );
+	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
+	//}
 }
 
 /**
@@ -337,17 +337,17 @@ void doOnEndPrint ( GtkPrintOperation *operation, GtkPrintContext *context, gpoi
 {
 	GnoclCommandData *cs = ( GnoclCommandData * ) user_data;
 
-	if ( *cs->interp->result == '\0' )
+	//if ( *cs->interp->result == '\0' )
+	//{
+	GnoclPercSubst ps[] =
 	{
-		GnoclPercSubst ps[] =
-		{
-			{ 'w', GNOCL_STRING },  /* printOperation */
-			{ 0 }
-		};
+		{ 'w', GNOCL_STRING },  /* printOperation */
+		{ 0 }
+	};
 
-		ps[0].val.str = gnoclGetNameFromWidget ( operation );
-		gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
-	}
+	ps[0].val.str = gnoclGetNameFromWidget ( operation );
+	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
+	//}
 }
 
 /**
@@ -367,17 +367,17 @@ void doOnDrawPage ( GtkPrintOperation *operation, GtkPrintContext *context, gint
 {
 	GnoclCommandData *cs = ( GnoclCommandData * ) user_data;
 
-	if ( *cs->interp->result == '\0' )
+	//if ( *cs->interp->result == '\0' )
+	//{
+	GnoclPercSubst ps[] =
 	{
-		GnoclPercSubst ps[] =
-		{
-			{ 'w', GNOCL_STRING },  /* printOperation */
-			{ 0 }
-		};
+		{ 'w', GNOCL_STRING },  /* printOperation */
+		{ 0 }
+	};
 
-		ps[0].val.str = gnoclGetNameFromWidget ( operation );
-		gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
-	}
+	ps[0].val.str = gnoclGetNameFromWidget ( operation );
+	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
+	//}
 }
 
 /**
@@ -397,17 +397,17 @@ void doOnDone ( GtkPrintOperation *operation, GtkPrintOperationResult result, gp
 {
 	GnoclCommandData *cs = ( GnoclCommandData * ) user_data;
 
-	if ( *cs->interp->result == '\0' )
+	//if ( *cs->interp->result == '\0' )
+	//{
+	GnoclPercSubst ps[] =
 	{
-		GnoclPercSubst ps[] =
-		{
-			{ 'w', GNOCL_STRING },  /* printOperation */
-			{ 0 }
-		};
+		{ 'w', GNOCL_STRING },  /* printOperation */
+		{ 0 }
+	};
 
-		ps[0].val.str = gnoclGetNameFromWidget ( operation );
-		gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
-	}
+	ps[0].val.str = gnoclGetNameFromWidget ( operation );
+	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
+	//}
 }
 
 /**
@@ -428,17 +428,17 @@ void doOnCustomWidgetApply ( GtkPrintOperation *operation, GtkWidget *widget, gp
 {
 	GnoclCommandData *cs = ( GnoclCommandData * ) user_data;
 
-	if ( *cs->interp->result == '\0' )
+	//if ( *cs->interp->result == '\0' )
+	//{
+	GnoclPercSubst ps[] =
 	{
-		GnoclPercSubst ps[] =
-		{
-			{ 'w', GNOCL_STRING },  /* printOperation */
-			{ 0 }
-		};
+		{ 'w', GNOCL_STRING },  /* printOperation */
+		{ 0 }
+	};
 
-		ps[0].val.str = gnoclGetNameFromWidget ( operation );
-		gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
-	}
+	ps[0].val.str = gnoclGetNameFromWidget ( operation );
+	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
+	//}
 }
 
 /**
@@ -458,17 +458,17 @@ GObject* doOnCreateCustomWidget ( GtkPrintOperation *operation, gpointer user_da
 {
 	GnoclCommandData *cs = ( GnoclCommandData * ) user_data;
 
-	if ( *cs->interp->result == '\0' )
+	//if ( *cs->interp->result == '\0' )
+	//{
+	GnoclPercSubst ps[] =
 	{
-		GnoclPercSubst ps[] =
-		{
-			{ 'w', GNOCL_STRING },  /* printOperation */
-			{ 0 }
-		};
+		{ 'w', GNOCL_STRING },  /* printOperation */
+		{ 0 }
+	};
 
-		ps[0].val.str = gnoclGetNameFromWidget ( operation );
-		gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
-	}
+	ps[0].val.str = gnoclGetNameFromWidget ( operation );
+	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
+	//}
 }
 
 /**
@@ -488,17 +488,17 @@ void doOnBeginPrint ( GtkPrintOperation *operation,	GtkPrintContext *context, gp
 {
 	GnoclCommandData *cs = ( GnoclCommandData * ) user_data;
 
-	if ( *cs->interp->result == '\0' )
+	//if ( *cs->interp->result == '\0' )
+	//{
+	GnoclPercSubst ps[] =
 	{
-		GnoclPercSubst ps[] =
-		{
-			{ 'w', GNOCL_STRING },  /* printOperation */
-			{ 0 }
-		};
+		{ 'w', GNOCL_STRING },  /* printOperation */
+		{ 0 }
+	};
 
-		ps[0].val.str = gnoclGetNameFromWidget ( operation );
-		gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
-	}
+	ps[0].val.str = gnoclGetNameFromWidget ( operation );
+	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
+	//}
 }
 
 /**

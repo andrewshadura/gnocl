@@ -23,17 +23,17 @@ static gboolean doOnClose ( GtkInfoBar *infobar, gpointer user_data )
 {
 	GnoclCommandData *cs = ( GnoclCommandData * ) user_data;
 
-	if ( *cs->interp->result == '\0' )
+	//if ( *cs->interp->result == '\0' )
+	//{
+	GnoclPercSubst ps[] =
 	{
-		GnoclPercSubst ps[] =
-		{
-			{ 'w', GNOCL_STRING },  /* printiconview */
-			{ 0 }
-		};
+		{ 'w', GNOCL_STRING },  /* printiconview */
+		{ 0 }
+	};
 
-		ps[0].val.str = gnoclGetNameFromWidget ( infobar );
-		gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
-	}
+	ps[0].val.str = gnoclGetNameFromWidget ( infobar );
+	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
+	//}
 }
 
 /**
@@ -54,19 +54,19 @@ static gboolean doOnResponse ( GtkInfoBar *infobar, gint response_id, gpointer u
 
 	GnoclCommandData *cs = ( GnoclCommandData * ) user_data;
 
-	if ( *cs->interp->result == '\0' )
+	//if ( *cs->interp->result == '\0' )
+	//{
+	GnoclPercSubst ps[] =
 	{
-		GnoclPercSubst ps[] =
-		{
-			{ 'w', GNOCL_STRING },
-			{ 'd', GNOCL_INT },
-			{ 0 }
-		};
+		{ 'w', GNOCL_STRING },
+		{ 'd', GNOCL_INT },
+		{ 0 }
+	};
 
-		ps[0].val.str = gnoclGetNameFromWidget ( infobar );
-		ps[1].val.i = response_id;
-		gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
-	}
+	ps[0].val.str = gnoclGetNameFromWidget ( infobar );
+	ps[1].val.i = response_id;
+	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
+	//}
 }
 
 /**

@@ -1038,7 +1038,9 @@ static int getRGBA ( Tcl_Interp *interp, Tcl_Obj *obj, int *r, int *g, int *b, i
 		Tcl_SetResult ( interp, "color must be either \"name\" or a list "
 						"consisting of \"name alpha\", \"r g b\", or \"r g b alpha\"",
 						TCL_STATIC );
-		return TCL_ERROR;
+		{
+			return TCL_ERROR;
+		}
 	}
 
 	if ( no == 0 ) /* transparent */
@@ -1105,7 +1107,7 @@ static int getRGBA ( Tcl_Interp *interp, Tcl_Obj *obj, int *r, int *g, int *b, i
 \author
 \date
 **/
-static int getGdkColor ( Tcl_Interp *interp, Tcl_Obj *obj, GdkColor *color )
+int getGdkColor ( Tcl_Interp *interp, Tcl_Obj *obj, GdkColor *color )
 {
 	int r, g, b, a;
 
@@ -1928,19 +1930,20 @@ static void doCommand ( GtkWidget *widget, gpointer data )
 	   error handling. In this case don't call any callbacks
 	   (especially onDestroy!) because this overrides the result. */
 
-	if ( *cs->interp->result == '\0' )
+	//if ( *cs->interp->result == '\0' )
+	//if ( *Tcl_GetStringResult(cs->interp) == '\0' )
+	//{
+	GnoclPercSubst ps[] =
 	{
-		GnoclPercSubst ps[] =
-		{
-			{ 'w', GNOCL_STRING },  /* widget */
-			{ 'g', GNOCL_STRING },  /* gladeName */
-			{ 0 }
-		};
+		{ 'w', GNOCL_STRING },  /* widget */
+		{ 'g', GNOCL_STRING },  /* gladeName */
+		{ 0 }
+	};
 
-		ps[0].val.str = gnoclGetNameFromWidget ( widget );
-		ps[1].val.str = gtk_widget_get_name ( widget );
-		gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
-	}
+	ps[0].val.str = gnoclGetNameFromWidget ( widget );
+	ps[1].val.str = gtk_widget_get_name ( widget );
+	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
+	//}
 }
 
 /**
