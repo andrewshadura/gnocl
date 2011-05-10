@@ -72,6 +72,7 @@ GTK_OBJ := \
 	image.o \
 	itemGroup.o \
 	label.o \
+	language.o \
 	layout.o \
 	linkButton.o \
 	keyfile.o \
