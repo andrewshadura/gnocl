@@ -1,4 +1,11 @@
-2011-05-30
+2011-05-21
+	gnocl::window
+		o new commands
+			hasFocus setFocus present
+		o new option
+			-defaultWidget
+
+2011-04-30
 	gnocl::text
 		o new tag options
 			-marginAccumulate -backgroundFullHeight	-backgroundStipple

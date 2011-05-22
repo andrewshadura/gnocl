@@ -11,6 +11,7 @@
  */
 
 /*
+	2011-05: added hasFocus, setFocus, present, -defaultWidget
     2009-12: added show, hide, synonymous with use of option -visible
     2009-02: added -bakckgroundImage, -mask
     2009-01: added -keepAbove, -keepBelow, -acceptFocus,
@@ -308,6 +309,7 @@ static const int yIdx           = 5;
 static const int widthIdx       = 6;
 static const int heightIdx      = 7;
 static const int setSizeIdx		= 8;
+static const int defaultIdx		= 9;
 
 
 static GnoclOption windowOptions[] =
@@ -320,7 +322,11 @@ static GnoclOption windowOptions[] =
 	{ "-y", GNOCL_INT, NULL },                           /* 5 */
 	{ "-width", GNOCL_INT, NULL },                       /* 6 */
 	{ "-height", GNOCL_INT, NULL },                      /* 7 */
-	{ "-setSize", GNOCL_DOUBLE, NULL },                   /* 8 */
+	{ "-setSize", GNOCL_DOUBLE, NULL },                  /* 8 */
+
+	/* set default widget */
+	{ "-default", GNOCL_OBJ, "", gnoclOptDefaultWidget },	 /* 9 */
+
 	{ "-allowGrow", GNOCL_BOOL, "allow-grow" },
 	{ "-allowShrink", GNOCL_BOOL, "allow-shrink" },
 	{ "-borderWidth", GNOCL_OBJ, "border-width", gnoclOptPadding },
@@ -965,26 +971,28 @@ static int cget (   Tcl_Interp *interp, GtkWindow *window, GnoclOption options[]
 	return gnoclCgetNotImplemented ( interp, options + idx );
 }
 
-/*****/
-
 /**
 /brief
-/author   Peter G Baum
-          William J Giddings
-/date
 **/
 int windowFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-	static const char *cmds[] = { "delete", "configure", "cget", "iconify",
-								  "center", "centre", "beep", "class", "reshow",
-								  "geometry", "pointer", "reposition", "grab", "ungrab",
-								  "hide", "show", "jitter",
-								  NULL
-								};
-	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, IconifyIdx, CenterIdx, CentreIdx,
-				  BeepIdx, ClassIdx, ReshowIdx, GeometryIdx, PointerIdx, RepositionIdx,
-				  GrabIdx, UngrabIdx, HideIdx, ShowIdx, JitterIdx
-				};
+	static const char *cmds[] = {
+		"delete", "configure", "cget", "iconify",
+		"center", "centre", "beep", "class",
+		"reshow", "geometry", "pointer", "reposition",
+		"grab", "ungrab", "hide", "show", "jitter",
+		"hasFocus", "setFocus", "present",
+		NULL
+		};
+
+	enum cmdIdx {
+		DeleteIdx, ConfigureIdx, CgetIdx, IconifyIdx,
+		CenterIdx, CentreIdx, BeepIdx, ClassIdx,
+		ReshowIdx, GeometryIdx, PointerIdx, RepositionIdx,
+		GrabIdx, UngrabIdx, HideIdx, ShowIdx, JitterIdx,
+		HasFocusIdx, SetFocusIdx, PresentIdx,
+		};
+
 	GtkWindow *window = GTK_WINDOW ( data );
 	int idx;
 
@@ -994,12 +1002,41 @@ int windowFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const 
 		return TCL_ERROR;
 	}
 
-	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "command",
-							   TCL_EXACT, &idx ) != TCL_OK )
+	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "command", TCL_EXACT, &idx ) != TCL_OK ) {
 		return TCL_ERROR;
+		}
 
 	switch ( idx )
 	{
+		case PresentIdx: {
+			gtk_window_present (window);
+
+			/* TODO: present window after a specified time delay */
+			//gtk_window_present_with_time (GtkWindow *window, guint32 timestamp);
+		}
+		break;
+
+		case SetFocusIdx: {
+			GtkWidget *widget;
+
+			widget = gnoclGetWidgetFromName ( Tcl_GetString ( objv[2] ), interp );
+
+			gtk_window_set_focus (window, widget);
+
+		}
+		break;
+
+		case HasFocusIdx: {
+			GtkWidget *widget;
+			gchar *name;
+
+
+			widget = gtk_window_get_focus (window);
+			name = gnoclGetNameFromWidget (widget);
+
+			Tcl_SetObjResult ( interp, Tcl_NewStringObj ( name, -1 ) );
+		}
+		break;
 		case JitterIdx:
 			{
 				gint x, y, i, j;
@@ -1017,9 +1054,6 @@ int windowFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const 
 				}
 
 				gtk_window_get_position ( window, &x, &y );
-
-
-
 
 				for ( j = 0 ; j < i; j++ )
 				{
@@ -1186,28 +1220,8 @@ int windowFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const 
 	return TCL_OK;
 }
 
-/*****/
-
-/****f* window/gnoclWindowCmd
- * NAME
- *  functionName
- * PURPOSE
- * AUTHOR
- *  Peter G. Baum
- *  William J Giddings
- * CREATION DATE
- *  When created
- * USAGE
- *  how this function is used
- * ARGUMENTS
- * RETURN VALUE
- * NOTE
- * TODO
- * USES
- * USED BY
- * MODIFICATION HISTORY
- * SOURCE
- */
+/**
+**/
 int gnoclWindowCmd (
 	ClientData data,
 	Tcl_Interp *interp,

@@ -421,6 +421,20 @@ int gnoclOptAngle (	Tcl_Interp *interp,	GnoclOption *opt,	GObject *obj,	Tcl_Obj 
 	return gnoclOptGeneric ( interp, opt, obj, "arrow", txt, types, ret );
 }
 
+
+/**
+\brief  Set the default widget for a toplevel window.
+**/
+int gnoclOptDefaultWidget (	Tcl_Interp *interp,	GnoclOption *opt, GObject *obj,	Tcl_Obj **ret )
+{
+
+	GtkWidget *widget = gnoclGetWidgetFromName ( Tcl_GetString ( opt->val.obj ), interp );
+
+	gtk_window_set_default (obj,widget);
+
+	return TCL_OK;
+}
+
 /**
 \brief      This is simply returning, so the arrows are being set elsewhere!
 **/
@@ -987,13 +1001,13 @@ static const char *keyvalToString ( guint keyval )
 \author     Peter G Baum
 \date
 **/
-static int getShortValue ( Tcl_Interp *interp,	Tcl_Obj *list,	int idx,	int *p )
+static int getShortValue ( Tcl_Interp *interp,	Tcl_Obj *list,	int idx, int *p )
 {
 	int val;
 	Tcl_Obj *tp;
 
-	if ( Tcl_ListObjIndex ( interp, list, idx, &tp ) != TCL_OK  )
-		return TCL_ERROR;
+	if ( Tcl_ListObjIndex ( interp, list, idx, &tp ) != TCL_OK  ) {
+		return TCL_ERROR; }
 
 	if ( Tcl_GetIntFromObj ( NULL, tp, &val ) != TCL_OK )
 	{
@@ -1012,8 +1026,7 @@ static int getShortValue ( Tcl_Interp *interp,	Tcl_Obj *list,	int idx,	int *p )
 
 	if ( val < .0 || val > 0xFFFF )
 	{
-		Tcl_SetResult ( interp, "color value must be between 0 and 65535",
-						TCL_STATIC );
+		Tcl_SetResult ( interp, "color value must be between 0 and 65535",TCL_STATIC );
 		return TCL_ERROR;
 	}
 

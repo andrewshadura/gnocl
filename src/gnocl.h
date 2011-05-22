@@ -285,6 +285,7 @@ gnoclOptFunc gnoclOptHasFrame;
 gnoclOptFunc gnoclOptShadow;
 gnoclOptFunc gnoclOptCurrentFolder;
 gnoclOptFunc gnoclOptArrow;
+gnoclOptFunc gnoclOptDefaultWidget;
 gnoclOptFunc gnoclOptCursor;
 gnoclOptFunc gnoclOptKeepAbove;
 gnoclOptFunc gnoclOptKeepBelow;
