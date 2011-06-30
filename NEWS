@@ -1,3 +1,28 @@
+2011-06-30:
+	gnocl::entry
+   		o added options
+   			-dropTargets, -dragTargets, -onDropData, -onDragData
+
+2011-06-24
+	gnocl::text
+		o new tag -underline option
+			'error'
+
+2011-06-15
+	gnocl::text
+		o new widget options
+		   -hasToolTip, -onQueryTooltip
+		o new tag option
+		   -data
+
+2011-06-11
+	gnocl::image
+		modified code to accomodate new PixbufParams data structure
+
+2011-06-02
+	gnocl::pibuf
+		implemented PixbufParams data structure
+
 2011-05-21
 	gnocl::window
 		o new commands

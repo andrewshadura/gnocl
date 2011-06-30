@@ -58,6 +58,7 @@ GTK_OBJ := \
 	fileChooser.o \
 	fileChooserButton.o \
 	fileFilter.o \
+	fill.o \
 	fixed.o \
 	fontButton.o \
 	fontSelection.o \
@@ -161,10 +162,10 @@ test:
 
 devinstall:
 	ar cr libgnocl-$(VERSION).a $(GTK_OBJ)
-	cp gnocl.h /usr/include
+	cp gnocl*.h /usr/include
 	cp libgnocl*.a /usr/lib
 	rm libgnocl*.a
 
 devuninstall:
-	rm /usr/include/gnocl.h
+	rm /usr/include/gnocl*.h
 	rm /usr/lib/libgnocl*.a

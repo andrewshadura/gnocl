@@ -647,6 +647,7 @@ static GnoclCmd commands[] =
 	/* non-gtk widgets */
 	{ "spinner", gnoclSpinnerCmd },
 	{ "dial", gnoclDialCmd },
+	{ "imageViewer", gnoclImageViewerCmd },
 
 	/* gnocl only widget */
 	{ "splashScreen", gnoclSplashScreenCmd },
@@ -753,6 +754,7 @@ static GnoclCmd commands[] =
 	{ "pointer", gnoclPointerCmd },
 	{ "signalEmit", gnoclSignalEmitCmd },
 	{ "beep", gnoclBeepCmd },
+//	{ "string", gnoclStringCmd },
 	{ "inventory", gnoclGetInventory },
 	{ "stockItem", gnoclStockItemCmd },
 	{ "bind", gnoclBindCmd },

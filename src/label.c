@@ -12,6 +12,7 @@
 
 /*
    History:
+   2011-06: added -cursorPos, -singleLine, -trackVisitedLinks, -useUnderline
             resolved problems with use of pango markup with the -text option
    2010-01: added -ellipsize
    2009-11: added -tooltip
@@ -58,43 +59,50 @@ static const int cursorIdx = 4;
 
 static GnoclOption labelOptions[] =
 {
+	/* gnocl specific options */
 	{ "-textVariable", GNOCL_STRING, NULL },            /* 0 */
 	{ "-onChanged", GNOCL_STRING, NULL },               /* 1 */
 	{ "-text", GNOCL_STRING, NULL},                     /* 3 */
 	{ "-showCursor", GNOCL_BOOL, NULL},					/* 4 */
 
+	/* gtklabel specific properties */
+	{ "-angle", GNOCL_DOUBLE, "angle" },
+	//{ "-attributes", GNOCL_DOUBLE, "angle" },
+	{ "-cursorPos", GNOCL_INT, "cursor-position" },
+	{ "-ellipsize", GNOCL_OBJ, "ellipsize" , gnoclOptEllipsize },
+	{ "-justify", GNOCL_OBJ, "justify", gnoclOptJustification },
+	//{ "-label", GNOCL_STRING, "label" },
+	{ "-maxWidthChars", GNOCL_INT, "max-width-chars" },
+	//{ "-mneumonicKeyval", GNOCL_INT, "mnemonic-keyval" },
 	{ "-mnemonicWidget", GNOCL_STRING, NULL },
+	//{ "-pattern", GNOCL_STRING, "pattern" },
+	{ "-selectable", GNOCL_BOOL, "selectable" },
+	//{ "-selectionBound", GNOCL_INT,"selection-bound" },
+	{ "-singleLine", GNOCL_BOOL, "single-line-mode" },
+	{ "-trackVisitedLinks", GNOCL_BOOL, "track-visited-links" },
+	{ "-useMarkup", GNOCL_BOOL, "use-markup" },
+	{ "-useUnderline", GNOCL_BOOL, "use-underline" },
+	{ "-widthChars", GNOCL_INT, "width-chars" },
+	{ "-wrap", GNOCL_BOOL, "wrap" },
+	//{ "-wrapMode", GNOCL_BOOL, "wrap" },
+
+	/* inherited properties */
 	{ "-align", GNOCL_OBJ, "?align", gnoclOptBothAlign },
 	{ "-data", GNOCL_OBJ, "", gnoclOptData },
 	{ "-heightGroup", GNOCL_OBJ, "h", gnoclOptSizeGroup },
-	{ "-justify", GNOCL_OBJ, "justify", gnoclOptJustification },
-	{ "-ellipsize", GNOCL_OBJ, "ellipsize" , gnoclOptEllipsize },
-#if GTK_CHECK_VERSION(2,6,0)
-	{
-		"-maxWidthChars", GNOCL_INT, "max-width-chars"
-	},
-
-#endif
 	{ "-name", GNOCL_STRING, "name" },
-	{ "-selectable", GNOCL_BOOL, "selectable" },
+
 	{ "-sensitive", GNOCL_BOOL, "sensitive" },
 	{ "-sizeGroup", GNOCL_OBJ, "s", gnoclOptSizeGroup },
 	{ "-visible", GNOCL_BOOL, "visible" },
-#if GTK_CHECK_VERSION(2,6,0)
-	{
-		"-widthChars", GNOCL_INT, "width-chars"
-	},
 
-#endif
 	{ "-widthGroup", GNOCL_OBJ, "w", gnoclOptSizeGroup },
-	{ "-wrap", GNOCL_BOOL, "wrap" },
+
 	{ "-xPad", GNOCL_INT, "xpad" },
 	{ "-yPad", GNOCL_INT, "ypad" },
-
 	{ "-baseFont", GNOCL_OBJ, "Sans 14", gnoclOptGdkBaseFont },
 	{ "-baseColor", GNOCL_OBJ, "normal", gnoclOptGdkColorBase },
 	{ "-background", GNOCL_OBJ, "normal", gnoclOptGdkColorBg },
-	{ "-angle", GNOCL_DOUBLE, "angle" },
 
 	{ "-tooltip", GNOCL_OBJ, "", gnoclOptTooltip },
 
@@ -312,16 +320,11 @@ static int configure (
 \author     Peter G Baum, William J Giddings
 \date
 **/
-static int cget (
-	Tcl_Interp *interp,
-	LabelParams *para,
-	GnoclOption options[], int idx )
+static int cget ( Tcl_Interp *interp, LabelParams *para, GnoclOption options[], int idx )
 {
 #ifdef DEBUG_LABEL
 	printf ( "label/staticFuncs/cget\n" );
 #endif
-
-
 
 	Tcl_Obj *obj = NULL;
 
@@ -407,11 +410,17 @@ int labelFunc (
 				switch ( gnoclCget ( interp, objc, objv, G_OBJECT ( para->label ), labelOptions, &idx ) )
 				{
 					case GNOCL_CGET_ERROR:
-						return TCL_ERROR;
+						{
+							return TCL_ERROR;
+						}
 					case GNOCL_CGET_HANDLED:
-						return TCL_OK;
+						{
+							return TCL_OK;
+						}
 					case GNOCL_CGET_NOTHANDLED:
-						return cget ( interp, para, labelOptions, idx );
+						{
+							return cget ( interp, para, labelOptions, idx );
+						}
 				}
 			}
 

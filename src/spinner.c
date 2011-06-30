@@ -50,7 +50,7 @@ int spinnerFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const
 		DeleteIdx, ConfigureIdx, ClassIdx, ParentIdx, StartIdx, StopIdx
 	};
 
-	GtkSpinner *spinner = GTK_PANED ( data );
+	GtkSpinner *spinner = GTK_SPINNER ( data );
 
 	int idx;
 

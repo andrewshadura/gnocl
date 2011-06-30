@@ -254,6 +254,7 @@ gnoclOptFunc gnoclOptOnMarkDelete;
 gnoclOptFunc gnoclOptOnExpose;
 gnoclOptFunc gnoclOptOnClicked;
 gnoclOptFunc gnoclOptOnColumnClicked;
+gnoclOptFunc gnoclOptOnInteractiveSearch;
 gnoclOptFunc gnoclOptArrowTooltip;
 gnoclOptFunc gnoclOptOnShowHelp;
 gnoclOptFunc gnoclOptPadding;
@@ -297,7 +298,7 @@ gnoclOptFunc gnoclOptOnBackspace;
 gnoclOptFunc gnoclOptOnDeleteFromCursor;
 gnoclOptFunc gnoclOptOnEntryInsert;
 gnoclOptFunc gnoclOptOnPreEditChanged;
-
+gnoclOptFunc gnoclOptOnQueryToolTip;
 
 int gnoclClearOptions ( GnoclOption *opts );
 int gnoclResetSetOptions ( GnoclOption *opts );
@@ -441,6 +442,7 @@ int gnoclAcceleratorCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj
 
 int gnoclDialCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] );
 int gnoclSpinnerCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] );
+int gnoclImageViewerCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] );
 
 /*
  */
@@ -698,6 +700,7 @@ Tcl_ObjCmdProc gnoclPutsOb;
 Tcl_ObjCmdProc gnoclSignalStopCmd;
 Tcl_ObjCmdProc gnoclSignalEmitCmd;
 Tcl_ObjCmdProc gnoclBeepCmd;
+Tcl_ObjCmdProc gnoclStringCmd;
 Tcl_ObjCmdProc gnoclBindCmd;
 Tcl_ObjCmdProc gnoclStockItemCmd;
 Tcl_ObjCmdProc gnoclSoundCmd;
@@ -780,3 +783,4 @@ Tcl_ObjCmdProc gnoclTextBufferCmd;
 void hash_to_list ( gpointer key, gpointer value, gpointer user_data );
 gint sorter ( gconstpointer a, gconstpointer b );
 
+int pixBufFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] );

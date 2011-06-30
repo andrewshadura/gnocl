@@ -355,6 +355,78 @@ int gnoclBindCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * con
 }
 
 
+/**
+\brief      Provide access to glib string manipulation commands.
+\notes		http://developer.gnome.org/glib/stable/glib-Unicode-Manipulation.html#g-unichar-to-utf8
+**/
+int gnoclStringCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * const objv[] )
+{
+
+#ifdef DEBUG_COMMANDS
+	g_print ( "%s %s %s\n",__FUNCTION__,  Tcl_GetString ( objv[1] ) , Tcl_GetString ( objv[2] ));
+#endif
+
+
+	static const char *cmd[] = {
+		"unichar_to_utf8",
+		NULL };
+	enum optIdx {
+		unichar_to_utf8_Idx
+		};
+
+	int idx;
+
+	if ( objc != 3 )
+	{
+		Tcl_WrongNumArgs ( interp, 1, objv, "--- NEED AN ERROR MESSAGE ---" );
+		return TCL_ERROR;
+	}
+
+	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmd, "option", TCL_EXACT, &idx ) != TCL_OK )
+	{
+		return TCL_ERROR;
+	}
+
+	/*
+	    g_print ( "opt = %s  id = %s\n",  Tcl_GetString ( objv[1] ),  Tcl_GetString ( objv[2] ) );
+	*/
+	switch ( idx )
+	{
+
+
+		case unichar_to_utf8_Idx: {
+
+
+
+		gchar outbuf[6];
+
+			// gint g_unichar_to_utf8 (gunichar c, gchar *outbuf);
+			gunichar c;
+			gint res;
+
+			sscanf (Tcl_GetString ( objv[2] ), "U+%06"G_GINT32_FORMAT"X", &c);
+
+			res = g_unichar_validate (Tcl_GetString ( objv[2] ));
+
+			g_print("valid = %d\n",res);
+
+			res = g_unichar_to_utf8 ( c	,outbuf);
+
+			g_print("res = %d %s\n",res,outbuf);
+
+			Tcl_SetObjResult ( interp, Tcl_NewStringObj ( outbuf, -1 ) );
+
+		}
+		default: {}
+	}
+
+
+
+
+	return TCL_OK;
+}
+
+
 
 /**
 \brief      Emits a short beep.
@@ -607,17 +679,15 @@ int gnoclWinfoCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * co
 {
 	static const char *cmd[] =
 	{
-		"path", "parent", "toplevel",
-		"geometry", "style", "pointer",
-		"notify",
+		"path", "parent", "toplevel", "geometry",
+		"style", "pointer", "notify",
 		NULL
 	};
 
 	enum optIdx
 	{
-		PathIdx, ParentIdx, ToplevelIdx,
-		GeometryIdx, StyleIdx, PointerIdx,
-		NotifyIdx
+		PathIdx, ParentIdx, ToplevelIdx, GeometryIdx,
+		StyleIdx, PointerIdx, NotifyIdx
 	};
 	int idx;
 
@@ -819,7 +889,9 @@ int gnoclWinfoCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * co
 	return TCL_OK;
 }
 
-
+/**
+\brief
+**/
 static gint cmp_families ( const void * a, const void * b )
 {
 	const char *a_name = pango_font_family_get_name ( * ( PangoFontFamily ** ) a );
@@ -917,8 +989,6 @@ int gnoclInfoCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * con
 				}
 
 				g_free ( families );
-
-
 
 				//g_print ( "Return a list of available fonts on the system: total = %d\n", n_families );
 
@@ -1279,8 +1349,9 @@ int gnoclGetStyleCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj *
 
 	static const char *cmd[] =
 	{
-		"foreground", "background", "light",
-		"dark", "mid", "text",
+		"foreground", "background",
+		"light", "dark",
+		"mid", "text",
 		"base", "text_aa",
 		"xthickness", "ythickness",
 		NULL
@@ -1288,8 +1359,9 @@ int gnoclGetStyleCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj *
 
 	enum
 	{
-		ForegroundIdx, BackgroundIdx, LightIdx,
-		DarkIdx, MidIdx, TextIdx,
+		ForegroundIdx, BackgroundIdx,
+		LightIdx, DarkIdx,
+		MidIdx, TextIdx,
 		BaseIdx, Text_aaIdx,
 		XthicknessIdx, YthicknessIdx
 	};

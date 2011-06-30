@@ -117,6 +117,7 @@ typedef struct
 	GtkScrolledWindow *scrollWin;
 	int               noColumns;
 	int               isTree;
+	GtkEntry 		  *searchEntry;
 	GHashTable        *idToIter;
 } TreeListParams;
 
@@ -285,3 +286,11 @@ typedef struct
 	GdkPixbuf *pixbuf;
 	GdkPixbuf *pixbuf2;
 } SplashScreenParams;
+
+typedef struct
+{
+	GdkPixbuf *pixbuf;
+	cairo_t *cr;
+	Tcl_Interp  *interp;
+	char        *fname;
+} PixbufParams;

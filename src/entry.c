@@ -12,6 +12,8 @@
 
 /*
    History:
+   2011-06-30: added options
+   					-dropTargets, -dragTargets, -onDropData, -onDragData
    2011-04-03: added options
    					-active -buffer -capsLockWarning -cursorPos -hasFrame
 					-inputMethod -innerBorder -invisibleChar -setInvisibleChar -overwriteMode
@@ -21,7 +23,6 @@
 				added commands
 					pulse
 					progress <val>
-
    2011-04-02: added options -primaryIcon -secondaryIcon -onIconPress -onIconRelease
    2010-05-25: added command wordList
    2009-06-13: added -align
@@ -82,7 +83,6 @@ static GnoclOption entryOptions[] =
 	{ "-data", GNOCL_OBJ, "", gnoclOptData },
 	{ "-name", GNOCL_STRING, "name" },
 
-
 	{ "-hasFocus", GNOCL_BOOL, "has-focus" },
 	{ "-heightGroup", GNOCL_OBJ, "h", gnoclOptSizeGroup },
 
@@ -98,7 +98,6 @@ static GnoclOption entryOptions[] =
 
 	{ "-baseFont", GNOCL_OBJ, "Sans 14", gnoclOptGdkBaseFont },
 	{ "-baseColor", GNOCL_OBJ, "normal", gnoclOptGdkColorBase },
-
 
 	/* other entry properties Gtk+ 2.24 */
 	{ "-activate", GNOCL_BOOL, "activates-default" },
@@ -154,6 +153,15 @@ static GnoclOption entryOptions[] =
 	/* GtkEditable Signals */
 	{ "-onKeyPress", GNOCL_OBJ, "", gnoclOptOnKeyPress },
 	{ "-onKeyRelease", GNOCL_OBJ, "", gnoclOptOnKeyRelease },
+
+	{ "-onFocusIn", GNOCL_OBJ, "I", gnoclOptOnFocus },
+	{ "-onFocusOut", GNOCL_OBJ, "O", gnoclOptOnFocus },
+
+	/* drag-n-drop */
+	{ "-dropTargets", GNOCL_LIST, "t", gnoclOptDnDTargets },
+	{ "-dragTargets", GNOCL_LIST, "s", gnoclOptDnDTargets },
+	{ "-onDropData", GNOCL_OBJ, "", gnoclOptOnDropData },
+	{ "-onDragData", GNOCL_OBJ, "", gnoclOptOnDragData },
 
 	{ NULL }
 };

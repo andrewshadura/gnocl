@@ -189,8 +189,7 @@ int gnoclCheckSetValue ( GnoclCheckParams *para, Tcl_Obj *obj )
 /**
 \brief
 **/
-int gnoclCheckOnToggled ( Tcl_Interp *interp, int objc, Tcl_Obj * const objv[],
-						  GnoclCheckParams *para )
+int gnoclCheckOnToggled ( Tcl_Interp *interp, int objc, Tcl_Obj * const objv[], GnoclCheckParams *para )
 {
 	int on;
 	Tcl_Obj *valObj;

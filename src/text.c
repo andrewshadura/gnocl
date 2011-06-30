@@ -13,6 +13,10 @@
 
 /*
    History:
+   2011-06  added tag -underline option 'error'
+   2011-06  added -hasToolTip, -onQueryTooltip,
+   			added tag options
+   				-data
    2011-04  added tag options
 				-marginAccumulate -backgroundFullHeight	-backgroundStipple
 				-direction -editable -foregroundStipple -indent -language
@@ -79,6 +83,7 @@
 
 
 static int textFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *  const objv[] );
+static int cget ( Tcl_Interp *interp, GtkTextView *text, GnoclOption options[], int idx );
 
 /**
 \brief     Search through the GtkTextBuffer from startPos to endPos.
@@ -581,12 +586,15 @@ static GnoclOption textOptions[] =
 	/*  inherited GtkWidget features */
 	{ "-onScroll", GNOCL_OBJ, "", gnoclOptOnScroll },
 
-	/* drag and drop fucntionality taken from box.c */
+	/* drag and drop functionality taken from box.c */
 	{ "-dropTargets", GNOCL_LIST, "t", gnoclOptDnDTargets },
 	{ "-dragTargets", GNOCL_LIST, "s", gnoclOptDnDTargets },
 	{ "-onDropData", GNOCL_OBJ, "", gnoclOptOnDropData },
 	{ "-onDragData", GNOCL_OBJ, "", gnoclOptOnDragData },
 	{ "-data", GNOCL_OBJ, "", gnoclOptData },
+
+	{ "-hasTooltip", GNOCL_BOOL, "has-tooltip" },
+	{ "-onQueryTooltip", GNOCL_OBJ, "", gnoclOptOnQueryToolTip },
 
 	{ NULL }
 };
@@ -997,9 +1005,9 @@ static int removeTag ( GtkTextBuffer *buffer, Tcl_Interp *interp, int objc, Tcl_
 		{ NULL }
 	};
 	const int tagsIdx = 0;
-	gint      startOffset;
-	gint   endOffset;
-	int       ret = TCL_ERROR;
+	gint startOffset;
+	gint endOffset;
+	int ret = TCL_ERROR;
 
 	GtkTextIter   iter;
 	GtkTextIter   iter2;
@@ -1041,6 +1049,10 @@ static int removeTag ( GtkTextBuffer *buffer, Tcl_Interp *interp, int objc, Tcl_
 	startOffset = gtk_text_iter_get_offset ( &iter );
 
 	endOffset = gtk_text_iter_get_offset ( &iter2 );
+
+
+	/* check for keyword all */
+
 
 	/*  add the tags, gets a list and then works through them */
 	if ( insertOptions[tagsIdx].status == GNOCL_STATUS_CHANGED )
@@ -1148,7 +1160,7 @@ static int markCmd ( GtkTextBuffer *buffer, Tcl_Interp *interp, int objc, Tcl_Ob
 				/*  return the name of the mark created */
 				resList = Tcl_NewListObj ( 0, NULL );
 				str = Tcl_GetString ( objv[cmdNo+1] );
-				Tcl_ListObjAppendElement ( interp, resList, Tcl_NewStringObj ( str, strlen ( str ) ) );
+				Tcl_ListObjAppendElement ( interp, resList, Tcl_NewStringObj ( str, -1 ) );
 				Tcl_SetObjResult ( interp, resList );
 
 				return TCL_OK ;
@@ -1364,6 +1376,7 @@ int tagCmd ( GtkTextBuffer *buffer, Tcl_Interp *interp, int objc, Tcl_Obj *  con
 		{ "-underline", GNOCL_OBJ, "underline", gnoclOptUnderline },
 		{ "-wrapMode", GNOCL_OBJ, "wrap-mode", gnoclOptWrapmode },
 
+		{ "-data", GNOCL_OBJ, "", gnoclOptData },
 
 		/* settings, what to do with these? */
 
@@ -1401,6 +1414,7 @@ int tagCmd ( GtkTextBuffer *buffer, Tcl_Interp *interp, int objc, Tcl_Obj *  con
 
 	int idx;
 
+
 	if ( objc < cmdNo + 1 )
 	{
 		Tcl_WrongNumArgs ( interp, cmdNo, objv, "subcommand ?option val ...?" );
@@ -1411,6 +1425,7 @@ int tagCmd ( GtkTextBuffer *buffer, Tcl_Interp *interp, int objc, Tcl_Obj *  con
 	{
 		return TCL_ERROR;
 	}
+
 
 	switch ( idx )
 	{
@@ -1430,7 +1445,37 @@ int tagCmd ( GtkTextBuffer *buffer, Tcl_Interp *interp, int objc, Tcl_Obj *  con
 			break;
 		case CgetIdx:
 			{
-				printf ( "Cget not yet implemented\n" );
+				int     idx;
+				Tcl_Obj *resList;
+
+
+				GtkTextTagTable *tagtable = gtk_text_buffer_get_tag_table ( buffer );
+
+
+
+				GtkTextTag *tag = gtk_text_tag_table_lookup ( tagtable, Tcl_GetString ( objv[cmdNo+1] ) );
+
+
+				switch ( gnoclTagCget ( interp, objc, objv, G_OBJECT ( tag ), tagOptions, &idx ) )
+				{
+					case GNOCL_CGET_ERROR:
+						{
+
+							return TCL_ERROR;
+						}
+					case GNOCL_CGET_HANDLED:
+						{
+							;
+							return TCL_OK;
+						}
+					case GNOCL_CGET_NOTHANDLED:
+						{
+
+							return gnoclCgetOne ( interp, objv, G_OBJECT ( tag ), tagOptions, &idx );
+
+						}
+				}
+
 				break;
 			}
 
@@ -1456,7 +1501,7 @@ int tagCmd ( GtkTextBuffer *buffer, Tcl_Interp *interp, int objc, Tcl_Obj *  con
 
 				/*  check the arguments */
 
-				if ( objc != cmdNo + 1 )
+				if ( objc != cmdNo + 2 )
 				{
 					Tcl_WrongNumArgs ( interp, cmdNo + 1, objv, "position" );
 					return TCL_ERROR;
@@ -1841,9 +1886,11 @@ static int configure ( Tcl_Interp *interp, GtkScrolledWindow *scrolled, GtkTextV
 **/
 static int cget ( Tcl_Interp *interp, GtkTextView *text, GnoclOption options[], int idx )
 {
+	/* get the option from the array? */
+
+
 	return gnoclCgetNotImplemented ( interp, options + idx );
 }
-
 /**
      ->   0: Ok
         1: delete chosen
@@ -1923,7 +1970,7 @@ static void gnoclGetTagSettings ( GtkTextTag *tag, gpointer data )
 	{
 		GdkColor bg_color  = tag_appearance->bg_color;
 		/*  build up the output list */
-		strcat ( tmp, "bg_color" );
+		strcat ( tmp, "background" );
 		sprintf ( tmp2, " { %d %d %d } ", bg_color.red, bg_color.green, bg_color.blue );
 		strcat ( tmp, tmp2 );
 	}
@@ -1941,7 +1988,7 @@ static void gnoclGetTagSettings ( GtkTextTag *tag, gpointer data )
 	{
 		GdkColor fg_color  = tag_appearance->fg_color;
 		/*  build up the output list */
-		strcat ( tmp, "fg_color" );
+		strcat ( tmp, "foreground" );
 		sprintf ( tmp2, " { %d %d %d } ", fg_color.red, fg_color.green, fg_color.blue );
 		strcat ( tmp, tmp2 );
 	}
@@ -2092,7 +2139,6 @@ static void gnoclGetTagSettings ( GtkTextTag *tag, gpointer data )
 
 	guint is_text = tag_appearance->is_text;
 
-
 	/*  update string */
 	// sprintf ( tmp2, " %d ", tag->values->pixels_below_lines );
 	strcat ( tmp, "} " );
@@ -2105,11 +2151,7 @@ static void gnoclGetTagSettings ( GtkTextTag *tag, gpointer data )
 /**
 \brief
 **/
-static int signalEmit (
-	Tcl_Interp *interp,
-	Tcl_Obj *obj,
-	int cmdNo,
-	GtkTextBuffer *buffer )
+static int signalEmit ( Tcl_Interp *interp, Tcl_Obj *obj, int cmdNo, GtkTextBuffer *buffer )
 {
 
 	const char *signal = Tcl_GetString ( obj );
@@ -2127,13 +2169,7 @@ static int signalEmit (
 /**
 \brief
 **/
-int gnoclTextCommand (
-	GtkTextBuffer *buffer,
-	Tcl_Interp *interp,
-	int objc,
-	Tcl_Obj *  const objv[],
-	int cmdNo,
-	int isTextWidget )
+int gnoclTextCommand ( GtkTextBuffer *buffer, Tcl_Interp *interp, int objc, Tcl_Obj *  const objv[], int cmdNo, int isTextWidget )
 {
 #ifdef DEBUG_TEXT
 	g_print ( "gnoclTextCommand %s %s\n", Tcl_GetString ( objv[cmdNo] ), Tcl_GetString ( objv[cmdNo+1] ) );
@@ -2141,36 +2177,34 @@ int gnoclTextCommand (
 
 	const char *cmds[] =
 	{
-		"delete", "configure", "scrollToPosition",
-		"scrollToMark", "set", "erase", "select",
-		"get", "cut", "copy", "paste", "cget",
-		"getLineCount", "getWordLength", "getLength",
-		"getLineLength", "setCursor", "getCursor",
-		"insert", "tag", "dump", "XYgetCursor",
-		"signalEmit", "mark", "gotoWordStart",
-		"gotoWordEnd", "search", "class", "spawn",
-		"parent", "replace", "serialize",
-		"deSerialize", "save", "load", "print",
-		"getIndex", "getCoords", "getRect", "lorem",
-		"clear", "popup", "undo", "redo",
+		"delete", "configure", "scrollToPosition", "scrollToMark",
+		"parent", "getIndex", "getCoords", "getRect", "undo", "redo",
+
+		"set", "erase", "select", "get", "cut", "copy", "paste",
+		"cget", "getLineCount", "getWordLength", "getLength",
+		"getLineLength", "setCursor", "getCursor", "insert", "tag",
+		"dump", "signalEmit", "mark", "gotoWordStart",
+		"gotoWordEnd", "search", "class", "spawn", "replace",
+		"serialize", "deSerialize", "save", "load", "print", "lorem",
+		"clear", "popup",
+
 		NULL
 	};
 
 	enum cmdIdx
 	{
-		DeleteIdx, ConfigureIdx, ScrollToPosIdx,
-		ScrollToMarkIdx, SetIdx, EraseIdx, SelectIdx,
-		GetIdx, CutIdx, CopyIdx, PasteIdx, CgetIdx,
-		GetLineCountIdx, GetWordLengthIdx, GetLengthIdx,
-		GetLineLengthIdx, SetCursorIdx, GetCursorIdx,
-		InsertIdx, TagIdx, DumpIdx, XYgetCursorIdx,
-		SignalEmitIdx, MarkIdx, GotoWordStartIdx,
-		GotoWordEndIdx, SearchIdx, ClassIdx, SpawnIdx,
-		ParentIdx, ReplaceIdx, SerializeIdx,
-		DeSerializeIdx, SaveIdx, LoadIdx, PrintIdx,
-		GetIndexIdx, GetCoordsIdx, GetRectIdx, LoremIdx,
-		ClearIdx, PopupIdx, UndoIdx, RedoIdx
+		DeleteIdx, ConfigureIdx, ScrollToPosIdx, ScrollToMarkIdx,
+		ParentIdx, GetIndexIdx, GetCoordsIdx, GetRectIdx, UndoIdx, RedoIdx,
+
+		SetIdx, EraseIdx, SelectIdx, GetIdx, CutIdx, CopyIdx, PasteIdx,
+		CgetIdx, GetLineCountIdx, GetWordLengthIdx, GetLengthIdx,
+		GetLineLengthIdx, SetCursorIdx, GetCursorIdx, InsertIdx, TagIdx,
+		DumpIdx, SignalEmitIdx, MarkIdx, GotoWordStartIdx,
+		GotoWordEndIdx, SearchIdx, ClassIdx, SpawnIdx, ReplaceIdx,
+		SerializeIdx, DeSerializeIdx, SaveIdx, LoadIdx, PrintIdx, LoremIdx,
+		ClearIdx, PopupIdx,
 	};
+
 
 	int   idx;
 	GtkTextMark *mark;
@@ -2208,7 +2242,7 @@ int gnoclTextCommand (
 		case UndoIdx:  			return 9;
 		case RedoIdx:  			return 10;
 
-			/* these are GtkTextBuffer operation */
+			/* these are GtkTextBuffer operations */
 
 		case PrintIdx:
 			{
@@ -2557,10 +2591,6 @@ int gnoclTextCommand (
 			}
 
 			break;
-		case XYgetCursorIdx:
-			sprintf ( s, "Coordinates %s", objv[cmdNo+2] );
-			Tcl_SetObjResult ( interp, Tcl_NewStringObj ( &s, -1 ) );
-			break;
 		case ClassIdx:
 			{
 				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "text", -1 ) );
@@ -2651,19 +2681,25 @@ int gnoclTextCommand (
 			{
 				/*  WJG started work on this one 19/03/08 */
 				printf ( "text cget not yet implemented\n" );
-				/*         int     idx;
-				 *
-				 *                    switch( gnoclCget( interp, objc, objv,
-				 *                          G_OBJECT( para->text ), textOptions, &idx ) )
-				 *                    {
-				 *                       case GNOCL_CGET_ERROR:
-				 *                                return TCL_ERROR;
-				 *                       case GNOCL_CGET_HANDLED:
-				 *                                return TCL_OK;
-				 *                       case GNOCL_CGET_NOTHANDLED:
-				 *                                return cget( interp, para, textOptions, idx );
-				 *                    }
-				 */
+				/*
+				int     idx;
+
+				switch ( gnoclCget ( interp, objc, objv, G_OBJECT ( para->text ), textOptions, &idx ) )
+				{
+					case GNOCL_CGET_ERROR:
+						{
+							return TCL_ERROR;
+						}
+					case GNOCL_CGET_HANDLED:
+						{
+							return TCL_OK;
+						}
+					case GNOCL_CGET_NOTHANDLED:
+						{
+							return cget ( interp, para, textOptions, idx );
+						}
+				}
+				*/
 			}
 
 			break;
@@ -2885,15 +2921,25 @@ int gnoclTextCommand (
 				GtkTextTagTable *tagtable;
 				char *txt;
 				int idx;
-				static const char *cmds[] = { "all", "tags", "text", "windows", "images", "marks", NULL };
-				enum opts {AllIdx, TagsIdx, TextIdx, WindowsIdx, ImagesIdx, MarksIdx};
 
+				static const char *cmds[] =
+				{
+					"-all", "-tags", "-text",
+					"-window", "-images", "-marks",
+					NULL
+				};
+
+				enum opts
+				{
+					AllIdx, TagsIdx, TextIdx,
+					WindowsIdx, ImagesIdx, MarksIdx
+				};
 
 				/*  do some error checking */
 
 				if ( objc < cmdNo + 4 )
 				{
-					Tcl_WrongNumArgs ( interp, cmdNo + 1, objv, "?all|text|tags|window|images|marks? startIndex ?endIndex?" );
+					Tcl_WrongNumArgs ( interp, cmdNo + 1, objv, "?-all|-text|-tags|-window|-images|-marks? startIndex ?endIndex?" );
 					return TCL_ERROR;
 				}
 
@@ -2994,9 +3040,9 @@ int gnoclTextCommand (
 
 				// gint gtk_text_tag_table_get_size (GtkTextTagTable *table);
 				int tagTableSize = gtk_text_tag_table_get_size ( tagtable );
-
+#ifdef DEBUG_TEXT
 				printf ( "~tagTableSize~    %d\n", tagTableSize );
-
+#endif
 				// void gtk_text_tag_table_foreach (GtkTextTagTable *table, GtkTextTagTableForeach func, gpointer data);
 				//gtk_text_tag_table_foreach ( tagtable, testPrint , NULL );
 
@@ -3046,13 +3092,30 @@ static int textFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *  
 		return TCL_ERROR;
 	}
 
+	/*
+			case DeleteIdx:         return 1;
+			case ConfigureIdx:      return 2;
+			case ScrollToPosIdx:    return 3;
+			case ScrollToMarkIdx:   return 4;
+			case ParentIdx:         return 5;
+			case GetIndexIdx:       return 6;
+			case GetCoordsIdx:      return 7;
+			case GetRectIdx:        return 8;
+			case UndoIdx:  			return 9;
+			case RedoIdx:  			return 10;
+	*/
+
 	switch ( gnoclTextCommand ( buffer, interp, objc, objv, 1, 1 ) )
 	{
 			/*  these are command which work upon the GtkTextView rather than the GtkTextBuffer */
-		case 0:
-			break;  /*  return TCL_OK */
-		case 1:     /*  delete */
-			return gnoclDelete ( interp, GTK_WIDGET ( scrolled ), objc, objv );
+		case 0: /*  return TCL_OK */
+			{
+				break;
+			}
+		case 1:  /*  delete */
+			{
+				return gnoclDelete ( interp, GTK_WIDGET ( scrolled ), objc, objv );
+			}
 		case 2:     /*  configure */
 			{
 				int ret = TCL_ERROR;
@@ -3070,9 +3133,13 @@ static int textFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *  
 
 			break;
 		case 3: /*  scrollToPosition */
-			return scrollToPos ( text, buffer, interp, objc, objv );
+			{
+				return scrollToPos ( text, buffer, interp, objc, objv );
+			}
 		case 4: /*  scrollToMark */
-			return scrollToMark ( text, buffer, interp, objc, objv );
+			{
+				return scrollToMark ( text, buffer, interp, objc, objv );
+			}
 		case 5: /*  get parent, WJG added 06/12/08 */
 			{
 				GtkWidget *  parent;
@@ -3087,10 +3154,10 @@ static int textFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *  
 			}
 
 			break;
-		case 6: /* get line/row from coordinates */
+		case 6: /* get line/row from root window coordinates, ie passed from an event */
 			{
 
-				GtkTextIter *iter;
+				GtkTextIter iter;
 				gint y, line_no;
 				gint x, row_no;
 
@@ -3246,7 +3313,6 @@ int gnoclTextCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *  con
 	GtkTextView       *textView;
 	GtkTextView       *textBuffer;
 	GtkScrolledWindow *scrolled;
-
 
 	if ( gnoclParseOptions ( interp, objc, objv, textOptions ) != TCL_OK )
 	{

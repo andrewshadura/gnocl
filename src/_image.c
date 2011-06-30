@@ -1,9 +1,3 @@
-/**image.c
-\brief		Implement binding to the GtkImage widget.
-\history	2011-06-11	Implemented changes to support PixbufParams
-**/
-
-
 /*
 * $Id: image.c,v 1.9 2005/08/16 20:57:45 baum Exp $
  *
@@ -22,7 +16,6 @@
 **/
 
 #include "gnocl.h"
-#include "gnoclparams.h"
 #include <string.h>
 #include <assert.h>
 
@@ -109,7 +102,7 @@ static int configure ( Tcl_Interp *interp, GtkImage *image, GnoclOption options[
 #ifdef DEBUG_PIXBUF
 					g_printf ( "loading from file = %s\n",  txt );
 #endif
-					GdkPixbufAnimation *ani = gdk_pixbuf_animation_new_from_file (txt, &error );
+					GdkPixbufAnimation *ani = gdk_pixbuf_animation_new_from_file ( txt, &error );
 
 					if ( ani == NULL )
 					{
@@ -162,18 +155,16 @@ static int configure ( Tcl_Interp *interp, GtkImage *image, GnoclOption options[
 #ifdef DEBUG_PIXBUF
 					g_printf ( "loading from pixbuf = %s\n",  txt );
 #endif
-					//GdkPixbuf *pixbuf;
-					//pixbuf = gnoclGetPixBufFromName ( txt, interp );
+					GdkPixbuf *pixbuf;
+					pixbuf = gnoclGetPixBufFromName ( txt, interp );
 
-					PixbufParams *para = gnoclGetPixBufFromName ( txt, interp );
-
-					if ( para->pixbuf == NULL )
+					if ( pixbuf == NULL )
 					{
 						Tcl_SetResult ( interp, "Pixbuf does not exist.", TCL_STATIC );
 						return TCL_ERROR;
 					}
 
-					gtk_image_set_from_pixbuf ( image, GDK_PIXBUF ( para->pixbuf ) );
+					gtk_image_set_from_pixbuf ( image, pixbuf );
 
 				}
 				break;
@@ -192,7 +183,8 @@ static int configure ( Tcl_Interp *interp, GtkImage *image, GnoclOption options[
 
 		if ( gtk_image_get_storage_type ( image ) != GTK_IMAGE_STOCK )
 		{
-			Tcl_SetResult ( interp, "Size can only be changed for stock images.", TCL_STATIC );
+			Tcl_SetResult ( interp, "Size can only be changed for stock images.",
+							TCL_STATIC );
 			return TCL_ERROR;
 		}
 
@@ -209,22 +201,17 @@ static int configure ( Tcl_Interp *interp, GtkImage *image, GnoclOption options[
 	{
 		GdkPixbuf *src, *dest;
 		int       width, height;
-		g_print ( "%s 1\n", __FUNCTION__ );
 
 		if ( gtk_image_get_storage_type ( image ) != GTK_IMAGE_PIXBUF )
 		{
-			Tcl_SetResult ( interp, "Only pixbuf images can be sized.", TCL_STATIC );
+			Tcl_SetResult ( interp, "Only pixbuf images can be sized.",	TCL_STATIC );
 			return TCL_ERROR;
 		}
-
-		g_print ( "%s 2\n", __FUNCTION__ );
 
 		if ( gnoclGet2Int ( interp, options[sizeIdx].val.obj, &width, &height ) != TCL_OK )
 		{
 			return TCL_ERROR;
 		}
-
-		g_print ( "%s 3\n", __FUNCTION__ );
 
 		if ( width <= 0  || height <= 0 )
 		{
@@ -232,21 +219,18 @@ static int configure ( Tcl_Interp *interp, GtkImage *image, GnoclOption options[
 			return TCL_ERROR;
 		}
 
-		g_print ( "%s 4\n", __FUNCTION__ );
 		src = gtk_image_get_pixbuf ( image );
-		g_print ( "%s 5\n", __FUNCTION__ );
+
 		dest = gdk_pixbuf_scale_simple ( src, width, height, GDK_INTERP_BILINEAR );
-		g_print ( "%s 6\n", __FUNCTION__ );
 
 		if ( dest == NULL )
 		{
-			Tcl_SetResult ( interp, "Error in scaling. Not enough memory?",	TCL_STATIC );
+			Tcl_SetResult ( interp, "Error in scaling. Not enough memory?", TCL_STATIC );
 			return TCL_ERROR;
 		}
 
-		g_print ( "%s 7\n", __FUNCTION__ );
 		gtk_image_set_from_pixbuf ( image, dest );
-		g_print ( "%s 8\n", __FUNCTION__ );
+
 		g_object_unref ( dest );
 	}
 
@@ -420,7 +404,8 @@ flipDone:
 			{
 				int ret = TCL_ERROR;
 
-				if ( gnoclParseAndSetOptions ( interp, objc - 1, objv + 1, imageOptions, G_OBJECT ( image ) ) == TCL_OK )
+				if ( gnoclParseAndSetOptions ( interp, objc - 1, objv + 1,
+											   imageOptions, G_OBJECT ( image ) ) == TCL_OK )
 				{
 					ret = configure ( interp, image, imageOptions );
 				}

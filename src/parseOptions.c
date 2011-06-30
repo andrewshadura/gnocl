@@ -430,7 +430,7 @@ int gnoclOptDefaultWidget (	Tcl_Interp *interp,	GnoclOption *opt, GObject *obj,	
 
 	GtkWidget *widget = gnoclGetWidgetFromName ( Tcl_GetString ( opt->val.obj ), interp );
 
-	gtk_window_set_default (obj,widget);
+	gtk_window_set_default ( obj, widget );
 
 	return TCL_OK;
 }
@@ -774,9 +774,9 @@ int gnoclOptOrientation ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tc
 **/
 int gnoclOptUnderline ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
-	const char *txt[] = { "none", "single", "double", "low", NULL };
+	const char *txt[] = { "none", "single", "double", "low", "error", NULL };
 	const int types[] = { PANGO_UNDERLINE_NONE, PANGO_UNDERLINE_SINGLE,
-						  PANGO_UNDERLINE_DOUBLE, PANGO_UNDERLINE_LOW
+						  PANGO_UNDERLINE_DOUBLE, PANGO_UNDERLINE_LOW, PANGO_UNDERLINE_ERROR
 						};
 
 	assert ( sizeof ( PANGO_UNDERLINE_LOW ) == sizeof ( int ) );
@@ -1006,8 +1006,10 @@ static int getShortValue ( Tcl_Interp *interp,	Tcl_Obj *list,	int idx, int *p )
 	int val;
 	Tcl_Obj *tp;
 
-	if ( Tcl_ListObjIndex ( interp, list, idx, &tp ) != TCL_OK  ) {
-		return TCL_ERROR; }
+	if ( Tcl_ListObjIndex ( interp, list, idx, &tp ) != TCL_OK  )
+	{
+		return TCL_ERROR;
+	}
 
 	if ( Tcl_GetIntFromObj ( NULL, tp, &val ) != TCL_OK )
 	{
@@ -1026,7 +1028,7 @@ static int getShortValue ( Tcl_Interp *interp,	Tcl_Obj *list,	int idx, int *p )
 
 	if ( val < .0 || val > 0xFFFF )
 	{
-		Tcl_SetResult ( interp, "color value must be between 0 and 65535",TCL_STATIC );
+		Tcl_SetResult ( interp, "color value must be between 0 and 65535", TCL_STATIC );
 		return TCL_ERROR;
 	}
 
@@ -1198,21 +1200,22 @@ int gnoclOptArrowTooltip ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, T
 **/
 int gnoclOptIconTooltip ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
+#ifdef DEBUG_PARSEOPTIONS
+	g_print ( "%s %s %s\n", __FUNCTION__, opt->propName, Tcl_GetString ( opt->val.obj ) )
+#endif
+
 	assert ( *opt->propName == 'P' || *opt->propName == 'S' );
-	//g_print ( "%s %s %s\n", __FUNCTION__, opt->propName, Tcl_GetString ( opt->val.obj ) );
 
 	const char *txt = Tcl_GetString ( opt->val.obj );
 
 	if ( *opt->propName == 'P' )
 	{
-		g_print ( "PRIMARY %s\n", txt );
 		gtk_entry_set_icon_tooltip_markup   ( GTK_ENTRY ( obj ), GTK_ENTRY_ICON_PRIMARY, txt );
 		return  TCL_OK;
 	}
 
 	if ( *opt->propName == 'S' )
 	{
-		g_print ( "SECONDARY %s\n", txt );
 		gtk_entry_set_icon_tooltip_text   ( GTK_ENTRY ( obj ), GTK_ENTRY_ICON_SECONDARY, txt );
 		return  TCL_OK;
 	}
@@ -1284,10 +1287,12 @@ int gnoclOptTooltip ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Ob
 static int modifyWidgetGdkColor (   Tcl_Interp *interp, GnoclOption *opt,   GObject *obj,
 									void ( *func ) ( GtkWidget *, GtkStateType, const GdkColor * ),   glong offset,   Tcl_Obj **ret )
 {
-	GtkStateType type;
+
 #ifdef DEBUG_PARSEOPTIONS
 	g_print ( "parseOptions/modifyWidgetGdkColor\n" );
 #endif
+
+	GtkStateType type;
 
 	switch ( *opt->propName )
 	{
@@ -1747,7 +1752,9 @@ int gnoclOptWidget ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj
 			widget = gnoclChildNotPacked ( str, interp );
 
 			if ( widget == NULL )
+			{
 				return TCL_ERROR;
+			}
 		}
 
 		g_object_set ( obj, opt->propName, widget, NULL );
@@ -1758,9 +1765,14 @@ int gnoclOptWidget ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj
 		g_object_get ( obj, opt->propName, &widget, NULL );
 
 		if ( widget )
+		{
 			*ret = Tcl_NewStringObj ( gnoclGetNameFromWidget ( widget ), -1 );
+		}
+
 		else
+		{
 			*ret = Tcl_NewStringObj ( "", 0 );
+		}
 	}
 
 	return TCL_OK;
@@ -1870,9 +1882,14 @@ int gnoclOptChild ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj 
 		GtkWidget *child = gtk_bin_get_child ( GTK_BIN ( obj ) );
 
 		if ( child )
+		{
 			*ret = Tcl_NewStringObj ( gnoclGetNameFromWidget ( child ), -1 );
+		}
+
 		else
+		{
 			*ret = Tcl_NewStringObj ( "", 0 );
+		}
 	}
 
 	return TCL_OK;
@@ -1903,13 +1920,24 @@ int gnoclOptHalign ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj
 		g_object_get ( obj, opt->propName, &align, NULL );
 
 		if ( fabs ( align ) < eps )
+		{
 			*ret = Tcl_NewStringObj ( "left", -1 );
+		}
+
 		else if ( fabs ( align - 0.5 ) < eps )
+		{
 			*ret = Tcl_NewStringObj ( "center", -1 );
+		}
+
 		else if ( fabs ( align - 1.0 ) < eps )
+		{
 			*ret = Tcl_NewStringObj ( "right", -1 );
+		}
+
 		else
+		{
 			*ret = Tcl_NewDoubleObj ( align );
+		}
 	}
 
 	return TCL_OK;
@@ -2059,7 +2087,7 @@ int gnoclConnectOptCmd ( Tcl_Interp *interp, GObject *obj, const char *signal, G
 }
 
 /**
-\brief      This is for all callbacks which have only %w as substitution
+\brief This is for all callbacks which have only %w as substitution
 **/
 int gnoclOptCommand ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
@@ -2070,9 +2098,6 @@ int gnoclOptCommand ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Ob
 
 /**
 \brief
-\author
-\date
-\note
 **/
 int gnoclOptData ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
@@ -2241,8 +2266,6 @@ static gboolean doOnExpose ( GtkWidget *widget, GdkEvent *event, gpointer data )
 	return FALSE; /* proceed: destroy widget */
 }
 
-
-
 /**
 \brief      Respond to expose-event signal.
 \note       Developed for use with gnocl::openGL
@@ -2266,7 +2289,62 @@ int gnoclOptOnDelete ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_O
 /**
 \brief
 **/
-static void doOnShowHelp ( GtkWidget *widget, GtkWidgetHelpType arg1,   gpointer data )
+static void doOnQueryToolTip ( GtkWidget *widget, gint x, gint y, gboolean keyboard_mode, GtkTooltip *tooltip, gpointer user_data )
+{
+#ifdef DEBUG_PARSEOPTIONS
+	g_print ( "%s\n", __FUNCTION__ );
+#endif
+
+	GnoclCommandData *cs = ( GnoclCommandData * ) user_data;
+	GtkTextIter *iter;
+
+	//GtkTextWindowType win;
+	gint buffer_x;
+	gint buffer_y;
+
+	//gtk_text_view_window_to_buffer_coords ( GTK_TEXT_VIEW  ( widget ), GTK_TEXT_WINDOW_WIDGET, x, y, &buffer_x, &buffer_y );
+
+	//gtk_text_view_get_iter_at_location  ( GTK_TEXT_VIEW  ( widget ), iter, buffer_x, buffer_y );
+
+	GnoclPercSubst ps[] =
+	{
+		{ 'w', GNOCL_STRING },  /* widget */
+		{ 'g', GNOCL_STRING },  /* glade name */
+		{ 'x', GNOCL_INT },
+		{ 'y', GNOCL_INT },
+		{ 'm', GNOCL_INT },
+		{ 'r', GNOCL_INT },
+		{ 'c', GNOCL_INT },
+		{ 0 }
+	};
+
+	ps[0].val.str = gnoclGetNameFromWidget ( widget );
+	ps[1].val.str = gtk_widget_get_name ( widget );
+	ps[2].val.i = x;
+	ps[3].val.i = y;
+	ps[4].val.i = keyboard_mode;
+
+	//ps[5].val.i = gtk_text_iter_get_line ( iter );
+	//ps[6].val.i = gtk_text_iter_get_line_offset ( iter );
+
+
+	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
+}
+
+
+/**
+\brief
+**/
+int gnoclOptOnQueryToolTip ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
+{
+	assert ( strcmp ( opt->optName, "-onQueryTooltip" ) == 0 );
+	return gnoclConnectOptCmd ( interp, obj, "query-tooltip", G_CALLBACK ( doOnQueryToolTip ), opt, NULL, ret );
+}
+
+/**
+\brief
+**/
+static void doOnShowHelp ( GtkWidget *widget, GtkWidgetHelpType arg1, gpointer data )
 {
 	GnoclCommandData *cs = ( GnoclCommandData * ) data;
 
@@ -2523,7 +2601,7 @@ int gnoclOptOnDeleteFromCursor ( Tcl_Interp *interp, GnoclOption *opt, GObject *
 \brief
 \author     William J Giddings
 \date       15/Jan/2010
-\note		Used by both text and entry widgets
+\note		Used by both text, entry and treeview widgets
 \todo
 
 
@@ -2539,7 +2617,7 @@ int gnoclOptOnDeleteFromCursor ( Tcl_Interp *interp, GnoclOption *opt, GObject *
   GTK_MOVEMENT_HORIZONTAL_PAGES   move horizontally by pages
 
 **/
-static int doOnMoveCursor ( GtkWidget *widget, GtkMovementStep step, gint count, gboolean extend_selection, gpointer data )
+static int doOnMoveCursor ( GtkWidget *widget, GtkMovementStep step, gint count, gint extend_selection, gpointer data )
 {
 
 	GnoclCommandData *cs = ( GnoclCommandData * ) data;
@@ -2561,59 +2639,79 @@ static int doOnMoveCursor ( GtkWidget *widget, GtkMovementStep step, gint count,
 	switch ( step )
 	{
 		case GTK_MOVEMENT_LOGICAL_POSITIONS:
-			//move by forw/back graphemes
-			ps[2].val.str = "gf/b";
+			{
+				//move by forw/back graphemes
+				ps[2].val.str = "gf/b";
+			}
 			break;
 
 		case GTK_MOVEMENT_VISUAL_POSITIONS:
-			//move by left/right graphemes
-			ps[2].val.str = "gl/r";
+			{
+				//move by left/right graphemes
+				ps[2].val.str = "gl/r";
+			}
 			break;
 
 
 		case GTK_MOVEMENT_WORDS:
-			//move by forward/back words
-			ps[2].val.str = "wf/b";
+			{
+				//move by forward/back words
+				ps[2].val.str = "wf/b";
+			}
 			break;
 
 		case GTK_MOVEMENT_DISPLAY_LINES:
-			//move up/down lines (wrapped lines)
-			ps[2].val.str = "dlu/d";
+			{
+				//move up/down lines (wrapped lines)
+				ps[2].val.str = "dlu/d";
+			}
 			break;
 
 		case GTK_MOVEMENT_DISPLAY_LINE_ENDS:
-			//move up/down lines (wrapped lines)
-			ps[2].val.str = "dleu/d";
+			{
+				//move up/down lines (wrapped lines)
+				ps[2].val.str = "dleu/d";
+			}
 			break;
 
 		case GTK_MOVEMENT_PARAGRAPHS:
-			//move up/down paragraphs (newline-ended lines)
-			ps[2].val.str = "pu/d";
+			{
+				//move up/down paragraphs (newline-ended lines)
+				ps[2].val.str = "pu/d";
+			}
 			break;
 
 		case GTK_MOVEMENT_PARAGRAPH_ENDS:
-			//move to either end of a paragraph
-			ps[2].val.str = "pend";
+			{
+				//move to either end of a paragraph
+				ps[2].val.str = "pend";
+			}
 			break;
 
 		case GTK_MOVEMENT_PAGES:
-			//move by pages
-			ps[2].val.str = "p";
+			{
+				//move by pages
+				ps[2].val.str = "p";
+			}
 			break;
 		case GTK_MOVEMENT_BUFFER_ENDS:
-			//move to ends of the buffer
-			ps[2].val.str = "eob";
+			{
+				//move to ends of the buffer
+				ps[2].val.str = "eob";
+			}
 			break;
 		case GTK_MOVEMENT_HORIZONTAL_PAGES:
-			//move horizontally by pages
-			ps[2].val.str = "hp";
+			{
+				//move horizontally by pages
+				ps[2].val.str = "hp";
+			}
 			break;
 
 		default: {}
 	}
 
 
-	ps[3].val.i   = count;
+	ps[3].val.i = count;
 	ps[4].val.i = extend_selection;
 
 	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
@@ -2623,16 +2721,13 @@ static int doOnMoveCursor ( GtkWidget *widget, GtkMovementStep step, gint count,
 /**
 \author     William J Giddings
 \date       02/06/08
-\note		Used by both text and entry widgets, other widgets will have their own handler, e.g. iconview.
+\note		Used by both text, entry and treeview widgets, other widgets will have their own handler, e.g. iconview.
 **/
 int gnoclOptOnMoveCursor ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
 
-
-
 	return gnoclConnectOptCmd ( interp, obj,   "move-cursor" , G_CALLBACK ( doOnMoveCursor ), opt, NULL, ret );
 }
-
 
 /**
 \brief
@@ -2909,7 +3004,9 @@ int gnoclOptOnBackspace ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tc
 **/
 static void doOnNotify ( GObject *gobject, GParamSpec *pspec, gpointer user_data )
 {
+#ifdef DEBUG_PARSEOPTIONS
 	g_print ( "%s\n", __FUNCTION__ );
+#endif
 
 	GnoclCommandData *cs = ( GnoclCommandData * ) user_data;
 
@@ -2937,7 +3034,9 @@ static void doOnNotify ( GObject *gobject, GParamSpec *pspec, gpointer user_data
 **/
 int gnoclOptNotify ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
+#ifdef DEBUG_PARSEOPTIONS
 	g_print ( "%s\n", __FUNCTION__ );
+#endif
 
 	return gnoclConnectOptCmd ( interp, obj,  "notify", G_CALLBACK ( doOnNotify ), opt, NULL, ret );
 
@@ -3208,7 +3307,7 @@ int gnoclOptOnProximityInOut ( Tcl_Interp *interp, GnoclOption *opt, GObject *ob
 static void doOnClicked   ( GtkToolButton *toolbutton, gpointer user_data )
 {
 #ifdef DEBUG_PARSEOPTIONS
-	g_print ( "doOnClicked\n" );
+	g_print ( "%s\n", __FUNCTION__ );
 #endif
 	GnoclCommandData *cs = ( GnoclCommandData * ) user_data;
 
@@ -3227,16 +3326,53 @@ static void doOnClicked   ( GtkToolButton *toolbutton, gpointer user_data )
 }
 
 
+
+/**
+\brief
+**/
+static void doOnInteractiveSearch   ( GtkTreeView *treeview, gpointer user_data )
+{
+#ifdef DEBUG_PARSEOPTIONS
+	g_print ( "%s\n", __FUNCTION__ );
+#endif
+	GnoclCommandData *cs = ( GnoclCommandData * ) user_data;
+
+	GtkEntry *entry = gtk_tree_view_get_search_entry ( treeview );
+
+
+	GnoclPercSubst ps[] =
+	{
+		{ 'w', GNOCL_STRING },  /* widget */
+		{ 'g', GNOCL_STRING },  /* glade name */
+		{ 'c', GNOCL_INT},  	/* search column */
+		{ 'e', GNOCL_STRING },  /* search entry widget */
+		{ 0 }
+	};
+
+
+
+	ps[0].val.str = gnoclGetNameFromWidget ( treeview );
+	ps[1].val.str = gtk_widget_get_name ( treeview );
+	ps[2].val.i = gtk_tree_view_get_search_column ( treeview );;
+
+	if ( entry != NULL )
+	{
+		ps[1].val.str = gnoclGetNameFromWidget ( entry );
+	}
+
+	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
+
+}
+
 /**
 \brief
 **/
 static void doOnColumnClicked ( GtkTreeViewColumn *treeviewcolumn, gpointer user_data )
 {
 #ifdef DEBUG_PARSEOPTIONS
-	g_print ( "doOnColumnClicked\n" );
+	g_print ( "%s\n", __FUNCTION__ );
 #endif
 
-	g_print ( "doOnColumnClicked\n" );
 
 	GnoclCommandData *cs = ( GnoclCommandData * ) user_data;
 
@@ -3268,7 +3404,7 @@ static void doOnIconPress ( GtkWidget *entry, GtkEntryIconPosition icon_pos, Gdk
 	{
 		{ 'w', GNOCL_STRING },  /* widget */
 		{ 't', GNOCL_STRING },
-		{ 'p', GNOCL_STRING }, /* icon position */
+		{ 'p', GNOCL_STRING },  /* icon position */
 		{ 'g', GNOCL_STRING },  /* glade name */
 		{ 0 }
 	};
@@ -3307,7 +3443,7 @@ static void doOnIconPress ( GtkWidget *entry, GtkEntryIconPosition icon_pos, Gdk
 static void doOnButton ( GtkWidget *widget, GdkEventButton *event, gpointer data )
 {
 #ifdef DEBUG_PARSEOPTIONS
-	g_print ( "callbackFunction/doOnButton\n" );
+	g_print ( "%s\n", __FUNCTION__ );
 #endif
 	GnoclCommandData *cs = ( GnoclCommandData * ) data;
 
@@ -3410,7 +3546,7 @@ static void doOnFontSet ( GtkWidget *widget, gpointer data )
 static void doOnFolderSet ( GtkWidget *widget, gpointer data )
 {
 #ifdef DEBUG_PARSEOPTIONS
-	g_printf ( "doOnFolderSet\n" );
+	g_print ( "%s\n", __FUNCTION__ );
 #endif
 
 	GnoclCommandData *cs = ( GnoclCommandData * ) data;
@@ -3488,14 +3624,9 @@ static void doOnLinkButton ( GtkWidget *widget, gpointer data )
             values substituted into % values for further processing by Tcl scripts.
 \author     William J Giddings
 \date       01/11/2009
-\note
+\note		Events only apply to windows and not object such as tags.
 **/
-static void doOnEvent (
-	GtkTextTag *texttag,
-	GObject *widget,
-	GdkEvent *event,
-	GtkTextIter *arg2,
-	gpointer data )
+static void doOnEvent (	GtkTextTag *texttag, GObject *widget, GdkEvent *event, GtkTextIter *arg2, gpointer data )
 {
 
 	GnoclCommandData *cs = ( GnoclCommandData * ) data;
@@ -3526,39 +3657,59 @@ static void doOnEvent (
 	 * _eventType_ ( event->type );
 	 */
 
+	/* set some initial values */
 	switch ( event->type )
 	{
 			/* these are not reported, it would be useful if they were, could do roll-over effects */
 		case GDK_ENTER_NOTIFY:
-			ps[1].val.str = "enterNotify";
+			{
+				ps[1].val.str = "enterNotify";
+			}
 			break;
 		case GDK_LEAVE_NOTIFY:
-			ps[1].val.str = "leaveNotify";
+			{
+				ps[1].val.str = "leaveNotify";
+			}
 			break;
 			/* this is reported */
 		case GDK_MOTION_NOTIFY:
-			ps[1].val.str = "motionNotify";
+			{
+				ps[1].val.str = "motionNotify";
+				ps[2].val.i = event->motion.x;
+				ps[3].val.i = event->motion.y;
+				ps[4].val.i = event->motion.state;
+				ps[7].val.i = event->motion.x_root;
+				ps[8].val.i = event->motion.y_root;
+			}
 			break;
 		case GDK_BUTTON_PRESS:
 		case GDK_2BUTTON_PRESS:
 		case GDK_3BUTTON_PRESS:
 		case GDK_BUTTON_RELEASE:
-
-			switch ( event->type )
 			{
-				case GDK_BUTTON_PRESS:      ps[1].val.str = "buttonPress"; break;
-				case GDK_2BUTTON_PRESS:     ps[1].val.str = "button2Press"; break;
-				case GDK_3BUTTON_PRESS:     ps[1].val.str = "button3Press"; break;
-				case GDK_BUTTON_RELEASE:    ps[1].val.str = "buttonRelease"; break;
-				default:                    assert ( 0 ); break;
+				switch ( event->type )
+				{
+					case GDK_BUTTON_PRESS:      ps[1].val.str = "buttonPress"; break;
+					case GDK_2BUTTON_PRESS:     ps[1].val.str = "button2Press"; break;
+					case GDK_3BUTTON_PRESS:     ps[1].val.str = "button3Press"; break;
+					case GDK_BUTTON_RELEASE:    ps[1].val.str = "buttonRelease"; break;
+					default:                    assert ( 0 ); break;
+				}
+					ps[2].val.i = event->button.x;
+					ps[3].val.i = event->button.y;
+					ps[4].val.i = event->button.state;
+					ps[5].val.i = event->button.button;
+					ps[7].val.i = event->button.x_root;
+					ps[8].val.i = event->button.y_root;
 			}
-
 			break;
 
 		default:
-			// assert( 1 );
-			ps[1].val.str = "unknownEvent";
-			break;
+			{
+				// assert( 1 );
+				ps[1].val.str = "unknownEvent";
+			}
+
 	}
 
 	/* assign values to remaining elements of the array */
@@ -3566,9 +3717,12 @@ static void doOnEvent (
 	ps[3].val.i = event->button.y;
 	ps[4].val.i = event->button.state;
 	ps[5].val.i = event->button.button;
-	ps[6].val.str = texttag->name;
 	ps[7].val.i = event->button.x_root;
 	ps[8].val.i = event->button.y_root;
+
+	ps[6].val.str = texttag->name;
+
+
 
 
 	/* other settings, mouse pointer etc can be obtained from the window structure */
@@ -3753,6 +3907,13 @@ int gnoclOptOnClicked ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_
 	return gnoclConnectOptCmd ( interp, obj, "clicked", G_CALLBACK ( doOnClicked ), opt, NULL, ret );
 }
 
+/**
+\brief
+**/
+int gnoclOptOnInteractiveSearch ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
+{
+	return gnoclConnectOptCmd ( interp, obj,  "start-interactive-search", G_CALLBACK ( doOnInteractiveSearch ), opt, NULL, ret );
+}
 
 
 /**
@@ -5516,13 +5677,7 @@ int gnoclCgetNotImplemented (
 \date
 \note
 **/
-int gnoclCget (
-	Tcl_Interp *interp,
-	int objc,
-	Tcl_Obj * const objv[],
-	GObject *gObj,
-	GnoclOption *opts,
-	int *idx )
+int gnoclCget (	Tcl_Interp *interp, int objc, Tcl_Obj * const objv[], GObject *gObj, GnoclOption *opts, int *idx )
 {
 	if ( objc != 3 )
 	{
@@ -5534,24 +5689,44 @@ int gnoclCget (
 }
 
 /**
+**/
+int gnoclTagCget (	Tcl_Interp *interp, int objc, Tcl_Obj * const objv[], GObject *gObj, GnoclOption *opts, int *idx )
+{
+
+	g_print ( "%s 1) option = %s\n", __FUNCTION__, Tcl_GetString ( objv[4] ) );
+
+	if ( objc != 5 )
+	{
+		g_print ( "%s 2)\n", __FUNCTION__ );
+		Tcl_WrongNumArgs ( interp, 5, objv, "option" );
+		return GNOCL_CGET_ERROR;
+	}
+
+	g_print ( "%s 3) %s %d\n", __FUNCTION__, Tcl_GetString ( objv[4] ), idx );
+	return gnoclCgetOne ( interp, objv[4], gObj, opts, idx );
+}
+
+
+/**
 \brief
 \author
 \date
 \note
 **/
-int gnoclCgetOne ( 	Tcl_Interp *interp,	Tcl_Obj *obj,	GObject *gObj,	GnoclOption *opts,	int *idx )
+int gnoclCgetOne ( 	Tcl_Interp *interp,	Tcl_Obj *obj, GObject *gObj, GnoclOption *opts, int *idx )
 {
+
+#ifdef DEBUG_PARSEOPTIONS
+	g_print ( "%s 1)\n", __FUNCTION__ );
+#endif
+
 	GnoclOption *pop;
 
 	if ( gnoclGetIndexFromObjStruct ( interp, obj, ( char ** ) &opts[0].optName, sizeof ( GnoclOption ), "option", TCL_EXACT, idx ) != TCL_OK )
 	{
+
 		return GNOCL_CGET_ERROR;
 	}
-
-#ifdef DEBUG_PARSEOPTIONS
-	g_print ( "parsing %s -> %s %d\n", Tcl_GetString ( objv[k] ),
-			  opts[idx].optName, opts[idx].status );
-#endif
 
 	pop = opts + *idx;
 
@@ -5561,6 +5736,7 @@ int gnoclCgetOne ( 	Tcl_Interp *interp,	Tcl_Obj *obj,	GObject *gObj,	GnoclOption
 		{
 			case GNOCL_STRING:
 				{
+
 					Tcl_Obj *obj;
 					gchar   *val;
 					g_object_get ( gObj, pop->propName, &val, NULL );
@@ -5572,6 +5748,7 @@ int gnoclCgetOne ( 	Tcl_Interp *interp,	Tcl_Obj *obj,	GObject *gObj,	GnoclOption
 				return GNOCL_CGET_HANDLED;
 			case GNOCL_BOOL:
 				{
+
 					gboolean val;
 					g_object_get ( gObj, pop->propName, &val, NULL );
 					Tcl_SetObjResult ( interp, Tcl_NewBooleanObj ( val ) );
@@ -5594,8 +5771,15 @@ int gnoclCgetOne ( 	Tcl_Interp *interp,	Tcl_Obj *obj,	GObject *gObj,	GnoclOption
 				}
 
 				return GNOCL_CGET_HANDLED;
+			case GNOCL_OBJ:
+				{
+					g_print ( "%s WE HAVE AN OBJECT\n", __FUNCTION__ );
+				}
+				return GNOCL_CGET_NOTHANDLED;
+				//return GNOCL_CGET_HANDLED;
 			default:
 				{
+
 					Tcl_Obj *obj = NULL;
 
 					if ( ( *pop->func ) ( interp, pop, gObj, &obj ) != TCL_OK )

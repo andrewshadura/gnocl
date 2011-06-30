@@ -470,7 +470,6 @@ int gnoclOptTransientWindow ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj
 \author     William J Giddings
 \date       12-01-09
 **/
-
 int gnoclOptKeepAbove ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
 
@@ -555,29 +554,9 @@ int gnoclOptStick ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj 
 	return TCL_OK;
 }
 
-/*****/
-
-/****f* window/gnoclOptMask
- * NAME
- *  functionName
- * PURPOSE
- *  Apply mask to the
- * AUTHOR
- *  William J Giddings
- * CREATION DATE
- *  12-01-09
- * USAGE
- *  how this function is used
- * ARGUMENTS
- * RETURN VALUE
- * NOTE
- *  http://www.gnu.org/software/guile-gnome/docs/gdk/html/Windows.html
- * TODO
- * USES
- * USED BY
- * MODIFICATION HISTORY
- * SOURCE
- */
+/**
+\brief
+**/
 int gnoclOptMask ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
 
@@ -976,22 +955,24 @@ static int cget (   Tcl_Interp *interp, GtkWindow *window, GnoclOption options[]
 **/
 int windowFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-	static const char *cmds[] = {
+	static const char *cmds[] =
+	{
 		"delete", "configure", "cget", "iconify",
 		"center", "centre", "beep", "class",
 		"reshow", "geometry", "pointer", "reposition",
 		"grab", "ungrab", "hide", "show", "jitter",
 		"hasFocus", "setFocus", "present",
 		NULL
-		};
+	};
 
-	enum cmdIdx {
+	enum cmdIdx
+	{
 		DeleteIdx, ConfigureIdx, CgetIdx, IconifyIdx,
 		CenterIdx, CentreIdx, BeepIdx, ClassIdx,
 		ReshowIdx, GeometryIdx, PointerIdx, RepositionIdx,
 		GrabIdx, UngrabIdx, HideIdx, ShowIdx, JitterIdx,
 		HasFocusIdx, SetFocusIdx, PresentIdx,
-		};
+	};
 
 	GtkWindow *window = GTK_WINDOW ( data );
 	int idx;
@@ -1002,41 +983,45 @@ int windowFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const 
 		return TCL_ERROR;
 	}
 
-	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "command", TCL_EXACT, &idx ) != TCL_OK ) {
+	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "command", TCL_EXACT, &idx ) != TCL_OK )
+	{
 		return TCL_ERROR;
-		}
+	}
 
 	switch ( idx )
 	{
-		case PresentIdx: {
-			gtk_window_present (window);
+		case PresentIdx:
+			{
+				gtk_window_present ( window );
 
-			/* TODO: present window after a specified time delay */
-			//gtk_window_present_with_time (GtkWindow *window, guint32 timestamp);
-		}
-		break;
+				/* TODO: present window after a specified time delay */
+				//gtk_window_present_with_time (GtkWindow *window, guint32 timestamp);
+			}
+			break;
 
-		case SetFocusIdx: {
-			GtkWidget *widget;
+		case SetFocusIdx:
+			{
+				GtkWidget *widget;
 
-			widget = gnoclGetWidgetFromName ( Tcl_GetString ( objv[2] ), interp );
+				widget = gnoclGetWidgetFromName ( Tcl_GetString ( objv[2] ), interp );
 
-			gtk_window_set_focus (window, widget);
+				gtk_window_set_focus ( window, widget );
 
-		}
-		break;
+			}
+			break;
 
-		case HasFocusIdx: {
-			GtkWidget *widget;
-			gchar *name;
+		case HasFocusIdx:
+			{
+				GtkWidget *widget;
+				gchar *name;
 
 
-			widget = gtk_window_get_focus (window);
-			name = gnoclGetNameFromWidget (widget);
+				widget = gtk_window_get_focus ( window );
+				name = gnoclGetNameFromWidget ( widget );
 
-			Tcl_SetObjResult ( interp, Tcl_NewStringObj ( name, -1 ) );
-		}
-		break;
+				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( name, -1 ) );
+			}
+			break;
 		case JitterIdx:
 			{
 				gint x, y, i, j;

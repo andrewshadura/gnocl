@@ -206,8 +206,7 @@ int eventBoxFunc (
 			{
 				int     idx;
 
-				switch ( gnoclCget ( interp, objc, objv, G_OBJECT ( box ),
-									 boxOptions, &idx ) )
+				switch ( gnoclCget ( interp, objc, objv, G_OBJECT ( box ), boxOptions, &idx ) )
 				{
 					case GNOCL_CGET_ERROR:
 						return TCL_ERROR;

@@ -131,16 +131,20 @@ int fontButtonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * co
 			{
 				int     idx;
 
-				switch ( gnoclCget ( interp, objc, objv, G_OBJECT ( button ),
-									 fontButtonOptions, &idx ) )
+				switch ( gnoclCget ( interp, objc, objv, G_OBJECT ( button ), fontButtonOptions, &idx ) )
 				{
 					case GNOCL_CGET_ERROR:
-						return TCL_ERROR;
+						{
+							return TCL_ERROR;
+						}
 					case GNOCL_CGET_HANDLED:
-						return TCL_OK;
+						{
+							return TCL_OK;
+						}
 					case GNOCL_CGET_NOTHANDLED:
-						return gnoclCgetNotImplemented ( interp,
-														 fontButtonOptions + idx );
+						{
+							return gnoclCgetNotImplemented ( interp, fontButtonOptions + idx );
+						}
 				}
 			}
 	}
@@ -151,8 +155,7 @@ int fontButtonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * co
 /**
 \brief
 **/
-int gnoclFontButtonCmd ( ClientData data, Tcl_Interp *interp,
-						 int objc, Tcl_Obj * const objv[] )
+int gnoclFontButtonCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
 	int       ret;
 	GtkFontButton *button;
