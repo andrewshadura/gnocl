@@ -13,6 +13,7 @@
 
 /*
    History:
+   2011-07  added insert command detects pango markup text
    2011-06  added tag -underline option 'error'
    2011-06  added -hasToolTip, -onQueryTooltip,
    			added tag options
@@ -86,6 +87,153 @@ static int textFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *  
 static int cget ( Tcl_Interp *interp, GtkTextView *text, GnoclOption options[], int idx );
 
 /**
+\brief	Return a Tcl list of text attributes.
+	GtkJustification justification;
+	GtkTextDirection direction;
+	PangoFontDescription *font;
+	gdouble font_scale;
+	gint left_margin;
+	gint indent;
+	gint right_margin;
+	gint pixels_above_lines;
+	gint pixels_below_lines;
+	gint pixels_inside_wrap;
+	PangoTabArray *tabs;
+	GtkWrapMode wrap_mode;
+	PangoLanguage *language;
+	guint invisible : 1;
+	guint bg_full_height : 1;
+	guint editable : 1;
+	guint realized : 1;
+
+**/
+static getAttributes ( Tcl_Interp *interp, GtkTextAttributes *values )
+{
+	g_print ( "%s\n", __FUNCTION__ );
+
+	Tcl_Obj *resList;
+
+	resList = Tcl_NewListObj ( 0, NULL );
+
+	gchar *justify;
+	gchar *direction;
+	gchar *font;
+
+	justify = "left";
+	direction = "none";
+	font = "";
+
+	font = pango_font_description_to_string ( values->font );
+
+
+	switch ( values->justification )
+	{
+		case GTK_JUSTIFY_LEFT:
+			{
+				justify = "left";
+			}
+			break;
+		case GTK_JUSTIFY_RIGHT:
+			{
+				justify = "right";
+			}			break;
+		case GTK_JUSTIFY_CENTER:
+			{
+				justify = "center";
+			}			break;
+		case GTK_JUSTIFY_FILL:
+			{
+				justify = "fill";
+			}			break;
+		default:
+			{
+				g_print ( "no justify\n" );
+			}
+	}
+
+	switch ( values->direction )
+	{
+		case GTK_TEXT_DIR_NONE:
+			{
+				direction = "none";
+			}
+			break;
+		case GTK_TEXT_DIR_LTR:
+			{
+				direction = "left-to-right";
+			}			break;
+		case GTK_TEXT_DIR_RTL:
+			{
+				direction = "right-to-left";
+			}			break;
+			break;
+		default:
+			{
+				g_print ( "no direction\n" );
+			}
+	}
+
+
+
+
+	Tcl_ListObjAppendElement ( interp, resList, Tcl_NewStringObj ( "justification", -1 ) );
+	Tcl_ListObjAppendElement ( interp, resList, Tcl_NewStringObj ( justify, -1 ) );
+
+	Tcl_ListObjAppendElement ( interp, resList, Tcl_NewStringObj ( "direction", -1  ) );
+	Tcl_ListObjAppendElement ( interp, resList, Tcl_NewStringObj ( direction, -1 ) );
+
+	Tcl_ListObjAppendElement ( interp, resList, Tcl_NewStringObj ( "font", -1  ) );
+	Tcl_ListObjAppendElement ( interp, resList, Tcl_NewStringObj ( font, -1 ) );
+
+	Tcl_ListObjAppendElement ( interp, resList, Tcl_NewStringObj ( "font_scale", -1  ) );
+	Tcl_ListObjAppendElement ( interp, resList, Tcl_NewDoubleObj ( values->font_scale ) );
+
+	Tcl_ListObjAppendElement ( interp, resList, Tcl_NewStringObj ( "left_margin", -1  ) );
+	Tcl_ListObjAppendElement ( interp, resList, Tcl_NewIntObj ( values->left_margin ) );
+
+	Tcl_ListObjAppendElement ( interp, resList, Tcl_NewStringObj ( "indent", -1  ) );
+	Tcl_ListObjAppendElement ( interp, resList, Tcl_NewIntObj ( values->indent ) );
+
+	Tcl_ListObjAppendElement ( interp, resList, Tcl_NewStringObj ( "right_margin", -1  ) );
+	Tcl_ListObjAppendElement ( interp, resList, Tcl_NewIntObj ( values->right_margin ) );
+
+	Tcl_ListObjAppendElement ( interp, resList, Tcl_NewStringObj ( "pixels_above_lines", -1  ) );
+	Tcl_ListObjAppendElement ( interp, resList, Tcl_NewIntObj ( values-> pixels_above_lines ) );
+
+	Tcl_ListObjAppendElement ( interp, resList, Tcl_NewStringObj ( "pixels_below_lines", -1  ) );
+	Tcl_ListObjAppendElement ( interp, resList, Tcl_NewIntObj ( values->pixels_below_lines ) );
+
+	Tcl_ListObjAppendElement ( interp, resList, Tcl_NewStringObj ( "pixels_inside_wrap", -1  ) );
+	Tcl_ListObjAppendElement ( interp, resList, Tcl_NewIntObj ( values->pixels_inside_wrap ) );
+
+	Tcl_ListObjAppendElement ( interp, resList, Tcl_NewStringObj ( "tabs", -1  ) );
+	Tcl_ListObjAppendElement ( interp, resList, Tcl_NewStringObj ( "tab-array", -1 ) );
+
+	Tcl_ListObjAppendElement ( interp, resList, Tcl_NewStringObj ( "wrap_mode", -1  ) );
+	Tcl_ListObjAppendElement ( interp, resList, Tcl_NewStringObj ( "wrap", -1 ) );
+
+	Tcl_ListObjAppendElement ( interp, resList, Tcl_NewStringObj ( "language", -1  ) );
+	Tcl_ListObjAppendElement ( interp, resList, Tcl_NewStringObj ( "text-language", -1 ) );
+
+	Tcl_ListObjAppendElement ( interp, resList, Tcl_NewStringObj ( "invisible", -1  ) );
+	Tcl_ListObjAppendElement ( interp, resList, Tcl_NewIntObj ( values->invisible ) );
+
+	Tcl_ListObjAppendElement ( interp, resList, Tcl_NewStringObj ( "bg_full_height", -1  ) );
+	Tcl_ListObjAppendElement ( interp, resList, Tcl_NewIntObj ( values->bg_full_height ) );
+
+	Tcl_ListObjAppendElement ( interp, resList, Tcl_NewStringObj ( "editable", -1  ) );
+	Tcl_ListObjAppendElement ( interp, resList, Tcl_NewIntObj ( 1 ) );
+
+	Tcl_ListObjAppendElement ( interp, resList, Tcl_NewStringObj ( "realized", -1  ) );
+	Tcl_ListObjAppendElement ( interp, resList, Tcl_NewIntObj ( values->realized ) );
+
+
+	Tcl_SetObjResult ( interp, resList );
+
+}
+
+
+/**
 \brief     Search through the GtkTextBuffer from startPos to endPos.
            If a match is found, add it to a list of row col indices.
            When search complete, return the list to the calling function.
@@ -157,6 +305,27 @@ static int gnoclOptTabs ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tc
 
 	PangoTabArray *ptaNameList = pango_tab_array_new_with_positions ( 2, TRUE, PANGO_TAB_LEFT, 100, PANGO_TAB_LEFT, 200 );
 	gtk_text_view_set_tabs ( GTK_TEXT_VIEW ( obj ), ptaNameList );
+
+
+	return TCL_OK;
+}
+
+/**
+\brief	Set text tag attribute.
+**/
+static int gnoclOptTextTagPriority ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
+{
+
+#ifdef DEBUG_TEXT
+	debugStep ( __FUNCTION__, 1.0 );
+#endif
+
+	gint priority;
+
+	Tcl_GetIntFromObj ( interp, opt->val.obj, &priority );
+
+
+	gtk_text_tag_set_priority ( GTK_TEXT_TAG ( obj ), priority );
 
 
 	return TCL_OK;
@@ -1344,6 +1513,7 @@ int tagCmd ( GtkTextBuffer *buffer, Tcl_Interp *interp, int objc, Tcl_Obj *  con
 		{"-leftMargin", GNOCL_INT, "left-margin"},
 		{"-name", GNOCL_STRING, "name"},
 		{"-pixelsInsideWrap", GNOCL_INT, "pixels-inside-wrap"},
+		{"-priority", GNOCL_OBJ, "", gnoclOptTextTagPriority},
 		{"-rightMargin", GNOCL_INT, "right-margin"},
 		{"-rise", GNOCL_INT, "rise"},
 		{"-scale", GNOCL_DOUBLE, "scale"},
@@ -1755,8 +1925,8 @@ clearExit:
 \brief      Insert formatted string into specified text widget at a given location.
 \author     PGB
 \date       2001-06:
-\bugs      Recent changes to posToIter causing this function to crash.
-           But, applyTag, which is hack of this function does not cause a crash!
+\bugs       Recent changes to posToIter causing this function to crash.
+            But, applyTag, which is hack of this function does not cause a crash!
 \history    2008-06-27  Began implementation of new keywords for text position. See TODO.
 **/
 static int textInsert ( GtkTextBuffer *buffer, Tcl_Interp *interp, int objc, Tcl_Obj *  const objv[], int cmdNo )
@@ -1771,6 +1941,7 @@ static int textInsert ( GtkTextBuffer *buffer, Tcl_Interp *interp, int objc, Tcl
 	int       ret = TCL_ERROR;
 
 	GtkTextIter   iter;
+
 
 	if ( objc < cmdNo + 2 )
 	{
@@ -1790,7 +1961,19 @@ static int textInsert ( GtkTextBuffer *buffer, Tcl_Interp *interp, int objc, Tcl
 
 	startOffset = gtk_text_iter_get_offset ( &iter );
 
-	gtk_text_buffer_insert ( buffer, &iter, gnoclGetString ( objv[cmdNo+1] ), -1 );
+
+	/* handle pango strings first */
+	gint type = gnoclGetStringType ( objv[cmdNo+1] );
+
+	if ( type == 48 )
+	{
+		gtk_text_buffer_insert_markup ( buffer, &iter, gnoclGetString ( objv[cmdNo+1] ) );
+	}
+
+	else
+	{
+		gtk_text_buffer_insert ( buffer, &iter, gnoclGetString ( objv[cmdNo+1] ), -1 );
+	}
 
 	if ( insertOptions[tagsIdx].status == GNOCL_STATUS_CHANGED )
 	{
@@ -1913,6 +2096,9 @@ static int cget ( Tcl_Interp *interp, GtkTextView *text, GnoclOption options[], 
 **/
 static void gnoclGetTagSettings ( GtkTextTag *tag, gpointer data )
 {
+#ifdef DEBUG_TEXT
+	g_print ( "%s\n", __FUNCTION__ );
+#endif
 
 	char **str = data;
 
@@ -2143,7 +2329,7 @@ static void gnoclGetTagSettings ( GtkTextTag *tag, gpointer data )
 	// sprintf ( tmp2, " %d ", tag->values->pixels_below_lines );
 	strcat ( tmp, "} " );
 #ifdef DEBUG_TEXT
-	g_print ( "tmp >>> = %s\n", tmp );
+	//g_print ( "tmp >>> = %s\n", tmp );
 #endif
 	*str = tmp;
 }
@@ -2603,11 +2789,67 @@ int gnoclTextCommand ( GtkTextBuffer *buffer, Tcl_Interp *interp, int objc, Tcl_
 				GtkTextIter startIter, endIter;
 				/*  text erase/select/getChars startIndex ?endIndex? */
 
+				if ( objc != cmdNo + 3 )
+				{
+					Tcl_WrongNumArgs ( interp, cmdNo + 2, objv, "{row col}" );
+
+					return -1;
+				}
+
+				/* get attributes */
+
+				if ( strcmp ( Tcl_GetString ( objv[cmdNo+1] ), "attributes" ) == 0 )
+				{
+
+					g_print ( "attributes at %s\n", Tcl_GetString ( objv[cmdNo+2] ) );
+
+					GtkTextIter iter;
+					GtkTextAttributes values;
+
+
+					if ( posToIter ( interp, objv[cmdNo+2], buffer, &iter ) != TCL_OK )
+					{
+						return TCL_ERROR;
+					}
+
+
+					if ( gtk_text_iter_get_attributes ( &iter, &values ) )
+					{
+						g_print ( "attributes at %s\n", Tcl_GetString ( objv[cmdNo+2] ) );
+						/*
+						GtkJustification justification;
+						GtkTextDirection direction;
+						PangoFontDescription *font;
+						gdouble font_scale;
+						gint left_margin;
+						gint indent;
+						gint right_margin;
+						gint pixels_above_lines;
+						gint pixels_below_lines;
+						gint pixels_inside_wrap;
+						PangoTabArray *tabs;
+						GtkWrapMode wrap_mode;
+						PangoLanguage *language;
+						guint invisible : 1;
+						guint bg_full_height : 1;
+						guint editable : 1;
+						guint realized : 1;
+						*/
+
+						getAttributes ( interp, &values );
+
+					}
+
+					return TCL_OK;
+				}
+
+
 				if ( objc < cmdNo + 2 || objc > cmdNo + 3 )
 				{
 					Tcl_WrongNumArgs ( interp, cmdNo + 1, objv, "startIndex ?endIndex?" );
 					return TCL_ERROR;
 				}
+
 
 				if ( posToIter ( interp, objv[cmdNo+1], buffer, &startIter ) != TCL_OK )
 				{
@@ -2916,6 +3158,8 @@ int gnoclTextCommand ( GtkTextBuffer *buffer, Tcl_Interp *interp, int objc, Tcl_
 						  Tcl_GetString ( objv[cmdNo+3] ) ) ;
 #endif
 
+
+
 				GtkTextIter startIter, endIter;
 
 				GtkTextTagTable *tagtable;
@@ -2957,10 +3201,16 @@ int gnoclTextCommand ( GtkTextBuffer *buffer, Tcl_Interp *interp, int objc, Tcl_
 
 				/*  get the sub-command, one of all, tags, text, images, marks */
 
+
 				if ( Tcl_GetIndexFromObj ( interp, objv[cmdNo+1], cmds, "subcommand", TCL_EXACT, &idx ) != TCL_OK )
 				{
 					return TCL_ERROR;
 				}
+
+				g_print ( "-----HERE\n" );
+
+//getIdx ( cmds, objv[cmdNo+1], &idx );
+
 
 				/*
 				 *  Respond to the second keyword..

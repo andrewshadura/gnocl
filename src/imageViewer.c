@@ -136,7 +136,7 @@ int gnoclImageViewerCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj
 
 	gchar *fname = "./desklet_or_gadget.png";
 
-    GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file (fname, NULL);
+	GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file ( fname, NULL );
 
 	if ( gnoclParseOptions ( interp, objc, objv, imageViewerOptions ) != TCL_OK )
 	{
@@ -144,11 +144,11 @@ int gnoclImageViewerCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj
 		return TCL_ERROR;
 	}
 
- 	image_view = gtk_image_view_new();
+	image_view = gtk_image_view_new();
 
-    gtk_image_view_set_pixbuf (GTK_IMAGE_VIEW (image_view), pixbuf, TRUE);
+	gtk_image_view_set_pixbuf ( GTK_IMAGE_VIEW ( image_view ), pixbuf, TRUE );
 
- //image_viewer = gtk_image_viewer_new_from_file(fname);
+//image_viewer = gtk_image_viewer_new_from_file(fname);
 
 	//scrolled =  GTK_SCROLLED_WINDOW ( gtk_scrolled_window_new ( NULL, NULL ) );
 
@@ -158,13 +158,13 @@ int gnoclImageViewerCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj
 
 	//gtk_widget_show_all ( GTK_WIDGET ( scrolled ) );
 
-  // Set the scroll region and zoom range
-  //gtk_image_viewer_set_scroll_region(GTK_IMAGE_VIEWER(image_viewer), 5,-5,5,5);
-  //gtk_image_viewer_set_zoom_range(GTK_IMAGE_VIEWER(image_viewer), -HUGE, HUGE);
+	// Set the scroll region and zoom range
+	//gtk_image_viewer_set_scroll_region(GTK_IMAGE_VIEWER(image_viewer), 5,-5,5,5);
+	//gtk_image_viewer_set_zoom_range(GTK_IMAGE_VIEWER(image_viewer), -HUGE, HUGE);
 
-  // Need to do a manual zoom fit at creation because a bug when
-  // not using an image.
-  // gtk_image_viewer_zoom_fit(GTK_IMAGE_VIEWER(image_viewer));
+	// Need to do a manual zoom fit at creation because a bug when
+	// not using an image.
+	// gtk_image_viewer_zoom_fit(GTK_IMAGE_VIEWER(image_viewer));
 
 
 

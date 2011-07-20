@@ -854,7 +854,7 @@ int gnoclOptCursor ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj
 
 	typedef struct
 	{
-		const char    *name;
+		const char *name;
 		GdkCursorType id;
 	} CursorNameToId;
 
@@ -3695,12 +3695,13 @@ static void doOnEvent (	GtkTextTag *texttag, GObject *widget, GdkEvent *event, G
 					case GDK_BUTTON_RELEASE:    ps[1].val.str = "buttonRelease"; break;
 					default:                    assert ( 0 ); break;
 				}
-					ps[2].val.i = event->button.x;
-					ps[3].val.i = event->button.y;
-					ps[4].val.i = event->button.state;
-					ps[5].val.i = event->button.button;
-					ps[7].val.i = event->button.x_root;
-					ps[8].val.i = event->button.y_root;
+
+				ps[2].val.i = event->button.x;
+				ps[3].val.i = event->button.y;
+				ps[4].val.i = event->button.state;
+				ps[5].val.i = event->button.button;
+				ps[7].val.i = event->button.x_root;
+				ps[8].val.i = event->button.y_root;
 			}
 			break;
 
@@ -5672,7 +5673,7 @@ int gnoclCgetNotImplemented (
 }
 
 /**
-\brief
+\brief		Return value from pre-set options.
 \author
 \date
 \note
@@ -5773,7 +5774,9 @@ int gnoclCgetOne ( 	Tcl_Interp *interp,	Tcl_Obj *obj, GObject *gObj, GnoclOption
 				return GNOCL_CGET_HANDLED;
 			case GNOCL_OBJ:
 				{
+#ifdef DEBUG_PARSEOPTIONS
 					g_print ( "%s WE HAVE AN OBJECT\n", __FUNCTION__ );
+#endif
 				}
 				return GNOCL_CGET_NOTHANDLED;
 				//return GNOCL_CGET_HANDLED;

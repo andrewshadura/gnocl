@@ -363,16 +363,19 @@ int gnoclStringCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * c
 {
 
 #ifdef DEBUG_COMMANDS
-	g_print ( "%s %s %s\n",__FUNCTION__,  Tcl_GetString ( objv[1] ) , Tcl_GetString ( objv[2] ));
+	g_print ( "%s %s %s\n", __FUNCTION__,  Tcl_GetString ( objv[1] ) , Tcl_GetString ( objv[2] ) );
 #endif
 
 
-	static const char *cmd[] = {
+	static const char *cmd[] =
+	{
 		"unichar_to_utf8",
-		NULL };
-	enum optIdx {
+		NULL
+	};
+	enum optIdx
+	{
 		unichar_to_utf8_Idx
-		};
+	};
 
 	int idx;
 
@@ -394,29 +397,30 @@ int gnoclStringCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * c
 	{
 
 
-		case unichar_to_utf8_Idx: {
+		case unichar_to_utf8_Idx:
+			{
 
 
 
-		gchar outbuf[6];
+				gchar outbuf[6];
 
-			// gint g_unichar_to_utf8 (gunichar c, gchar *outbuf);
-			gunichar c;
-			gint res;
+				// gint g_unichar_to_utf8 (gunichar c, gchar *outbuf);
+				gunichar c;
+				gint res;
 
-			sscanf (Tcl_GetString ( objv[2] ), "U+%06"G_GINT32_FORMAT"X", &c);
+				sscanf ( Tcl_GetString ( objv[2] ), "U+%06"G_GINT32_FORMAT"X", &c );
 
-			res = g_unichar_validate (Tcl_GetString ( objv[2] ));
+				res = g_unichar_validate ( Tcl_GetString ( objv[2] ) );
 
-			g_print("valid = %d\n",res);
+				g_print ( "valid = %d\n", res );
 
-			res = g_unichar_to_utf8 ( c	,outbuf);
+				res = g_unichar_to_utf8 ( c	, outbuf );
 
-			g_print("res = %d %s\n",res,outbuf);
+				g_print ( "res = %d %s\n", res, outbuf );
 
-			Tcl_SetObjResult ( interp, Tcl_NewStringObj ( outbuf, -1 ) );
+				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( outbuf, -1 ) );
 
-		}
+			}
 		default: {}
 	}
 

@@ -478,11 +478,17 @@ int buttonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const 
 				switch ( gnoclCget ( interp, objc, objv, G_OBJECT ( button ), buttonOptions, &idx ) )
 				{
 					case GNOCL_CGET_ERROR:
-						return TCL_ERROR;
+						{
+							return TCL_ERROR;
+						}
 					case GNOCL_CGET_HANDLED:
-						return TCL_OK;
+						{
+							return TCL_OK;
+						}
 					case GNOCL_CGET_NOTHANDLED:
-						return cget ( interp, button, buttonOptions, idx );
+						{
+							return cget ( interp, button, buttonOptions, idx );
+						}
 				}
 			}
 			break;

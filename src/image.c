@@ -109,7 +109,7 @@ static int configure ( Tcl_Interp *interp, GtkImage *image, GnoclOption options[
 #ifdef DEBUG_PIXBUF
 					g_printf ( "loading from file = %s\n",  txt );
 #endif
-					GdkPixbufAnimation *ani = gdk_pixbuf_animation_new_from_file (txt, &error );
+					GdkPixbufAnimation *ani = gdk_pixbuf_animation_new_from_file ( txt, &error );
 
 					if ( ani == NULL )
 					{

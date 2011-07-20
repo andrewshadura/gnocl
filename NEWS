@@ -1,3 +1,11 @@
+2011-07-20
+	gnocl::text
+		added support for pango formatted markup strings
+
+2011-07-03
+	gnocl::entry
+   		cget -data now works properly
+
 2011-06-30:
 	gnocl::entry
    		o added options

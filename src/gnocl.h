@@ -784,3 +784,6 @@ void hash_to_list ( gpointer key, gpointer value, gpointer user_data );
 gint sorter ( gconstpointer a, gconstpointer b );
 
 int pixBufFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] );
+
+void gtk_text_buffer_insert_markup ( GtkTextBuffer *buffer, GtkTextIter *iter, const gchar *markup );
+

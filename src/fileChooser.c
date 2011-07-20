@@ -47,6 +47,9 @@ int gnoclOptFileFilter (	Tcl_Interp *interp,	GnoclOption *opt,	GObject *obj,	Tcl
 	return TCL_OK;
 }
 
+/**
+\brief
+**/
 static void fileFilter ( GtkWidget *widget )
 {
 	g_print ( "%s\n", __FUNCTION__ );
@@ -780,12 +783,12 @@ int gnoclFileChooserCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj
 	widget = gtk_file_chooser_widget_new ( GTK_FILE_CHOOSER_ACTION_SAVE ) ;
 
 
-	fileFilter ( widget );
+	//fileFilter ( widget );
 
 	gtk_widget_show ( GTK_WIDGET ( widget ) );
 
 
-	if ( 1 )
+	if ( 0 )
 	{
 		ret = gnoclSetOptions ( interp, GnoclOptMiscFp, G_OBJECT ( widget ), -1 );
 

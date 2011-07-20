@@ -53,14 +53,16 @@ Indicies of options that specifically relate to sub-widgets
 Used by the function needFrame()
 */
 
-static const int startFrameOpts  = 7;
-static const int startCommonOpts = 12;
-static const int startPackOpts   = 25;
+static const int startFrameOpts = 8;
+static const int startCommonOpts = 13;
+static const int startPackOpts = 26;
 
-static const int paddingDiff     = 0;
-static const int fillDiff        = 1;
-static const int expandDiff      = 2;
-static const int alignDiff       = 3;
+static const int paddingDiff = 0;
+static const int fillDiff = 1;
+static const int expandDiff = 2;
+static const int alignDiff = 3;
+
+static const int dataIdx = 7;
 
 enum { ExpandDefault = 1, FillDefault = 1, PaddingDefault = 0 };
 
@@ -74,16 +76,17 @@ static GnoclOption boxOptions[] =
 	{ "-homogeneous", GNOCL_BOOL, "homogeneous" }, 					/* 4 */
 	{ "-spacing", GNOCL_OBJ, "spacing", gnoclOptPadding }, 			/* 5 */
 	{ "-borderWidth", GNOCL_OBJ, "border-width", gnoclOptPadding },	/* 6 */
+	{ "-data", GNOCL_OBJ, "", gnoclOptData },						/* 7 */
 
-	/* frame options : startFrameOpts = 7 */
-	{ "-label", GNOCL_STRING, "label" },    						/* 7 */
+	/* frame options : startFrameOpts = 8 */
+	{ "-label", GNOCL_STRING, "label" },    						/* 8 */
 	{ "-shadow", GNOCL_OBJ, "shadow", gnoclOptShadow },
 	{ "-labelAlign", GNOCL_OBJ, "label-xalign", gnoclOptHalign },
 	{ "-background", GNOCL_OBJ, "normal", gnoclOptGdkColorBg },
 	{ "-labelWidget", GNOCL_OBJ, "", gnoclOptFrameLabelWidget },
 
-	/* common options startCommonOpts = 12 */
-	{ "-name", GNOCL_STRING, "name" },      						/* 12 */
+	/* common options startCommonOpts = 13 */
+	{ "-name", GNOCL_STRING, "name" },      						/* 13 */
 	{ "-visible", GNOCL_BOOL, "visible" },
 	{ "-sensitive", GNOCL_BOOL, "sensitive" },
 	{ "-tooltip", GNOCL_OBJ, "", gnoclOptTooltip },
@@ -106,10 +109,35 @@ static GnoclOption boxOptions[] =
 	{ "-activeBackgroundColor", GNOCL_OBJ, "active", gnoclOptGdkColorBg },
 	{ "-normalBackgroundColor", GNOCL_OBJ, "normal", gnoclOptGdkColorBg },
 	{ "-prelightBackgroundColor", GNOCL_OBJ, "prelight", gnoclOptGdkColorBg },
-	{ "-data", GNOCL_OBJ, "", gnoclOptData },
 
 	{ NULL }
 };
+
+
+/**
+\brief
+**/
+static int cget ( Tcl_Interp *interp, GtkWidget *widget, GnoclOption options[], int idx )
+{
+#ifdef DEBUG_BOX
+	printf ( "%s\n", __FUNCTION__ );
+#endif
+
+	Tcl_Obj *obj = NULL;
+
+	if ( idx == dataIdx )
+	{
+		obj = Tcl_NewStringObj ( g_object_get_data ( widget, "gnocl::data" ), -1 );
+	}
+
+	if ( obj != NULL )
+	{
+		Tcl_SetObjResult ( interp, obj );
+		return TCL_OK;
+	}
+
+	return gnoclCgetNotImplemented ( interp, options + idx );
+}
 
 /**
 \brief
@@ -384,8 +412,18 @@ static int boxFuncAdd ( GtkBox *box, Tcl_Interp *interp, int objc, Tcl_Obj * con
 **/
 int boxFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-	static const char *cmds[] = {  "delete", "configure", "add", "addBegin", "addEnd", "class", NULL };
-	enum cmdIdx { DeleteIdx, ConfigureIdx, AddIdx, BeginIdx, EndIdx, ClassIdx };
+	static const char *cmds[] =
+	{
+		"cget", "delete", "configure", "add",
+		"addBegin", "addEnd", "class",
+		NULL
+	};
+
+	enum cmdIdx
+	{
+		CgetIdx, DeleteIdx, ConfigureIdx, AddIdx,
+		BeginIdx, EndIdx, ClassIdx
+	};
 
 	int idx;
 
@@ -418,6 +456,23 @@ int boxFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const obj
 
 	switch ( idx )
 	{
+
+		case CgetIdx:
+			{
+				int     idx;
+
+				switch ( gnoclCget ( interp, objc, objv,  widget, boxOptions, &idx ) )
+				{
+					case GNOCL_CGET_ERROR:
+						return TCL_ERROR;
+					case GNOCL_CGET_HANDLED:
+						return TCL_OK;
+					case GNOCL_CGET_NOTHANDLED:
+						return cget ( interp, widget, boxOptions, idx );
+				}
+			}
+			break;
+
 		case ClassIdx:
 			{
 				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "box", -1 ) );

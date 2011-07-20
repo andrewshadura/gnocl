@@ -1017,7 +1017,7 @@ static GdkPixbuf *getPixbuf ( Tcl_Interp *interp,
 
 			break;
 		default:
-			Tcl_SetResult ( interp, "String must bei either "
+			Tcl_SetResult ( interp, "String must be either "
 							"a file (\"%/\") or a stock (\"%#\") percent string",
 							TCL_STATIC );
 	}
@@ -2673,7 +2673,9 @@ static int getFullList ( TreeListParams * para, Tcl_Interp * interp, int objc, T
 
 	model = gtk_tree_view_get_model ( para->view );
 
+#ifdef DEBUG_TREELIST
 	g_print ( "%s\n", __FUNCTION__ );
+#endif
 
 	if ( objc != 4 )
 	{
@@ -2685,7 +2687,9 @@ static int getFullList ( TreeListParams * para, Tcl_Interp * interp, int objc, T
 	gint nrows = gtk_tree_model_iter_n_children ( model, NULL );
 	gint ncols = gtk_tree_model_get_n_columns ( model );
 
+#ifdef DEBUG_TREELIST
 	g_print ( "rows %d: cols = %d\n", nrows, ncols );
+#endif
 
 	//col = gtk_tree_model_iter_n_children ( model, &iter );
 
@@ -2707,36 +2711,48 @@ static int getFullList ( TreeListParams * para, Tcl_Interp * interp, int objc, T
 		{
 			case G_TYPE_BOOLEAN:
 				{
+#ifdef DEBUG_TREELIST
 					g_print ( "col %d is an BOOLEAN\n", col );
+#endif
 				}
 				break;
 			case G_TYPE_UINT:
 			case G_TYPE_INT:
 				{
+#ifdef DEBUG_TREELIST
 					g_print ( "col %d is an INTEGER\n", col );
+#endif
 				}
 
 				break;
 			case G_TYPE_DOUBLE:
 				{
+#ifdef DEBUG_TREELIST
 					g_print ( "col %d is an FLOAT\n", col );
+#endif
 				}
 
 				break;
 			case G_TYPE_OBJECT:
 				{
+#ifdef DEBUG_TREELIST
 					g_print ( "col %d is an IMAGE\n", col );
+#endif
 				}
 				break;
 			default:
 				{
+#ifdef DEBUG_TREELIST
 					g_print ( "col %d is an STRING\n", col );
+#endif
 				}
 		}
 
 		column = gtk_tree_view_get_column ( para->view, col );
 		title = gtk_tree_view_column_get_title ( column );
+#ifdef DEBUG_TREELIST
 		g_print ( "col %d title = %s\n", col, title );
+#endif
 
 	}
 
@@ -2764,13 +2780,15 @@ static int getFullList ( TreeListParams * para, Tcl_Interp * interp, int objc, T
 			}
 
 			Tcl_ListObjAppendElement ( interp, tmp2, tmp1 );
-
+#ifdef DEBUG_TREELIST
 			g_print ( "item = %s\n", Tcl_GetString ( tmp1 ) );
-
+#endif
 		}
 
 		//tmp =  Tcl_NewStringObj ( "}", -1 );
+#ifdef DEBUG_TREELIST
 		g_print ( "add list 1 %s\n", Tcl_GetString ( tmp2 ) );
+#endif
 
 		if ( Tcl_IsShared ( tmp2 ) )
 		{
@@ -2782,12 +2800,13 @@ static int getFullList ( TreeListParams * para, Tcl_Interp * interp, int objc, T
 			res = Tcl_DuplicateObj ( res );
 		}
 
+#ifdef DEBUG_TREELIST
 		g_print ( "add list 2\n" );
-
+#endif
 		Tcl_ListObjAppendElement ( interp, res, tmp2 );
-
+#ifdef DEBUG_TREELIST
 		g_print ( "add list 3\n" );
-
+#endif
 	}
 	while ( gtk_tree_model_iter_next ( model, &iter ) );
 
@@ -2930,7 +2949,10 @@ int treeListFunc ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * con
 	{
 		"delete", "configure", "add", "addBegin",
 		"addEnd", "getSelection", "setSelection", "onSelectionChanged",
-		"columnConfigure", "columnCget", "get",  "getfulllist",
+		"columnConfigure", "columnCget", "get",
+
+		"getfulllist",
+
 		"cellConfigure", "erase", "scrollToPosition", "collapse",
 		"expand", "getNumChildren", "coordsToPath", "setCursor",
 		"getReference", "deleteReference", "referenceToPath", "class",
@@ -2942,7 +2964,10 @@ int treeListFunc ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * con
 	{
 		DeleteIdx, ConfigureIdx, AddIdx, BeginIdx,
 		EndIdx, GetSelectionIdx, SetSelectionIdx, OnSelectionChangedIdx,
-		ColumnConfigureIdx, ColumnCgetIdx, GetIdx, GetFullListIdx,
+		ColumnConfigureIdx, ColumnCgetIdx, GetIdx,
+
+		GetFullListIdx,
+
 		CellConfigureIdx, EraseIdx, ScrollToPosIdx, CollapseIdx,
 		ExpandIdx, GetNumChildren, CoordsToPathIdx, SetCursorIdx,
 		GetReferenceIdx, DeleteReferenceIdx, ReferenceToPathIdx, ClassIdx,

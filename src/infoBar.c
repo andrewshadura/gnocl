@@ -82,6 +82,7 @@ static int gnoclOptOnResponse ( Tcl_Interp *interp, GnoclOption *opt, GObject *o
 static const int childIdx = 0;
 static const int typeIdx = 1;
 static const int defaultIdx = 2;
+static const int dataIdx = 3;
 
 static GnoclOption infoBarOptions[] =
 {
@@ -89,13 +90,13 @@ static GnoclOption infoBarOptions[] =
 	{ "-child", GNOCL_STRING, NULL },
 	{ "-type", GNOCL_STRING, NULL },
 	{ "-default", GNOCL_STRING, NULL },
+	{ "-data", GNOCL_OBJ, "", gnoclOptData },
 
 	/* signal handlers */
 	{ "-onClose", GNOCL_OBJ, "close", gnoclOptOnClose },
 	{ "-onResponse", GNOCL_OBJ, "response", gnoclOptOnResponse },
 
 	/* inherited options */
-	{ "-data", GNOCL_OBJ, "", gnoclOptData },
 	{ "-visible", GNOCL_BOOL, "visible" },
 	{ "-name", GNOCL_STRING, "name" },
 	{ "-onShowHelp", GNOCL_OBJ, "", gnoclOptOnShowHelp },

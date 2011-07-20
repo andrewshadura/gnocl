@@ -12,6 +12,7 @@
 
 /*
    History:
+   2011-07-03: cget -data now works properly
    2011-06-30: added options
    					-dropTargets, -dragTargets, -onDropData, -onDragData
    2011-04-03: added options
@@ -69,6 +70,7 @@ static const int valueIdx         = 2;
 static const int cursorIdx        = 3;
 static const int primaryIconIdx   = 4;
 static const int secondaryIconIdx = 5;
+static const int dataIdx          = 6;
 
 static GnoclOption entryOptions[] =
 {
@@ -80,7 +82,7 @@ static GnoclOption entryOptions[] =
 	{ "-primaryIcon", GNOCL_OBJ, NULL },      /* 4 */
 	{ "-secondaryIcon", GNOCL_OBJ, NULL },    /* 5 */
 
-	{ "-data", GNOCL_OBJ, "", gnoclOptData },
+	{ "-data", GNOCL_OBJ, "", gnoclOptData }, /* 6 */
 	{ "-name", GNOCL_STRING, "name" },
 
 	{ "-hasFocus", GNOCL_BOOL, "has-focus" },
@@ -582,10 +584,7 @@ static int configure (	Tcl_Interp *interp,	EntryParams *para,	GnoclOption option
 /**
 \brief
 **/
-static int cget (
-	Tcl_Interp *interp,
-	EntryParams *para,
-	GnoclOption options[], int idx )
+static int cget ( Tcl_Interp *interp, EntryParams *para, GnoclOption options[], int idx )
 {
 #ifdef DEBUG_ENTRY
 	printf ( "entry/staticFuncs/cget\n" );
@@ -593,7 +592,12 @@ static int cget (
 
 	Tcl_Obj *obj = NULL;
 
-	if ( idx == variableIdx )
+	if ( idx == dataIdx )
+	{
+		obj = Tcl_NewStringObj ( g_object_get_data ( para->entry, "gnocl::data" ), -1 );
+	}
+
+	else if ( idx == variableIdx )
 	{
 		obj = Tcl_NewStringObj ( para->variable, -1 );
 	}
@@ -914,7 +918,6 @@ int gnoclEntryCmd (	ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * con
 	}
 
 	para = g_new ( EntryParams, 1 );
-
 	para->entry = GTK_ENTRY ( gtk_entry_new( ) );
 	//para->entry = GTK_ENTRY ( gtk_undo_entry_new() );
 
@@ -924,7 +927,6 @@ int gnoclEntryCmd (	ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * con
 	para->inSetVar = 0;
 
 	gtk_entry_set_activates_default ( para->entry, TRUE );
-
 	gtk_widget_show ( GTK_WIDGET ( para->entry ) );
 
 	/* add completion */

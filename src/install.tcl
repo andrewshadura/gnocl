@@ -76,6 +76,7 @@ switch -- $what {
            foreach file $files {
                puts "Copying $file"
                file copy $file $destDir
+               exec chmod 444 $file
                }
         }
    "uninstall" {
