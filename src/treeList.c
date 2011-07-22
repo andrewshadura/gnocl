@@ -515,7 +515,7 @@ static void deleteCellData ( gpointer data )
 }
 
 /**
-\brief
+\brief	Return value from a column for given row iterator.
 **/
 static Tcl_Obj *getObjFromCol ( GtkTreeModel *model, int colNo, GtkTreeIter *iter )
 {
@@ -2888,8 +2888,8 @@ static int addRows ( TreeListParams * para, Tcl_Interp * interp, int objc, Tcl_O
 {
 	GnoclOption options[] =
 	{
-		{ " - singleRow", GNOCL_BOOL, NULL },    /* 0 */
-		{ " - singleColumn", GNOCL_BOOL, NULL }, /* 1 */
+		{ "-singleRow", GNOCL_BOOL, NULL },    /* 0 */
+		{ "-singleColumn", GNOCL_BOOL, NULL }, /* 1 */
 		{ NULL }
 	};
 	const int singleRowIdx = 0;
@@ -2916,24 +2916,28 @@ static int addRows ( TreeListParams * para, Tcl_Interp * interp, int objc, Tcl_O
 		return TCL_ERROR;
 	}
 
-	if ( gnoclParseOptions ( interp, objc - offset, objv + offset, options )
-			!= TCL_OK )
+	if ( gnoclParseOptions ( interp, objc - offset, objv + offset, options ) != TCL_OK )
 	{
 		gnoclClearOptions ( options );
 		return TCL_ERROR;
 	}
 
 	if ( options[singleRowIdx].status == GNOCL_STATUS_CHANGED )
+	{
 		singleRow = options[singleRowIdx].val.b;
+	}
 
 	if ( options[singleColIdx].status == GNOCL_STATUS_CHANGED )
+	{
 		singleCol = options[singleColIdx].val.b;
+	}
 
 	gnoclClearOptions ( options );
 
 	if ( para->isTree )
-		return addTreeChildren ( para, interp, objv[2], objv[3], singleRow,
-								 singleCol, begin );
+	{
+		return addTreeChildren ( para, interp, objv[2], objv[3], singleRow, singleCol, begin );
+	}
 
 	return addListChildren ( para, interp, objv[2], singleRow, singleCol, begin );
 }

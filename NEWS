@@ -1,6 +1,8 @@
 2011-07-20
 	gnocl::text
-		added support for pango formatted markup strings
+		o insert command now detects pango markup text
+		o new option
+			-markupTags
 
 2011-07-03
 	gnocl::entry

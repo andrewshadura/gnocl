@@ -13,7 +13,8 @@
 
 /*
    History:
-   2011-07  added insert command detects pango markup text
+   2011-07  insert command now detects pango markup text
+			added -markupTags
    2011-06  added tag -underline option 'error'
    2011-06  added -hasToolTip, -onQueryTooltip,
    			added tag options
@@ -85,6 +86,8 @@
 
 static int textFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *  const objv[] );
 static int cget ( Tcl_Interp *interp, GtkTextView *text, GnoclOption options[], int idx );
+static void gnoclGetTagRanges ( GtkTextBuffer *buffer, gchar *tagName );
+
 
 /**
 \brief	Return a Tcl list of text attributes.
@@ -474,6 +477,45 @@ static gboolean doOnTextEnterLeave ( GtkWidget *widget, GdkEventMotion *event, 	
 	return 0;
 }
 
+
+/**
+\brief	Add default set of tag with pango compliant tagnames.
+**/
+static int gnoclOptMarkupTags ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
+{
+
+	assert ( strcmp ( opt->optName, "-markupTags" ) == 0 );
+
+	/* modify this to destroy tags */
+	if ( Tcl_GetString ( opt->val.obj ) == "0" )
+	{
+		return TCL_OK;
+	}
+
+	GtkTextBuffer *buffer = gtk_text_view_get_buffer ( GTK_TEXT_VIEW ( obj ) );
+
+	gtk_text_buffer_create_tag ( buffer, "b", "weight", PANGO_WEIGHT_BOLD, NULL ); //bold
+
+	//GtkTextTag *tag gtk_text_tag_new (b);
+
+	//g_object_set ( tag, "weight", PANGO_WEIGHT_BOLD, NULL );
+
+	gtk_text_buffer_create_tag ( buffer, "i", "style", PANGO_STYLE_ITALIC, NULL ); //italic
+	gtk_text_buffer_create_tag ( buffer, "s", "strikethrough", 1, NULL ); //strikethrough
+	gtk_text_buffer_create_tag ( buffer, "u", "underline", PANGO_UNDERLINE_SINGLE, NULL ); //underline
+
+	/*
+	gtk_text_buffer_create_tag (buffer, "sub","font", font, NULL);  //bold
+	gtk_text_buffer_create_tag (buffer, "sup","font", font, NULL);  //bold
+	gtk_text_buffer_create_tag (buffer, "small","font", font, NULL);  //bold
+	*/
+	gtk_text_buffer_create_tag ( buffer, "tt", "font", "Monospace", NULL ); //bold
+
+
+	return TCL_OK;
+
+}
+
 /**
 \brief
 **/
@@ -637,6 +679,8 @@ static GnoclOption textOptions[] =
 	"tabs"                     PangoTabArray*        : Read / Write
 	"wrap-mode"                GtkWrapMode           : Read / Write
 	*/
+
+	{ "-markupTags", GNOCL_OBJ, "", gnoclOptMarkupTags },
 
 	{ "-accepttTab", GNOCL_BOOL, "accepts-tab" },
 	{ "-cursorVisible", GNOCL_BOOL, "cursor_visible" },
@@ -1487,12 +1531,14 @@ int tagCmd ( GtkTextBuffer *buffer, Tcl_Interp *interp, int objc, Tcl_Obj *  con
 	{
 		"cget", "create", "configure", "apply",
 		"delete", "remove", "get", "clear", "set",
+		"ranges",
 		NULL
 	};
 	enum cmdIdx
 	{
 		CgetIdx, CreateIdx, ConfigureIdx, ApplyIdx,
-		DeleteIdx, RemoveIdx, GetIdx, ClearIdx, SetIdx
+		DeleteIdx, RemoveIdx, GetIdx, ClearIdx, SetIdx,
+		RangesIdx
 	};
 
 	/*  see also list.c */
@@ -1599,10 +1645,16 @@ int tagCmd ( GtkTextBuffer *buffer, Tcl_Interp *interp, int objc, Tcl_Obj *  con
 
 	switch ( idx )
 	{
+		case RangesIdx:
+			{
+				gnoclGetTagRanges ( buffer, Tcl_GetString ( objv[cmdNo+1] ) );
+			}
+			break;
 		case SetIdx:
 			{
 				/* control tag option application settings */
 			}
+			break;
 		case ClearIdx:
 			{
 				GtkTextTagTable *tagtable = gtk_text_buffer_get_tag_table ( buffer );
@@ -2074,6 +2126,34 @@ static int cget ( Tcl_Interp *interp, GtkTextView *text, GnoclOption options[], 
 
 	return gnoclCgetNotImplemented ( interp, options + idx );
 }
+
+/**
+\brief	Return a list of all occuranances of a named tag within a buffer
+**/
+static void gnoclGetTagRanges ( GtkTextBuffer *buffer, gchar *tagName )
+{
+#ifdef DEBUG_TEXT
+	g_print ( "%s %s\n", __FUNCTION__, tagName );
+#endif
+
+
+	GtkTextIter iter;
+	GtkTextTag *tag;
+	GtkTextTagTable *table;
+	gint cc;
+
+	gtk_text_buffer_get_start_iter ( buffer, &iter );
+	table = gtk_text_buffer_get_tag_table ( buffer );
+	tag = gtk_text_tag_table_lookup ( table, tagName );
+
+
+	while ( ( gtk_text_iter_forward_to_tag_toggle ( &iter, tag ) ) == TRUE )
+	{
+		cc = gtk_text_iter_get_offset ( &iter );
+		printf ( "cc: %d\n", cc );
+	}
+}
+
 /**
      ->   0: Ok
         1: delete chosen
@@ -2094,13 +2174,17 @@ static int cget ( Tcl_Interp *interp, GtkTextView *text, GnoclOption options[], 
 \todo       How do I get the results of this back to the calling function?
             Data is assigned to the memory block referenced by gpointer data.
 **/
+
+
 static void gnoclGetTagSettings ( GtkTextTag *tag, gpointer data )
 {
 #ifdef DEBUG_TEXT
 	g_print ( "%s\n", __FUNCTION__ );
 #endif
 
+
 	char **str = data;
+
 
 	/*  modify the memory allocation here to use malloc and free to release it */
 
@@ -2122,6 +2206,15 @@ static void gnoclGetTagSettings ( GtkTextTag *tag, gpointer data )
 	/*  get the info on the GtkTextTag union form gtktexttag.h */
 	strcat ( tmp, "" );
 
+	/* tags created as pango markup strings have no name, so create one */
+	/*
+	static gint i=1;
+	if ( tag->name == NULL ) {
+		sprintf (tmp2,"pango%03d",i);
+		tag->name = tmp2;
+		i++;
+	}
+	*/
 	sprintf ( tmp2, "%s { ", tag->name );
 
 	strcat ( tmp, tmp2 );
@@ -2332,6 +2425,7 @@ static void gnoclGetTagSettings ( GtkTextTag *tag, gpointer data )
 	//g_print ( "tmp >>> = %s\n", tmp );
 #endif
 	*str = tmp;
+
 }
 
 /**
@@ -3168,8 +3262,8 @@ int gnoclTextCommand ( GtkTextBuffer *buffer, Tcl_Interp *interp, int objc, Tcl_
 
 				static const char *cmds[] =
 				{
-					"-all", "-tags", "-text",
-					"-window", "-images", "-marks",
+					"all", "tags", "text",
+					"window", "images", "marks",
 					NULL
 				};
 

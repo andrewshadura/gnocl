@@ -24,6 +24,9 @@
  * hope that this code will be in official version of gtk soon
  */
 
+/*
+ * WJG (21/07/11) Added automatic tag naming; i.e. pango001, pango002 etc.,
+ */
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -42,6 +45,9 @@ gtk_text_buffer_real_insert_markup ( GtkTextBuffer *buffer,
 	GtkTextMark        *mark;
 	GError             *error = NULL;
 	gchar              *text;
+
+	static gint i = 1;
+	static char tagname[50];
 
 	g_return_if_fail ( GTK_IS_TEXT_BUFFER ( buffer ) );
 	g_return_if_fail ( textiter != NULL );
@@ -81,7 +87,10 @@ gtk_text_buffer_real_insert_markup ( GtkTextBuffer *buffer,
 		if ( end == G_MAXINT ) /* last chunk */
 			end = start - 1; /* resulting in -1 to be passed to _insert */
 
-		tag = gtk_text_tag_new ( NULL );
+		sprintf ( tagname, "pango%03d", i );
+		i++;
+
+		tag = gtk_text_tag_new ( tagname );
 
 		if ( ( attr = pango_attr_iterator_get ( paiter, PANGO_ATTR_LANGUAGE ) ) )
 			g_object_set ( tag, "language", pango_language_to_string ( ( ( PangoAttrLanguage* ) attr )->value ), NULL );
