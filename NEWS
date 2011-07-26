@@ -1,3 +1,8 @@
+2011-07-26
+    gnocl::text
+        o new tag sub-commands
+            names, raise, lower
+            
 2011-07-20
 	gnocl::text
 		o insert command now detects pango markup text

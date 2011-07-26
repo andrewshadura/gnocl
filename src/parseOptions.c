@@ -294,8 +294,7 @@ error:
 								 ( numAbbrev > 1 ) ? "ambiguous " : "bad ", msg, " \"",
 								 key, "\": must be ", *tablePtr, ( char * ) NULL );
 
-		for ( entryPtr = ( char ** ) ( ( long ) tablePtr + offset ), count = 0;
-				*entryPtr != NULL;
+		for ( entryPtr = ( char ** ) ( ( long ) tablePtr + offset ), count = 0; *entryPtr != NULL;
 				entryPtr = ( char ** ) ( ( long ) entryPtr + offset ), count++ )
 		{
 			if ( ( * ( ( char ** ) ( ( long ) entryPtr + offset ) ) ) == NULL )
@@ -5690,20 +5689,29 @@ int gnoclCget (	Tcl_Interp *interp, int objc, Tcl_Obj * const objv[], GObject *g
 }
 
 /**
+\note   Should this be move to the text.c module?
 **/
 int gnoclTagCget (	Tcl_Interp *interp, int objc, Tcl_Obj * const objv[], GObject *gObj, GnoclOption *opts, int *idx )
 {
 
+#ifdef DEBUG_TEXT
 	g_print ( "%s 1) option = %s\n", __FUNCTION__, Tcl_GetString ( objv[4] ) );
+#endif
+
+
 
 	if ( objc != 5 )
 	{
+#ifdef DEBUG_TEXT
 		g_print ( "%s 2)\n", __FUNCTION__ );
+#endif
 		Tcl_WrongNumArgs ( interp, 5, objv, "option" );
 		return GNOCL_CGET_ERROR;
 	}
 
+#ifdef DEBUG_TEXT
 	g_print ( "%s 3) %s %d\n", __FUNCTION__, Tcl_GetString ( objv[4] ), idx );
+#endif
 	return gnoclCgetOne ( interp, objv[4], gObj, opts, idx );
 }
 

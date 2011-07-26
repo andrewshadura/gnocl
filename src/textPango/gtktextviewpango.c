@@ -34,6 +34,10 @@
 
 #include "gtktextviewpango.h"
 
+/**
+\brief
+\note   this function attemps to concatenate all pango attributes into a single string.
+**/
 static void
 gtk_text_buffer_real_insert_markup ( GtkTextBuffer *buffer,
 									 GtkTextIter   *textiter,
@@ -55,7 +59,9 @@ gtk_text_buffer_real_insert_markup ( GtkTextBuffer *buffer,
 	g_return_if_fail ( gtk_text_iter_get_buffer ( textiter ) == buffer );
 
 	if ( *markup == '\000' )
+	{
 		return;
+	}
 
 	if ( !pango_parse_markup ( markup, -1, 0, &attrlist, &text, NULL, &error ) )
 	{
@@ -74,6 +80,8 @@ gtk_text_buffer_real_insert_markup ( GtkTextBuffer *buffer,
 	/* create mark with right gravity */
 	mark = gtk_text_buffer_create_mark ( buffer, NULL, textiter, FALSE );
 
+	/* handle span attributes */
+
 	paiter = pango_attr_list_get_iterator ( attrlist );
 
 	do
@@ -84,8 +92,10 @@ gtk_text_buffer_real_insert_markup ( GtkTextBuffer *buffer,
 
 		pango_attr_iterator_range ( paiter, &start, &end );
 
-		if ( end == G_MAXINT ) /* last chunk */
+		if ( end == G_MAXINT )   /* last chunk */
+		{
 			end = start - 1; /* resulting in -1 to be passed to _insert */
+		}
 
 		sprintf ( tagname, "pango%03d", i );
 		i++;
@@ -93,28 +103,44 @@ gtk_text_buffer_real_insert_markup ( GtkTextBuffer *buffer,
 		tag = gtk_text_tag_new ( tagname );
 
 		if ( ( attr = pango_attr_iterator_get ( paiter, PANGO_ATTR_LANGUAGE ) ) )
+		{
 			g_object_set ( tag, "language", pango_language_to_string ( ( ( PangoAttrLanguage* ) attr )->value ), NULL );
+		}
 
 		if ( ( attr = pango_attr_iterator_get ( paiter, PANGO_ATTR_FAMILY ) ) )
+		{
 			g_object_set ( tag, "family", ( ( PangoAttrString* ) attr )->value, NULL );
+		}
 
 		if ( ( attr = pango_attr_iterator_get ( paiter, PANGO_ATTR_STYLE ) ) )
+		{
 			g_object_set ( tag, "style", ( ( PangoAttrInt* ) attr )->value, NULL );
+		}
 
 		if ( ( attr = pango_attr_iterator_get ( paiter, PANGO_ATTR_WEIGHT ) ) )
+		{
 			g_object_set ( tag, "weight", ( ( PangoAttrInt* ) attr )->value, NULL );
+		}
 
 		if ( ( attr = pango_attr_iterator_get ( paiter, PANGO_ATTR_VARIANT ) ) )
+		{
 			g_object_set ( tag, "variant", ( ( PangoAttrInt* ) attr )->value, NULL );
+		}
 
 		if ( ( attr = pango_attr_iterator_get ( paiter, PANGO_ATTR_STRETCH ) ) )
+		{
 			g_object_set ( tag, "stretch", ( ( PangoAttrInt* ) attr )->value, NULL );
+		}
 
 		if ( ( attr = pango_attr_iterator_get ( paiter, PANGO_ATTR_SIZE ) ) )
+		{
 			g_object_set ( tag, "size", ( ( PangoAttrInt* ) attr )->value, NULL );
+		}
 
 		if ( ( attr = pango_attr_iterator_get ( paiter, PANGO_ATTR_FONT_DESC ) ) )
+		{
 			g_object_set ( tag, "font-desc", ( ( PangoAttrFontDesc* ) attr )->desc, NULL );
+		}
 
 		if ( ( attr = pango_attr_iterator_get ( paiter, PANGO_ATTR_FOREGROUND ) ) )
 		{
@@ -139,18 +165,26 @@ gtk_text_buffer_real_insert_markup ( GtkTextBuffer *buffer,
 		}
 
 		if ( ( attr = pango_attr_iterator_get ( paiter, PANGO_ATTR_UNDERLINE ) ) )
+		{
 			g_object_set ( tag, "underline", ( ( PangoAttrInt* ) attr )->value, NULL );
+		}
 
 		if ( ( attr = pango_attr_iterator_get ( paiter, PANGO_ATTR_STRIKETHROUGH ) ) )
+		{
 			g_object_set ( tag, "strikethrough", ( gboolean ) ( ( ( PangoAttrInt* ) attr )->value != 0 ), NULL );
+		}
 
 		if ( ( attr = pango_attr_iterator_get ( paiter, PANGO_ATTR_RISE ) ) )
+		{
 			g_object_set ( tag, "rise", ( ( PangoAttrInt* ) attr )->value, NULL );
+		}
 
 		/* PANGO_ATTR_SHAPE cannot be defined via markup text */
 
 		if ( ( attr = pango_attr_iterator_get ( paiter, PANGO_ATTR_SCALE ) ) )
+		{
 			g_object_set ( tag, "scale", ( ( PangoAttrFloat* ) attr )->value, NULL );
+		}
 
 		gtk_text_tag_table_add ( gtk_text_buffer_get_tag_table ( buffer ), tag );
 
