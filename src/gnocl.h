@@ -619,7 +619,6 @@ Tcl_ObjCmdProc gnoclWinfoCmd;
 Tcl_ObjCmdProc gnoclScreenCmd;
 Tcl_ObjCmdProc gnoclPrintCmd;
 Tcl_ObjCmdProc gnoclPixBufCmd;
-Tcl_ObjCmdProc gnoclFileFilterCmd;
 Tcl_ObjCmdProc gnoclPixMapCmd;
 Tcl_ObjCmdProc gnoclClr2RGBCmd;
 Tcl_ObjCmdProc gnoclRGB2HexCmd;
@@ -705,6 +704,7 @@ Tcl_ObjCmdProc gnoclBindCmd;
 Tcl_ObjCmdProc gnoclStockItemCmd;
 Tcl_ObjCmdProc gnoclSoundCmd;
 Tcl_ObjCmdProc gnoclPointerCmd;
+Tcl_ObjCmdProc gnoclExecCmd;
 Tcl_ObjCmdProc gnoclCairoCmd;
 
 #ifdef GNOCL_USE_GNOME

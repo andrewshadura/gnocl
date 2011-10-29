@@ -373,7 +373,7 @@ static int setVariable ( EntryParams *para, const char *val )
 \brief
     Function associated with the widget.
 */
-static void changedFunc ( GtkWidget *widget,	gpointer data )
+static void changedFunc ( GtkWidget *widget, gpointer data )
 {
 #ifdef DEBUG_ENTRY
 	printf ( "entry/staticFuncs/changedFunc\n" );
@@ -395,7 +395,6 @@ static void destroyFunc (
 #ifdef DEBUG_ENTRY
 	printf ( "entry/staticFuncs/destroyFunc\n" );
 #endif
-
 
 	EntryParams *para = ( EntryParams * ) data;
 

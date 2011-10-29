@@ -12,6 +12,7 @@
 
 /*
    History:
+   2011-11: completed support for file filters, now accepts multiple filters.
    2010-07: merged contents of fileChooserDialog.c with fileChooser.c
    2010-01: deprecated -action option "openFolder" in favor of Gtk compliant "selectFolder"
    2009-12: module renamed from fileChooser,c to fileChooserDialog.c
@@ -35,14 +36,60 @@
 int gnoclOptCurrentName ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret );
 static int GnoclOptMiscFp ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret );
 
+/**
+\brief
+**/
+void addFilterPatterns (Tcl_Interp *interp, GtkFileFilter *filter, gchar *pattern) {
+	int argc, code, i;
+	char *string;
+	char **argv;	
 
-int gnoclOptFileFilter (	Tcl_Interp *interp,	GnoclOption *opt,	GObject *obj,	Tcl_Obj **ret )
+	code = Tcl_SplitList ( interp, pattern, &argc, &argv );
+
+	for ( i = 0; i < argc; i++ )
+	{
+		/* process patterns */
+		//gtk_file_filter_add_pattern (GtkFileFilter *filter, const gchar *pattern);
+		gtk_file_filter_add_pattern (filter, argv[i]);
+
+	}
+
+	Tcl_Free ( ( char * ) argv );
+
+}
+
+/**
+\brief
+**/
+int gnoclOptFileFilters (	Tcl_Interp *interp,	GnoclOption *opt,	GObject *obj,	Tcl_Obj **ret )
 {
+#ifdef DEBUG_FILECHOOSER
+	g_print ( "$s\n",__FUNCTION__ );
+#endif
+	int argc, code, i;
+	char *string;
+	char **argv;
+
+	code = Tcl_SplitList ( interp, Tcl_GetString ( opt->val.obj ), &argc, &argv );
 
 	GtkFileFilter *filter;
-	filter = gnoclFileFilterFromName ( Tcl_GetString ( opt->val.obj ) );
 
-	gtk_file_chooser_add_filter ( GTK_FILE_CHOOSER ( obj ), filter );
+	/* read pairs */
+	for ( i = 0; i < argc; i+=2 )
+	{
+		//filter = gnoclFileFilterFromName ( argv[i] );
+		/* filter name */
+		filter = gtk_file_filter_new ();
+		gtk_file_filter_set_name (filter, argv[i]);		
+		
+		addFilterPatterns(interp, filter, argv[i+1]);
+		
+		/* add filter to the dialog */
+		gtk_file_chooser_add_filter ( GTK_FILE_CHOOSER ( obj ), filter );
+
+	}
+
+	Tcl_Free ( ( char * ) argv );
 
 	return TCL_OK;
 }
@@ -64,6 +111,9 @@ static void fileFilter ( GtkWidget *widget )
 	gtk_file_chooser_add_filter ( GTK_FILE_CHOOSER ( widget ), filter );
 }
 
+/**
+\brief
+**/
 static int doFileSelectionChanged ( GtkFileChooser *chooser, gpointer user_data )
 {
 	GnoclCommandData *cs = ( GnoclCommandData * ) user_data;
@@ -79,10 +129,75 @@ static int doFileSelectionChanged ( GtkFileChooser *chooser, gpointer user_data 
 	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
 }
 
+/**
+\brief
+**/
+static GtkFileChooserConfirmation doOverwriteConfirm ( GtkFileChooser *chooser, gpointer user_data )
+{
+  char *uri;
+  uri = gtk_file_chooser_get_uri (chooser);
+
+	GnoclCommandData *cs = ( GnoclCommandData * ) user_data;
+
+	GnoclPercSubst ps[] =
+	{
+		{ 'f', GNOCL_STRING },  /* filename */
+		{ 'a', GNOCL_STRING },  /* action */
+		{ 0 }
+	};
+
+	ps[0].val.str = gtk_file_chooser_get_uri (chooser);
+	ps[1].val.str = "action";
+	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
+
+/*
+if (is_uri_read_only (uri))
+    {
+      if (user_wants_to_replace_read_only_file (uri))
+        return GTK_FILE_CHOOSER_CONFIRMATION_ACCEPT_FILENAME;
+      else
+        return GTK_FILE_CHOOSER_CONFIRMATION_SELECT_AGAIN;
+    } else
+*/
+      return GTK_FILE_CHOOSER_CONFIRMATION_CONFIRM; // fall back to the default dialog
+
+
+/*
+  if (is_uri_read_only (uri))
+    {
+      if (user_wants_to_replace_read_only_file (uri))
+        return GTK_FILE_CHOOSER_CONFIRMATION_ACCEPT_FILENAME;
+      else
+        return GTK_FILE_CHOOSER_CONFIRMATION_SELECT_AGAIN;
+    } else
+      return GTK_FILE_CHOOSER_CONFIRMATION_CONFIRM; // fall back to the default dialog
+*/
+
+}
+
+
+/**
+\brief
+**/
+int gnoclOptOverwriteConfirm  ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
+{
+#ifdef DEBUG_FILECHOOSER
+	g_print ( "$s\n",__FUNCTION__ );
+#endif
+
+	assert ( strcmp ( opt->optName, "-onConfirmOverwrite" ) == 0 );
+
+	return gnoclConnectOptCmd ( interp, obj, "confirm-overwrite", G_CALLBACK ( doOverwriteConfirm ), opt, NULL, ret );
+}
+
+
+/**
+\brief
+**/
 int gnoclOptFileSelectionChanged  ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
 #ifdef DEBUG_FILECHOOSER
-	g_print ( "gnoclOptFileSelectionChanged\n" );
+	g_print ( "$s\n",__FUNCTION__ );
 #endif
 
 	assert ( strcmp ( opt->optName, "-onSelectionChanged" ) == 0 );
@@ -109,7 +224,7 @@ static GnoclOption options[] =
 	{ "-createFolders", GNOCL_BOOL, "local-only" },
 	{ "-overwriteConfirm", GNOCL_BOOL, "do-overwrite-confirmation" },
 	{ "-previewLabel", GNOCL_BOOL,   "use-preview-label"},
-	{ "-onConfirmOverwrite", GNOCL_OBJ, "", NULL },
+	{ "-onConfirmOverwrite", GNOCL_OBJ, "", gnoclOptOverwriteConfirm },
 	{ "-onFolderChanged", GNOCL_OBJ, "", NULL },
 	{ "-onFileActivated", GNOCL_OBJ, "", NULL },
 	{ "-onSelectionChanged", GNOCL_OBJ, "", gnoclOptFileSelectionChanged },
@@ -124,7 +239,7 @@ static GnoclOption options[] =
 	{ "-showHidden", GNOCL_BOOL, "show-hidden" },
 	{ "-title", GNOCL_STRING, "title" },
 
-	{ "-fileFilter", GNOCL_OBJ, "", gnoclOptFileFilter},
+	{ "-fileFilters", GNOCL_OBJ, "", gnoclOptFileFilters},
 
 	/* variation specific options */
 	/* Dialog */
@@ -374,7 +489,6 @@ static Tcl_Obj *getFileList ( Tcl_Interp *interp, FileSelDialogParams *para )
 
 /**
 \brief
-\author
 **/
 #if 0
 static void onButtonFunc ( FileSelDialogParams *para, int isOk )
@@ -399,7 +513,6 @@ static void onButtonFunc ( FileSelDialogParams *para, int isOk )
 
 /**
 \brief
-\author
 **/
 static void onOkFunc ( GtkWidget *widget, gpointer data )
 {
@@ -408,7 +521,6 @@ static void onOkFunc ( GtkWidget *widget, gpointer data )
 
 /**
 \brief
-\author
 **/
 static void onCancelFunc ( GtkWidget *widget, gpointer data )
 {
@@ -641,7 +753,6 @@ cleanExit:
 
 /**
 \brief
-\author     William J Giddings
 **/
 static int configure ( Tcl_Interp *interp, GtkWidget *widget, GnoclOption options[] )
 {
@@ -650,7 +761,6 @@ static int configure ( Tcl_Interp *interp, GtkWidget *widget, GnoclOption option
 
 /**
 \brief
-\author     William J Giddings
 **/
 static int fc_cget ( Tcl_Interp *interp, GtkWidget *widget, GnoclOption options[], int idx )
 {
@@ -659,7 +769,6 @@ static int fc_cget ( Tcl_Interp *interp, GtkWidget *widget, GnoclOption options[
 
 /**
 \brief
-\author     William J Giddings
 **/
 int fileChooserFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
@@ -753,7 +862,6 @@ int fileChooserFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * c
 
 /**
 \brief
-\author     William J Giddings
 **/
 int gnoclFileChooserCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
@@ -783,7 +891,7 @@ int gnoclFileChooserCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj
 	widget = gtk_file_chooser_widget_new ( GTK_FILE_CHOOSER_ACTION_SAVE ) ;
 
 
-	//fileFilter ( widget );
+	fileFilter ( widget );
 
 	gtk_widget_show ( GTK_WIDGET ( widget ) );
 

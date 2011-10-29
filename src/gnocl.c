@@ -663,7 +663,6 @@ static GnoclCmd commands[] =
 	{ "winfo", gnoclWinfoCmd },
 	{ "print", gnoclPrintCmd },
 	{ "pixBuf", gnoclPixBufCmd },
-	{ "fileFilter", gnoclFileFilterCmd },
 	{ "pixMap", gnoclPixMapCmd },
 	{ "draw", gnoclCairoCmd },
 
@@ -752,6 +751,7 @@ static GnoclCmd commands[] =
 	/* miscellaneous funcs */
 	{ "signalStop", gnoclSignalStopCmd },
 	{ "pointer", gnoclPointerCmd },
+	{ "exec", gnoclExecCmd },
 	{ "signalEmit", gnoclSignalEmitCmd },
 	{ "beep", gnoclBeepCmd },
 //	{ "string", gnoclStringCmd },

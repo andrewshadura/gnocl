@@ -824,7 +824,6 @@ int gnoclOptWindowTypeHint ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj,
 static int configure ( Tcl_Interp *interp, GtkWindow *window, GnoclOption options[] )
 {
 
-
 	/* resize window in proportion to the screen */
 	if ( windowOptions[setSizeIdx].status == GNOCL_STATUS_CHANGED )
 	{
@@ -833,15 +832,13 @@ static int configure ( Tcl_Interp *interp, GtkWindow *window, GnoclOption option
 		gint height = 0;
 		GdkScreen *screen;
 
-
 		screen = gdk_screen_get_default();
 
 		width = gdk_screen_get_width ( screen );
 		height = gdk_screen_get_height ( screen );
 
-
-		g_print ( "size = %f\n", windowOptions[setSizeIdx].val.d );
-		g_print ( "w = %f ; h = %f\n", windowOptions[setSizeIdx].val.d * ( float ) width , windowOptions[setSizeIdx].val.d * ( float ) height );
+//		g_print ( "size = %f\n", windowOptions[setSizeIdx].val.d );
+//		g_print ( "w = %f ; h = %f\n", windowOptions[setSizeIdx].val.d * ( float ) width , windowOptions[setSizeIdx].val.d * ( float ) height );
 
 		float w, h;
 
@@ -851,7 +848,7 @@ static int configure ( Tcl_Interp *interp, GtkWindow *window, GnoclOption option
 		width = ( gint ) w;
 		height = ( gint ) h;
 
-		g_print ( "width = %d ; height = %d\n", width, height );
+//		g_print ( "width = %d ; height = %d\n", width, height );
 
 		gtk_window_resize ( window, width, height );
 
@@ -961,7 +958,7 @@ int windowFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const 
 		"center", "centre", "beep", "class",
 		"reshow", "geometry", "pointer", "reposition",
 		"grab", "ungrab", "hide", "show", "jitter",
-		"hasFocus", "setFocus", "present",
+		"hasFocus", "setFocus", "grabFocus", "present",
 		NULL
 	};
 
@@ -971,7 +968,7 @@ int windowFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const 
 		CenterIdx, CentreIdx, BeepIdx, ClassIdx,
 		ReshowIdx, GeometryIdx, PointerIdx, RepositionIdx,
 		GrabIdx, UngrabIdx, HideIdx, ShowIdx, JitterIdx,
-		HasFocusIdx, SetFocusIdx, PresentIdx,
+		HasFocusIdx, SetFocusIdx, GrabFocusIdx, PresentIdx,
 	};
 
 	GtkWindow *window = GTK_WINDOW ( data );
@@ -990,6 +987,8 @@ int windowFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const 
 
 	switch ( idx )
 	{
+
+
 		case PresentIdx:
 			{
 				gtk_window_present ( window );
@@ -1004,6 +1003,7 @@ int windowFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const 
 				GtkWidget *widget;
 
 				widget = gnoclGetWidgetFromName ( Tcl_GetString ( objv[2] ), interp );
+
 
 				gtk_window_set_focus ( window, widget );
 
@@ -1022,6 +1022,18 @@ int windowFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const 
 				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( name, -1 ) );
 			}
 			break;
+		case GrabFocusIdx:
+			{
+				GtkWidget *widget;
+
+				widget = gnoclGetWidgetFromName ( Tcl_GetString ( objv[2] ), interp );
+
+				gtk_widget_grab_focus ( widget );
+
+
+			}
+			break;
+
 		case JitterIdx:
 			{
 				gint x, y, i, j;

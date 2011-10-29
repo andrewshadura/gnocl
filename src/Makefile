@@ -115,6 +115,7 @@ GTK_OBJ := \
 	table.o \
 	text.o \
 	textBuffer.o \
+    textTag.o \
 	./textPango/gtktextviewpango.o \
 	./textUndo/undo_manager.o \
 	./textUndo/undo_view.o \

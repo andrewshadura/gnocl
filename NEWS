@@ -1,3 +1,12 @@
+2011-11-27
+	gnocl::fileChooserDialog
+		o new option -fileFilters
+
+2011-08-20
+    gnocl::exec
+        o new command, similar to Tcl exec but allows script execution
+          when background task exits.
+
 2011-07-26
     gnocl::text
         o new tag sub-commands

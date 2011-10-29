@@ -12,6 +12,7 @@
 
 /*
    History:
+   2011-08: added gnocl::exec
    2010-04: added gnocl::sound moved to gnome package
    2010-10: added gnocl::stockItem
    2010-08: added gnocl::pointer
@@ -88,6 +89,33 @@
 #include <string.h>
 #include <ctype.h>
 
+/*
+ * Modify this callback to present data to the Tcl interpreter
+ */
+static void post_process ( GPid pid, int status, gpointer data )
+{
+	printf ( "---------------------->Child is done\n" );
+}
+
+/*
+\brief  Spawn a background process.
+*/
+int gnoclExecCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
+{
+
+	GPid cpid;
+	char *com[] = {"./ls"};
+
+	g_print ( "cmd = %s\n", Tcl_GetString ( objv[1] ) );
+
+	if ( g_spawn_async ( NULL, com, NULL, G_SPAWN_DO_NOT_REAP_CHILD, NULL, NULL, &cpid, NULL ) )
+	{
+		printf ( "Child pid: %d\n", cpid );
+		g_child_watch_add ( cpid, ( GChildWatchFunc ) post_process, NULL );
+	}
+}
+
+
 /**
 \brief      Manipulate the screen pointer.
 
@@ -95,7 +123,7 @@ static int configure ( Tcl_Interp *interp, GtkImage *image, GnoclOption options[
 int gnoclGetStockItem ( Tcl_Obj *obj, Tcl_Interp *interp, GtkStockItem *sp )
 
 **/
-int gnoclPointerCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
+int gnoclPointerCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * const objv[] )
 {
 
 	static const char *cmd[] = { "warp", "set", NULL };
@@ -322,7 +350,7 @@ int gnoclSignalStopCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj
 }
 
 /**
-\brief      Perform an effective break, let the script decide what to do next.
+\brief      
 **/
 int gnoclSignalEmitCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * const objv[] )
 {

@@ -14,7 +14,7 @@
 /*
    History:
    2011-07  added tag sub-commands
-				names, raise, lower
+				lower, names, raise, settings
     		insert command now detects pango markup text
 			added -markupTags
    2011-06  added tag -underline option 'error'
@@ -73,9 +73,7 @@
    2002-05: transition to gtk 2.0: move from gtkText to gtkTextView
    2001-06: Begin of developement
 
-   TODO:
-    * set a clear pango mode, ie no other tags a can be created, non-deleted
-    * marks
+   TODO: marks
  */
 
 /**
@@ -90,222 +88,32 @@
 
 static int textFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *  const objv[] );
 static int cget ( Tcl_Interp *interp, GtkTextView *text, GnoclOption options[], int idx );
-static void gnoclGetTagRanges ( GtkTextBuffer *buffer, gchar *tagName );
-static void getTagName ( GtkTextTag *tag, gpointer data );
-static void gnoclGetTagProperties ( GtkTextTag * tag, Tcl_Obj *resList );
-
-
-static gint usemarkup = 0;
-
-/**
-\brief	Return text with Pango markup
-**/
-Tcl_Obj *getMarkUpString ( Tcl_Interp *interp, GtkTextBuffer *buffer, GtkTextIter *start, GtkTextIter *end )
-{
-#ifdef DEBUG_TEXT
-	g_print ( "%s usemarkup = %d\n", __FUNCTION__, usemarkup );
-#endif
-
-	Tcl_Obj *res;
-	//gchar *txt = NULL;
-
-	GtkTextIter *iter;
-	gunichar ch;
-	GSList *p, *onList, *offList;
-
-	gchar *tagName = NULL;
-	gchar *onTag = NULL;
-	gchar *offTag = NULL;
-
-	//txt = gtk_text_buffer_get_text ( buffer, start, end, 1 );
-
-	//res = Tcl_NewStringObj ( txt, -1 );
-	//g_free ( txt );
-
-	res = Tcl_NewStringObj ( "", 0 );
-
-	iter = gtk_text_iter_copy ( start );
-
-	/* parse each position in the selection */
-	while ( gtk_text_iter_equal ( iter, end ) == 0 )
-	{
-
-		/* process tagOff before any subsequent tagOn */
-		offList = gtk_text_iter_get_toggled_tags ( iter, 0 );
-
-		for ( p = offList; p != NULL; p = p->next )
-		{
-			tagName = ( GTK_TEXT_TAG ( p->data )->name );
-
-			/* handle overlapping tags, pango only allows nesting -WORKING HERE*/
-			if ( onTag != tagName  )
-			{
-				Tcl_AppendStringsToObj ( res, "</", onTag, ">", "</", tagName, ">", "<", onTag, ">", ( char * ) NULL );
-			}
-
-			else
-			{
-				Tcl_AppendStringsToObj ( res, "</", tagName, ">", ( char * ) NULL );
-				onTag = NULL;
-				offTag = NULL;
-			}
-
-			//offTag = tagName;
-
-		}
-
-		/* process tagOn */
-		onList = gtk_text_iter_get_toggled_tags ( iter, 1 );
-
-		for ( p = onList; p != NULL; p = p->next )
-		{
-			tagName = ( GTK_TEXT_TAG ( p->data )->name );
-
-			/* handle overlapping tags, pango only allows nesting -OK*/
-			if ( onTag != NULL && strcmp ( onTag, tagName ) == 0 )
-			{
-				Tcl_AppendStringsToObj ( res, "</", onTag, ">", "<", onTag, ">", "<", tagName, ">", ( char * ) NULL );
-			}
-
-			onTag = tagName;
-		}
-
-		/* get character */
-		ch = gtk_text_iter_get_char ( iter );
-		Tcl_AppendStringsToObj ( res, &ch, ( char * ) NULL );
-
-		/* turnOff span? */
-		gtk_text_iter_forward_char ( iter );
-
-		/* ensure all open markup tags are properly closed */
-		if  ( gtk_text_iter_equal ( iter, end ) )
-		{
-			offList = gtk_text_iter_get_toggled_tags ( iter, 0 );
-
-			for ( p = offList; p != NULL; p = p->next )
-			{
-				tagName = ( GTK_TEXT_TAG ( p->data )->name );
-
-				if ( strstr ( tagName, "=" ) )
-				{
-					Tcl_AppendStringsToObj ( res, "</span>", ( char * ) NULL );
-				}
-
-				else
-				{
-					Tcl_AppendStringsToObj ( res, "</", tagName, ">", ( char * ) NULL );
-				}
-
-
-			}
-
-		}
-
-	}
-
-	gtk_text_iter_free ( iter );
-
-
-#ifdef DEBUG_TEXT
-	g_print ( "done!\n" );
-#endif
-
-	return res;
-}
-
-
-/**
-\brief  Serialize the content of the textbuffer in an ascii format
-\note   Currently supports tags only.
-**/
-static Tcl_Obj *dumpAll ( Tcl_Interp *interp, GtkTextBuffer *buffer, GtkTextIter *start, GtkTextIter *end )
-{
-
-#ifdef DEBUG_TEXT
-	g_print ( "%s\n", __FUNCTION__ );
-#endif
-
-	Tcl_Obj *res;
-
-	GtkTextIter *iter;
-	gunichar ch;
-	GSList *p, *onList, *offList;
-
-	gchar *tagName = NULL;
-	gchar *onTag = NULL;
-	gchar *offTag = NULL;
-
-
-	res = Tcl_NewStringObj ( "", 0 );
-
-	iter = gtk_text_iter_copy ( start );
-
-	while ( gtk_text_iter_equal ( iter, end ) == 0 )
-	{
-		/* process tagOff before any subsequent tagOn */
-		offList = gtk_text_iter_get_toggled_tags ( iter, 0 );
-
-		for ( p = offList; p != NULL; p = p->next )
-		{
-			tagName = ( GTK_TEXT_TAG ( p->data )->name );
-			Tcl_AppendStringsToObj ( res, "</", tagName, ">", ( char * ) NULL );
-		}
-
-		/* process tagOn */
-		onList = gtk_text_iter_get_toggled_tags ( iter, 1 );
-
-		for ( p = onList; p != NULL; p = p->next )
-		{
-			tagName = ( GTK_TEXT_TAG ( p->data )->name );
-			Tcl_AppendStringsToObj ( res, "<", tagName, ">", ( char * ) NULL );
-		}
-
-		/* get character */
-		ch = gtk_text_iter_get_char ( iter );
-		Tcl_AppendStringsToObj ( res, &ch, ( char * ) NULL );
-
-		/* turnOff span? */
-		gtk_text_iter_forward_char ( iter );
-	}
-
-	gtk_text_iter_free ( iter );
-
-
-#ifdef DEBUG_TEXT
-	g_print ( "done!\n" );
-#endif
-
-	return res;
-}
-
-
-
 
 /**
 \brief	Return a Tcl list of text attributes.
-GtkJustification justification;
-GtkTextDirection direction;
-PangoFontDescription *font;
-gdouble font_scale;
-gint left_margin;
-gint indent;
-gint right_margin;
-gint pixels_above_lines;
-gint pixels_below_lines;
-gint pixels_inside_wrap;
-PangoTabArray *tabs;
-GtkWrapMode wrap_mode;
-PangoLanguage *language;
-guint invisible : 1;
-guint bg_full_height : 1;
-guint editable : 1;
-guint realized : 1;
+	GtkJustification justification;
+	GtkTextDirection direction;
+	PangoFontDescription *font;
+	gdouble font_scale;
+	gint left_margin;
+	gint indent;
+	gint right_margin;
+	gint pixels_above_lines;
+	gint pixels_below_lines;
+	gint pixels_inside_wrap;
+	PangoTabArray *tabs;
+	GtkWrapMode wrap_mode;
+	PangoLanguage *language;
+	guint invisible : 1;
+	guint bg_full_height : 1;
+	guint editable : 1;
+	guint realized : 1;
 
 **/
 static getAttributes ( Tcl_Interp *interp, GtkTextAttributes *values )
 {
 #ifdef DEBUG_TEXT
-	g_print ( " % s\n", __FUNCTION__ );
+	g_print ( "%s\n", __FUNCTION__ );
 #endif
 
 
@@ -357,11 +165,11 @@ static getAttributes ( Tcl_Interp *interp, GtkTextAttributes *values )
 			break;
 		case GTK_TEXT_DIR_LTR:
 			{
-				direction = "left - to - right";
+				direction = "left-to-right";
 			}			break;
 		case GTK_TEXT_DIR_RTL:
 			{
-				direction = "right - to - left";
+				direction = "right-to-left";
 			}			break;
 			break;
 		default:
@@ -402,13 +210,13 @@ static getAttributes ( Tcl_Interp *interp, GtkTextAttributes *values )
 	Tcl_ListObjAppendElement ( interp, resList, Tcl_NewIntObj ( values->pixels_inside_wrap ) );
 
 	Tcl_ListObjAppendElement ( interp, resList, Tcl_NewStringObj ( "tabs", -1  ) );
-	Tcl_ListObjAppendElement ( interp, resList, Tcl_NewStringObj ( "tab - array", -1 ) );
+	Tcl_ListObjAppendElement ( interp, resList, Tcl_NewStringObj ( "tab-array", -1 ) );
 
 	Tcl_ListObjAppendElement ( interp, resList, Tcl_NewStringObj ( "wrap_mode", -1  ) );
 	Tcl_ListObjAppendElement ( interp, resList, Tcl_NewStringObj ( "wrap", -1 ) );
 
 	Tcl_ListObjAppendElement ( interp, resList, Tcl_NewStringObj ( "language", -1  ) );
-	Tcl_ListObjAppendElement ( interp, resList, Tcl_NewStringObj ( "text - language", -1 ) );
+	Tcl_ListObjAppendElement ( interp, resList, Tcl_NewStringObj ( "text-language", -1 ) );
 
 	Tcl_ListObjAppendElement ( interp, resList, Tcl_NewStringObj ( "invisible", -1  ) );
 	Tcl_ListObjAppendElement ( interp, resList, Tcl_NewIntObj ( values->invisible ) );
@@ -429,8 +237,8 @@ static getAttributes ( Tcl_Interp *interp, GtkTextAttributes *values )
 
 /**
 \brief     Search through the GtkTextBuffer from startPos to endPos.
-If a match is found, add it to a list of row col indices.
-When search complete, return the list to the calling function.
+           If a match is found, add it to a list of row col indices.
+           When search complete, return the list to the calling function.
 **/
 static int searchWord ( GtkTextBuffer *buffer, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[], int cmdNo, int isTextWidget )
 {
@@ -449,7 +257,7 @@ static int searchWord ( GtkTextBuffer *buffer, Tcl_Interp *interp, int objc, Tcl
 	while ( gtk_text_iter_forward_search ( &start, ( gchar*  ) Tcl_GetString ( objv[cmdNo+2] ), 0, &begin, &end, NULL ) != NULL )
 	{
 #ifdef DEBUG_TEXT
-		g_print ( "*  search forwards % s\n", ( gchar*  ) Tcl_GetString ( objv[cmdNo+2] ) );
+		g_print ( "*  search forwards %s\n", ( gchar*  ) Tcl_GetString ( objv[cmdNo+2] ) );
 #endif
 		/*  return the index of the found location */
 		row1 = gtk_text_iter_get_line ( &begin );
@@ -504,219 +312,12 @@ static int gnoclOptTabs ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tc
 	return TCL_OK;
 }
 
-/**
-\brief	Set text tag attribute.
-\notes  Keywords:
-        raise
-        lower
-        top
-        bottom
-**/
-static int gnoclOptTextTagPriority ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
-{
-
-#ifdef DEBUG_TEXT
-	debugStep ( __FUNCTION__, 1.0 );
-#endif
-
-	static char *opts[] =
-	{
-		"raise", "lower", "top", "bottom",
-		NULL
-	};
-
-	static enum  popupOptionsIdx
-	{
-		raiseIdx, lowerIdx, topIdx, bottomIdx
-	};
-
-	gint idx;
-
-	gint priority;
-
-	gint max;
-
-	GtkTextTag *tag;
-
-	tag = GTK_TEXT_TAG ( obj );
-
-	max = gtk_text_tag_table_get_size ( tag->table );
-
-	priority = gtk_text_tag_get_priority ( tag );
-
-	getIdx ( opts,  Tcl_GetStringFromObj ( opt->val.obj, NULL ), &idx );
-
-	switch ( idx )
-	{
-		case raiseIdx:
-			{
-				priority++;
-			}
-			break;
-		case lowerIdx:
-			{
-				priority--;
-			}
-			break;
-		case topIdx:
-			{
-				priority = max - 1;
-			}
-			break;
-		case bottomIdx:
-			{
-				priority = 0;
-			}
-			break;
-		default:
-			{
-				Tcl_GetIntFromObj ( interp, opt->val.obj, &priority );
-			}
-	}
-
-	/* check limits */
-	if ( priority < 0 )
-	{
-		priority = 0;
-	}
-
-	if ( priority >= max )
-	{
-		priority--;
-	}
-
-	gtk_text_tag_set_priority ( tag, priority );
-
-	return TCL_OK;
-}
-
-/**
-\brief	Set text tag attribute.
-**/
-static int gnoclOptTagBackgroundStipple ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
-{
-	GtkWidget *container;
-	container =  gtk_widget_get_parent ( obj );
-
-#ifdef DEBUG_TEXT
-	debugStep ( __FUNCTION__, 1.0 );
-	g_print ( "Feature not yet implemented\n" );
-#endif
-
-	return TCL_OK;
-}
-
-/**
-\brief	Set text tag attribute.
-**/
-static int gnoclOptTagTextDirection ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
-{
-
-#ifdef DEBUG_TEXT
-	debugStep ( __FUNCTION__, 1.0 );
-#endif
-
-	/* options: leftRight | rightLeft | none */
-
-	/*
-	typedef enum
-	{
-	GTK_TEXT_DIR_NONE,
-	GTK_TEXT_DIR_LTR,
-	GTK_TEXT_DIR_RTL,
-	} GtkTextDirection;
-	*/
-
-	int idx;
-
-	const char *txt[] = { "none", "leftRight", "rightLeft", NULL };
-
-	if ( Tcl_GetIndexFromObj ( NULL, opt->val.obj, txt, NULL, TCL_EXACT, &idx ) != TCL_OK )
-	{
-		Tcl_AppendResult ( interp, "Unknown direction \"", Tcl_GetString ( opt->val.obj ), "\". Must be one of none, leftRight or rightLeft.", NULL );
-		return TCL_ERROR;
-	}
-
-	g_object_set ( obj, opt->propName, idx, NULL );
-
-	return TCL_OK;
-}
-
-/**
-\brief	Set text tag attribute.
-**/
-static int gnoclOptTextTagForegroundStipple ( Tcl_Interp * interp, GnoclOption * opt, GObject * obj, Tcl_Obj **ret )
-{
-	GtkWidget *container;
-	container =  gtk_widget_get_parent ( obj );
-
-#ifdef DEBUG_TEXT
-	debugStep ( __FUNCTION__, 1.0 );
-	g_print ( "Feature not yet implemented\n" );
-#endif
-
-	return TCL_OK;
-}
-
-/**
-\brief	Set text tag attribute.
-**/
-static int gnocOptTextTagLanguage ( Tcl_Interp * interp, GnoclOption * opt, GObject * obj, Tcl_Obj **ret )
-{
-
-	gchar *lang;
-	gint i;
-
-	lang = Tcl_GetStringFromObj ( opt->val.obj, NULL );
-
-#ifdef DEBUG_TEXT
-	debugStep ( __FUNCTION__, 1.0 );
-	g_print ( "Language = %s\n", lang );
-#endif
-
-	i = getLanguage ( lang );
-
-	g_print ( "idx = %d\n", i );
-
-
-	return TCL_OK;
-}
-
-/**
-\brief	Set text tag attribute.
-**/
-static int gnoclOptTextTagTabs ( Tcl_Interp * interp, GnoclOption * opt, GObject * obj, Tcl_Obj **ret )
-{
-
-
-#ifdef DEBUG_TEXT
-	debugStep ( __FUNCTION__, 1.0 );
-	g_print ( "Feature not yet implemented\n" );
-#endif
-
-	return TCL_OK;
-}
-
-/**
-\brief	Set text tag attribute.
-**/
-static int gnoclOptTextTagVariant ( Tcl_Interp * interp, GnoclOption * opt, GObject * obj, Tcl_Obj **ret )
-{
-
-
-#ifdef DEBUG_TEXT
-	debugStep ( __FUNCTION__, 1.0 );
-	g_print ( "Feature not yet implemented\n" );
-#endif
-
-	return TCL_OK;
-}
 
 
 /**
 \brief
 */
-static gboolean doOnTextEnterLeave ( GtkWidget * widget, GdkEventMotion * event, 	gpointer data )
+static gboolean doOnTextEnterLeave ( GtkWidget *widget, GdkEventMotion *event, 	gpointer data )
 {
 	GnoclCommandData *cs = ( GnoclCommandData *  ) data;
 
@@ -735,85 +336,9 @@ static gboolean doOnTextEnterLeave ( GtkWidget * widget, GdkEventMotion * event,
 
 
 /**
-\brief	Add default set of tag with pango compliant tagnames.
-**/
-static int gnoclOptMarkupTags ( Tcl_Interp * interp, GnoclOption * opt, GObject * obj, Tcl_Obj **ret )
-{
-#ifdef DEBUG_TEXT
-	g_print ( "%s %d\n", __FUNCTION__, Tcl_GetString ( opt->val.obj ) );
-#endif
-
-	extern gint usemarkup;
-
-	assert ( strcmp ( opt->optName, "-markupTags" ) == 0 );
-
-	/* modify this to destroy tags */
-	if ( strcmp ( Tcl_GetString ( opt->val.obj ), "1" ) == 0 )
-	{
-		usemarkup = 1;
-		/* create default markup tag set */
-	}
-
-	else
-	{
-		usemarkup = 1;
-		/* delete markup tags */
-	}
-
-#ifdef DEBUG_TEXT
-	g_print ( "usemarkup = %d\n", usemarkup );
-#endif
-
-	GtkTextBuffer *buffer = gtk_text_view_get_buffer ( GTK_TEXT_VIEW ( obj ) );
-
-	gtk_text_buffer_create_tag ( buffer, "<b>", "weight", PANGO_WEIGHT_BOLD, NULL ); //bold
-
-	//GtkTextTag *tag gtk_text_tag_new (b);
-
-	//g_object_set ( tag, "weight", PANGO_WEIGHT_BOLD, NULL );
-
-	gtk_text_buffer_create_tag ( buffer, "<i>", "style", PANGO_STYLE_ITALIC, NULL ); //italic
-	gtk_text_buffer_create_tag ( buffer, "<s>", "strikethrough", 1, NULL ); //strikethrough
-	gtk_text_buffer_create_tag ( buffer, "<u>", "underline", PANGO_UNDERLINE_SINGLE, NULL ); //underline
-	//gtk_text_buffer_create_tag (buffer, "<sub>","font", font, NULL);  //bold
-	//gtk_text_buffer_create_tag (buffer, "<sup>","font", font, NULL);  //bold
-	//gtk_text_buffer_create_tag (buffer, "<small>","font", font, NULL);  //bold
-	gtk_text_buffer_create_tag ( buffer, "<tt>", "font", "Monospace", NULL ); //tt
-
-	gtk_text_buffer_create_tag ( buffer, "background=\"yellow\"", "background", "yellow", NULL ); //yellow-highlighter
-
-
-
-	/*
-		gtk_text_buffer_create_tag ( buffer, "fg=red", "underline", PANGO_UNDERLINE_SINGLE, NULL ); //underline
-		gtk_text_buffer_create_tag ( buffer, "fg=green", "underline", PANGO_UNDERLINE_SINGLE, NULL ); //underline
-		gtk_text_buffer_create_tag ( buffer, "fg=blue", "underline", PANGO_UNDERLINE_SINGLE, NULL ); //underline
-		gtk_text_buffer_create_tag ( buffer, "fg=cyan", "underline", PANGO_UNDERLINE_SINGLE, NULL ); //underline
-		gtk_text_buffer_create_tag ( buffer, "fg=magenta", "underline", PANGO_UNDERLINE_SINGLE, NULL ); //underline
-		gtk_text_buffer_create_tag ( buffer, "fg=yellow", "underline", PANGO_UNDERLINE_SINGLE, NULL ); //underline
-		gtk_text_buffer_create_tag ( buffer, "fg=gray", "underline", PANGO_UNDERLINE_SINGLE, NULL ); //underline
-		gtk_text_buffer_create_tag ( buffer, "fg=black", "underline", PANGO_UNDERLINE_SINGLE, NULL ); //underline
-		gtk_text_buffer_create_tag ( buffer, "fg=white", "underline", PANGO_UNDERLINE_SINGLE, NULL ); //underline
-
-		gtk_text_buffer_create_tag ( buffer, "bg=red", "underline", PANGO_UNDERLINE_SINGLE, NULL ); //underline
-		gtk_text_buffer_create_tag ( buffer, "bg=green", "underline", PANGO_UNDERLINE_SINGLE, NULL ); //underline
-		gtk_text_buffer_create_tag ( buffer, "bg=blue", "underline", PANGO_UNDERLINE_SINGLE, NULL ); //underline
-		gtk_text_buffer_create_tag ( buffer, "bg=cyan", "underline", PANGO_UNDERLINE_SINGLE, NULL ); //underline
-		gtk_text_buffer_create_tag ( buffer, "bg=magenta", "underline", PANGO_UNDERLINE_SINGLE, NULL ); //underline
-		gtk_text_buffer_create_tag ( buffer, "bg=yellow", "underline", PANGO_UNDERLINE_SINGLE, NULL ); //underline
-		gtk_text_buffer_create_tag ( buffer, "bg=gray", "underline", PANGO_UNDERLINE_SINGLE, NULL ); //underline
-		gtk_text_buffer_create_tag ( buffer, "bg=black", "underline", PANGO_UNDERLINE_SINGLE, NULL ); //underline
-		gtk_text_buffer_create_tag ( buffer, "bg=white", "underline", PANGO_UNDERLINE_SINGLE, NULL ); //underline
-	*/
-
-	return TCL_OK;
-
-}
-
-/**
 \brief
 **/
-static int gnoclOptTextOnEnterLeave ( Tcl_Interp * interp, GnoclOption * opt, GObject * obj, Tcl_Obj **ret )
+static int gnoclOptTextOnEnterLeave ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
 	GtkWidget *container;
 	container =  gtk_widget_get_parent ( obj );
@@ -825,7 +350,7 @@ static int gnoclOptTextOnEnterLeave ( Tcl_Interp * interp, GnoclOption * opt, GO
 /**
 \brief
 **/
-static GdkBitmap *getBitmapMask ( gchar * filename )
+static GdkBitmap *getBitmapMask ( gchar *filename )
 {
 	GdkPixbuf *pbuf;
 	GdkBitmap *ret;
@@ -854,7 +379,7 @@ static GdkBitmap *getBitmapMask ( gchar * filename )
 /**
 \brief
 **/
-static void doOnInsertPixbuf ( GtkTextBuffer * textbuffer, GtkTextIter * location, GdkPixbuf * pixbuf, gpointer user_data )
+static void doOnInsertPixbuf ( GtkTextBuffer *textbuffer, GtkTextIter *location, GdkPixbuf *pixbuf, gpointer user_data )
 {
 	GnoclCommandData *cs = ( GnoclCommandData * ) user_data;
 
@@ -881,7 +406,7 @@ static void doOnInsertPixbuf ( GtkTextBuffer * textbuffer, GtkTextIter * locatio
 \author     William J Giddings
 \date       30-Apr-09
 **/
-int gnoclOptOnInsertPB ( Tcl_Interp * interp, GnoclOption * opt, GObject * obj, Tcl_Obj **ret )
+int gnoclOptOnInsertPB ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
 
 	/* check the name of the signal is correct for this function */
@@ -900,7 +425,7 @@ int gnoclOptOnInsertPB ( Tcl_Interp * interp, GnoclOption * opt, GObject * obj, 
 \since     0.9.95
 \note      Used by: gnome::text, Default Binding F7.
 \**/
-static void doOnToggleCursorVisible ( GtkTextView * text_view, gpointer user_data )
+static void doOnToggleCursorVisible ( GtkTextView *text_view, gpointer user_data )
 {
 
 	GnoclCommandData *cs = ( GnoclCommandData * ) user_data;
@@ -926,7 +451,7 @@ static void doOnToggleCursorVisible ( GtkTextView * text_view, gpointer user_dat
 \date		30/04/2010
 \note
 **/
-int gnoclOptOnToggleCursorVisible ( Tcl_Interp * interp, GnoclOption * opt, GObject * obj, Tcl_Obj **ret )
+int gnoclOptOnToggleCursorVisible ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
 	/* check the name of the signal is correct for this function */
 	assert ( strcmp ( opt->optName, "-onToggleCursorVisible" ) == 0 );
@@ -992,8 +517,6 @@ static GnoclOption textOptions[] =
 
 	{ "-tabs", GNOCL_STRING, "tabs", gnoclOptTabs}, /* "tabs" */
 	{ "-wrapMode", GNOCL_OBJ, "wrap_mode", gnoclOptWrapmode },
-
-
 
 	/* GtkTextBuffer properties
 	"copy-target-list"         GtkTargetList*        : Read
@@ -1132,7 +655,7 @@ static GnoclOption textOptions[] =
 \history
     2008-06-27  Began implementation of new keywords for text position. See TODO.
 */
-int posToIter ( Tcl_Interp * interp, Tcl_Obj * obj, GtkTextBuffer * buffer, GtkTextIter * iter )
+int posToIter ( Tcl_Interp *interp, Tcl_Obj *obj, GtkTextBuffer *buffer, GtkTextIter *iter )
 {
 	char errMsg[] = "Position must be either a list of row and column "
 					"or a keyword plus offset";
@@ -1377,7 +900,7 @@ int posToIter ( Tcl_Interp * interp, Tcl_Obj * obj, GtkTextBuffer * buffer, GtkT
 /**
 \brief      Apply a lists of tags to the a specified range of text.
 **/
-static int applyTag ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, Tcl_Obj *  const objv[], int cmdNo )
+static int applyTag ( GtkTextBuffer *buffer, Tcl_Interp *interp, int objc, Tcl_Obj *  const objv[], int cmdNo )
 {
 	/**
 	Or, does it appear here?
@@ -1494,7 +1017,7 @@ clearExit:
 /**
 \brief	Remove specific tag from a tag tagtable
 **/
-static void deleteTag  ( GtkTextTag * tag, gpointer data )
+static void deleteTag  ( GtkTextTag *tag, gpointer data )
 {
 	gtk_text_tag_table_remove ( data, tag );
 }
@@ -1504,7 +1027,7 @@ static void deleteTag  ( GtkTextTag * tag, gpointer data )
 \brief
 \note
 **/
-static int removeTag ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, Tcl_Obj *  const objv[], int cmdNo )
+static int removeTag ( GtkTextBuffer *buffer, Tcl_Interp *interp, int objc, Tcl_Obj *  const objv[], int cmdNo )
 {
 	/*  declare some variables */
 	// console error messaging
@@ -1607,7 +1130,7 @@ clearExit:
 \date       31/Jun/2008
 \note
 **/
-static int markCmd ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, Tcl_Obj *  const objv[], int cmdNo )
+static int markCmd ( GtkTextBuffer *buffer, Tcl_Interp *interp, int objc, Tcl_Obj *  const objv[], int cmdNo )
 {
 	const char  *cmds[] = { "create", "configure", "delete", "move", "names", "cget", "getIndex", NULL };
 	enum   cmdIdx { CreateIdx, ConfigureIdx, DeleteIdx, MoveIdx, NamesIdx, CgetIdx, GetIndexIdx };
@@ -1825,7 +1348,6 @@ static int markCmd ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, Tcl_
     pathName tag names ?index?
     pathName tag nextrange tagName index1 ?index2?
     pathName tag prevrange tagName index1 ?index2?
-    pathName tag properties tagName
     pathName tag raise tagName ?aboveThis?
     pathName tag ranges tagName
     pathName tag remove tagName index1 ?index2 index1 index2 ...?
@@ -1836,12 +1358,8 @@ static int markCmd ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, Tcl_
 	allow list arguments for add, remove and delete
 
 **/
-int tagCmd ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, Tcl_Obj *  const objv[], int cmdNo )
+int tagCmd ( GtkTextBuffer *buffer, Tcl_Interp *interp, int objc, Tcl_Obj *  const objv[], int cmdNo )
 {
-#ifdef DEBUG_TAGS
-	g_print ( "%s\n", __FUNCTION__ );
-#endif
-
 	// widgetname tag add tagname start_index end_index
 	// widgetname tag remove tagname start_index end_index
 
@@ -1851,8 +1369,7 @@ int tagCmd ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, Tcl_Obj *  c
 	{
 		"cget", "create", "configure", "apply",
 		"delete", "remove", "get", "clear", "set",
-		"ranges", "names", "raise", "lower",
-		"copy", "properties",
+		"ranges", "names", "raise", "lower", "settings",
 		NULL
 	};
 	enum cmdIdx
@@ -1860,7 +1377,7 @@ int tagCmd ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, Tcl_Obj *  c
 		CgetIdx, CreateIdx, ConfigureIdx, ApplyIdx,
 		DeleteIdx, RemoveIdx, GetIdx, ClearIdx, SetIdx,
 		RangesIdx, NamesIdx, RaiseIdx, LowerIdx,
-		CopyIdx, PropertiesIdx
+		SettingsIdx
 	};
 
 	/*  see also list.c */
@@ -1874,6 +1391,7 @@ int tagCmd ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, Tcl_Obj *  c
 		{"-backgroundFullHeight", GNOCL_BOOL, "background-full-height"},
 		{"-backgroundStipple", GNOCL_OBJ, gnoclOptTagBackgroundStipple},
 		{"-direction", GNOCL_OBJ, "direction", gnoclOptTagTextDirection},
+		{"-editable", GNOCL_BOOL, "editable"},
 		{"-foregroundStipple", GNOCL_OBJ, "foreground-stipple", gnoclOptTextTagForegroundStipple},
 		{"-indent", GNOCL_INT, "indent"},
 		{"-language", GNOCL_OBJ, "language", gnocOptTextTagLanguage},
@@ -1885,8 +1403,8 @@ int tagCmd ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, Tcl_Obj *  c
 		{"-rise", GNOCL_INT, "rise"},
 		{"-scale", GNOCL_DOUBLE, "scale"},
 		{"-tabs", GNOCL_OBJ, "tabs", gnoclOptTextTagTabs},
-		{"-variant", GNOCL_OBJ, "variant", gnoclOptTextTagVariant},
-		{"-weight", GNOCL_INT, "weight"},
+		{"-variant", GNOCL_OBJ, "variant", gnoclOptPangoVariant },
+		{"-weight", GNOCL_OBJ, "weight", gnoclOptPangoWeight }, /* see -fontWeight */
 
 		/*--------------- existing options ---------------*/
 
@@ -1901,7 +1419,7 @@ int tagCmd ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, Tcl_Obj *  c
 		{ "-fontRise", GNOCL_OBJ, "rise", gnoclOptPangoScaledInt },
 		{ "-fontStretch", GNOCL_OBJ, "stretch", gnoclOptPangoStretch },
 		{ "-fontSize", GNOCL_OBJ, "size", gnoclOptPangoScaledInt },
-		//{ "-fontScale", GNOCL_OBJ, "scale", gnoclOptScale },
+		{ "-fontScale", GNOCL_OBJ, "scale", gnoclOptScale },
 		{ "-invisible", GNOCL_BOOL, "invisible" },
 		{ "-justification", GNOCL_OBJ, "justification", gnoclOptJustification },
 		{ "-paragraph", GNOCL_OBJ, "paragraph-background-gdk", gnoclOptGdkColor },
@@ -1966,85 +1484,32 @@ int tagCmd ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, Tcl_Obj *  c
 
 	switch ( idx )
 	{
-		case NamesIdx:	// return a list of all tag names
+		case SettingsIdx:
 			{
-#ifdef DEBUG_TAGS
-				g_print ( "\ttag names\n" );
+#ifdef DEBUG_TEXT
+				g_print ( "tag Settings start\n" );
 #endif
 				GtkTextTagTable *tagtable = gtk_text_buffer_get_tag_table ( buffer );
-
-				gchar names[512];
-
-				Tcl_Obj *resList;
-				resList = Tcl_NewListObj ( 0, NULL );
-				/* create a tcl list */
+				char *txt;
 
 				/*  get the settings of each tag in the buffer*/
 				/*  note, pass the address of the pointer to the data assigned by the called function */
-				gtk_text_tag_table_foreach ( tagtable, getTagName , &resList );
+				gtk_text_tag_table_foreach ( tagtable, gnoclGetTagSettings , &txt );
 
-				Tcl_SetObjResult ( interp, resList );
+#ifdef DEBUG_TEXT
+				g_print ( "tag Settings end\n" );
+#endif
+
+
+				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( txt, -1 ) );
 				/*  reset the outsput string by using null pointers */
-				//gnoclGetTagProperties ( NULL, NULL );
-
-#ifdef  DEBUG_TAGS
-				g_print ( "tag names\n" );
-#endif
-
+				//gnoclGetTagSettings ( NULL, NULL );
 				return TCL_OK;
 			}
-			break;
-		case PropertiesIdx:
-			{
-#ifdef DEBUG_TAGS
-				g_print ( "\ttag properties %s\n", Tcl_GetString ( objv[3] ) );
-#endif
-
-				Tcl_Obj *resList;
-				resList = Tcl_NewListObj ( 0, NULL );
-
-				GtkTextTagTable *table = gtk_text_buffer_get_tag_table ( buffer );
-				GtkTextTag *tag =   gtk_text_tag_table_lookup ( table, Tcl_GetString ( objv[3] ) );
-
-				gnoclGetTagProperties ( tag, resList );
-
-				Tcl_SetObjResult ( interp, resList );
-
-				return TCL_OK;
-
-			}
-			break;
-		case CopyIdx:
-			{
-#ifdef DEBUG_TAGS
-				g_print ( "\ttag copy\n" );
-#endif
-				listParameters ( objc, objv, __FUNCTION__ );
-//g_print("cmdNo+2 = %s\n",Tcl_GetString ( objv[cmdNo+2] ));
-//g_print("cmdNo+3 = %s\n",Tcl_GetString ( objv[cmdNo+3] ));
-//g_print("cmdNo+4 = %s\n",Tcl_GetString ( objv[cmdNo+4] ));
-
-				GtkScrolledWindow   *scrolled = gnoclGetWidgetFromName ( Tcl_GetString ( objv[3] ), interp );
-				GtkTextView     *text = GTK_TEXT_VIEW ( gtk_bin_get_child ( GTK_BIN ( scrolled ) ) );
-				GtkTextBuffer  *buffer2 = gtk_text_view_get_buffer ( text );
-				GtkTextTagTable *table = gtk_text_buffer_get_tag_table ( buffer2 );
-
-//				g_print ( "1\n" );
-				buffer->tag_table = table;
-
-//				g_print ( "2\n" );
-				g_object_ref ( buffer->tag_table );
-
-//				g_print ( "3\n" );
-				table->buffers = g_slist_prepend ( table->buffers, buffer );
-//				g_print ( "4\n" );
-
-			}
-			break;
 		case RaiseIdx:
 			{
-#ifdef DEBUG_TAGS
-				g_print ( "\ttag raise\n" );
+#ifdef DEBUG_TEXT
+				g_print ( "tag raise\n" );
 #endif
 
 				GtkTextTagTable *table = gtk_text_buffer_get_tag_table ( buffer );
@@ -2084,12 +1549,37 @@ int tagCmd ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, Tcl_Obj *  c
 
 				gtk_text_tag_set_priority ( tag2, priority );
 			}
+		case NamesIdx:
+			{
+#ifdef DEBUG_TEXT
+				g_print ( "tag names\n" );
+#endif
+				GtkTextTagTable *tagtable = gtk_text_buffer_get_tag_table ( buffer );
 
+				gchar names[512];
+
+				Tcl_Obj *resList;
+				resList = Tcl_NewListObj ( 0, NULL );
+				/* create a tcl list */
+
+				/*  get the settings of each tag in the buffer*/
+				/*  note, pass the address of the pointer to the data assigned by the called function */
+				gtk_text_tag_table_foreach ( tagtable, gnoclGetTagName , &resList );
+
+				Tcl_SetObjResult ( interp, resList );
+				/*  reset the outsput string by using null pointers */
+				//gnoclGetTagSettings ( NULL, NULL );
+
+
+#ifdef DEBUG_TEXT
+				g_print ( "tag names\n" );
+#endif
+
+				return TCL_OK;
+			}
+			break;
 		case RangesIdx:
 			{
-#ifdef DEBUG_TAGS
-				g_print ( "\ttag ranges\n" );
-#endif
 				gnoclGetTagRanges ( buffer, Tcl_GetString ( objv[cmdNo+1] ) );
 			}
 			break;
@@ -2151,63 +1641,27 @@ int tagCmd ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, Tcl_Obj *  c
 
 				/*  some DEBUG_TEXTging feedback */
 
-#ifdef DEBUG_TAGS
+#ifdef DEBUG_TEXT
 				printf ( "Get tags for position: %s\n", Tcl_GetString ( objv[cmdNo+1] ) ) ;
-				printf ( "Get tag state for position: %s\n", Tcl_GetString ( objv[cmdNo+2] ) ) ;
-				printf ( "1 %s\n", Tcl_GetString ( objv[cmdNo+1] ) ) ;
-				printf ( "2 %s\n", Tcl_GetString ( objv[cmdNo+2] ) ) ;
-				printf ( "3 %s\n", Tcl_GetString ( objv[cmdNo+3] ) ) ;
 #endif
 
-				static char *tagOpt[] =
+				/*  check the arguments */
+
+				if ( objc != cmdNo + 2 )
 				{
-					"-on", "-off",	NULL
-				};
-
-				static enum  tagOptIdx
-				{
-					OnIdx, OffIdx
-				};
-
-				gint idx;
-
-
-				/*  check the number of arguments */
-				if ( objc < cmdNo + 2 || objc > cmdNo + 4 )
-				{
-					Tcl_WrongNumArgs ( interp, cmdNo + 1, objv, "position opts" );
+					Tcl_WrongNumArgs ( interp, cmdNo + 1, objv, "position" );
 					return TCL_ERROR;
 				}
 
 				/*  convert the position to a pointer */
+
 				if ( posToIter ( interp, objv[cmdNo+1], buffer, &iter ) != TCL_OK )
 				{
 					return -1;
 				}
 
-				getIdx ( tagOpt, Tcl_GetString ( objv[cmdNo+2] ), &idx );
-
-				switch ( idx )
-				{
-					case OnIdx:
-						{
-							/* build a list of tagOn changes */
-							tagList = gtk_text_iter_get_toggled_tags ( &iter, 1 );
-						}
-						break;
-					case OffIdx:
-						{
-							/* build a list of tagOff changes */
-							tagList = gtk_text_iter_get_toggled_tags ( &iter, 0 );
-						}
-						break;
-					default:
-						{
-							/* get a list of all applicable tags */
-							tagList = gtk_text_iter_get_tags ( &iter );
-						}
-				}
-
+				/*  Get the tags. But, remember, tagList is a list of tag structures! */
+				tagList = gtk_text_iter_get_tags ( &iter );
 
 				/*  initialise list for return to the inpreter */
 				resList = Tcl_NewListObj ( 0, NULL );
@@ -2318,9 +1772,9 @@ int tagCmd ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, Tcl_Obj *  c
 /**
 **/
 static int scrollToMark (
-	GtkTextView * view,
-	GtkTextBuffer * buffer,
-	Tcl_Interp * interp,
+	GtkTextView *view,
+	GtkTextBuffer *buffer,
+	Tcl_Interp *interp,
 	int objc,
 	Tcl_Obj *  const objv[] )
 {
@@ -2359,9 +1813,9 @@ static int scrollToMark (
 \note
 **/
 static int scrollToPos (
-	GtkTextView * view,
-	GtkTextBuffer * buffer,
-	Tcl_Interp * interp,
+	GtkTextView *view,
+	GtkTextBuffer *buffer,
+	Tcl_Interp *interp,
 	int objc,
 	Tcl_Obj *  const objv[] )
 {
@@ -2448,7 +1902,7 @@ clearExit:
             But, applyTag, which is hack of this function does not cause a crash!
 \history    2008-06-27  Began implementation of new keywords for text position. See TODO.
 **/
-static int textInsert ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, Tcl_Obj *  const objv[], int cmdNo )
+static int textInsert ( GtkTextBuffer *buffer, Tcl_Interp *interp, int objc, Tcl_Obj *  const objv[], int cmdNo )
 {
 	GnoclOption insertOptions[] =
 	{
@@ -2460,6 +1914,7 @@ static int textInsert ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, T
 	int       ret = TCL_ERROR;
 
 	GtkTextIter   iter;
+
 
 	if ( objc < cmdNo + 2 )
 	{
@@ -2485,12 +1940,7 @@ static int textInsert ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, T
 
 	if ( type == 48 )
 	{
-
-		gnoclInsertMarkup ( buffer, &iter, gnoclGetString ( objv[cmdNo+1] ) );
-
-		//gtk_text_buffer_insert_markup ( buffer, &iter, gnoclGetString ( objv[cmdNo+1] ) );
-		//gnoclMarkupInsertTest ( buffer, &iter );
-
+		gtk_text_buffer_insert_markup ( buffer, &iter, gnoclGetString ( objv[cmdNo+1] ) );
 	}
 
 	else
@@ -2537,7 +1987,7 @@ clearExit:
 \brief
 \note        04/12/09 WJG modified to allow for variable assignment
 **/
-static int configure ( Tcl_Interp * interp, GtkScrolledWindow * scrolled, GtkTextView * text, GnoclOption options[] )
+static int configure ( Tcl_Interp *interp, GtkScrolledWindow *scrolled, GtkTextView *text, GnoclOption options[] )
 {
 
 	GtkTextBuffer *buffer;
@@ -2590,7 +2040,7 @@ static int configure ( Tcl_Interp * interp, GtkScrolledWindow * scrolled, GtkTex
 /**
 \brief
 **/
-static int cget ( Tcl_Interp * interp, GtkTextView * text, GnoclOption options[], int idx )
+static int cget ( Tcl_Interp *interp, GtkTextView *text, GnoclOption options[], int idx )
 {
 	/* get the option from the array? */
 
@@ -2598,48 +2048,9 @@ static int cget ( Tcl_Interp * interp, GtkTextView * text, GnoclOption options[]
 	return gnoclCgetNotImplemented ( interp, options + idx );
 }
 
-/**
-\brief	Return a list of all occuranances of a named tag within a buffer
-**/
-static void gnoclGetTagRanges ( GtkTextBuffer * buffer, gchar * tagName )
-{
-#ifdef DEBUG_TEXT
-	g_print ( "%s %s\n", __FUNCTION__, tagName );
-#endif
 
 
-	GtkTextIter iter;
-	GtkTextTag *tag;
-	GtkTextTagTable *table;
-	gint cc;
 
-	gtk_text_buffer_get_start_iter ( buffer, &iter );
-	table = gtk_text_buffer_get_tag_table ( buffer );
-	tag = gtk_text_tag_table_lookup ( table, tagName );
-
-
-	while ( ( gtk_text_iter_forward_to_tag_toggle ( &iter, tag ) ) == TRUE )
-	{
-		cc = gtk_text_iter_get_offset ( &iter );
-		printf ( "cc: %d\n", cc );
-	}
-}
-
-
-/**
-\brief	Add tagname to a Tcl list.
-**/
-static void getTagName ( GtkTextTag * tag, gpointer data )
-{
-#ifdef DEBUG_TAG
-	g_print ( "%s %s\n", __FUNCTION__, tag->name );
-#endif
-
-	Tcl_Obj **resList = data;
-
-	Tcl_ListObjAppendElement ( NULL, *resList, Tcl_NewStringObj ( tag->name, -1 ) );
-
-}
 
 /**
      ->   0: Ok
@@ -2650,347 +2061,9 @@ static void getTagName ( GtkTextTag * tag, gpointer data )
 */
 
 /**
-\brief      Return list of tag properties and their values.
-\note       Only returns those attribute which have been set away from their default values.
-
-            Getting a handle on the various tag parameters has been a process of trial and error.
-
-            An alternative way of getting the colour values but this time in hex is:
-            GdkColor *bg_color2  = &tag_appearance->bg_color;
-            char *clr = gdk_color_to_string ( bg_color2 );
-            sprintf ( tmp2, "clr = %s ",clr);
-\arguments	TAG POINTER, ptr to Tcl list
-\returns	TCL_LIST
-**/
-static void gnoclGetTagProperties ( GtkTextTag *tag, Tcl_Obj *resList )
-{
-#ifdef DEBUG_TAG
-	g_print ( "%s\n", __FUNCTION__ );
-#endif
-
-	if ( tag == NULL )
-	{
-		return;
-	}
-
-	/*  modify the memory allocation here to use malloc and free to release it */
-
-	static char tmp[300];
-
-	GtkTextAppearance *tag_appearance;
-
-	/*  Individual chunks of this can be set/unset as a group */
-	PangoFontDescription *font;
-	GtkTextDirection direction;
-	guint realized;
-
-	/*    -----------------------------------------------
-	 *  get a handle on the tag appearance structure
-	 *  it might be fair to say that these are 'options'
-	 *  and take default values.
-	 *  When values are returned following a dump tags call,
-	 *  only return these values if they have been changed from
-	 *  system defaults.
-	 *    -----------------------------------------------*/
-	tag_appearance = tag->values;
-
-	gchar **fontName;
-	gchar **fontFamily;
-	gchar **fontDesc;
-
-	/* priority */
-	Tcl_ListObjAppendElement ( NULL, resList, Tcl_NewStringObj ( "-priority", -1 ) );
-	sprintf ( tmp, "%d", tag->priority );
-	Tcl_ListObjAppendElement ( NULL, resList, Tcl_NewStringObj ( tmp, -1 ) );
-
-	/* font */
-	//if ( tag->family_set ) {
-	Tcl_ListObjAppendElement ( NULL, resList, Tcl_NewStringObj ( "-font", -1 ) );
-
-	g_object_get ( G_OBJECT ( tag ), "font", &fontName, "family", &fontFamily, "font-desc", fontDesc,  NULL );
-	sprintf ( tmp, "%s", fontName  );
-	Tcl_ListObjAppendElement ( NULL, resList, Tcl_NewStringObj ( tmp, -1 ) );
-
-	/*
-		Tcl_ListObjAppendElement ( NULL, resList, Tcl_NewStringObj ( "-fontFamily", -1 ) );
-		sprintf ( tmp, "%s", fontFamily );
-		Tcl_ListObjAppendElement ( NULL, resList, Tcl_NewStringObj ( tmp,  -1 ) );
-	*/
-	//}
-
-	/*  background stipple */
-	if ( tag->bg_stipple_set )
-	{
-		GdkBitmap *bg_stipple  = tag_appearance->bg_stipple;
-	}
-
-
-	/*  background colour */
-	if ( tag->pg_bg_color_set )
-	{
-		GdkColor bg_color  = tag_appearance->bg_color;
-		Tcl_ListObjAppendElement ( NULL, resList, Tcl_NewStringObj ( "-background", -1 ) );
-		sprintf ( tmp, "%d %d %d", bg_color.red, bg_color.green, bg_color.blue );
-		Tcl_ListObjAppendElement ( NULL, resList, Tcl_NewStringObj ( tmp,  -1 ) );
-	}
-
-	/*  foreground colour */
-	if ( tag->fg_color_set )
-	{
-		GdkColor fg_color  = tag_appearance->fg_color;
-		Tcl_ListObjAppendElement ( NULL, resList, Tcl_NewStringObj ( "-foreground", -1 ) );
-		sprintf ( tmp, "%d %d %d", fg_color.red, fg_color.green, fg_color.blue );
-		Tcl_ListObjAppendElement ( NULL, resList, Tcl_NewStringObj ( tmp, -1 ) );
-	}
-
-	/*  font scaling */
-	if ( tag->scale_set )
-	{
-		Tcl_ListObjAppendElement ( NULL, resList, Tcl_NewStringObj ( "-scale", -1 ) );
-		sprintf ( tmp, "%f", tag->values->font_scale );
-		Tcl_ListObjAppendElement ( NULL, resList, Tcl_NewStringObj ( tmp, -1 ) );
-	}
-
-	/*  foreground stipple */
-	if ( tag->fg_stipple_set )
-	{
-		GdkBitmap *fg_stipple = tag_appearance->fg_stipple;
-	}
-
-	/*  text justfification */
-	if ( tag->justification_set )
-	{
-
-		Tcl_ListObjAppendElement ( NULL, resList, Tcl_NewStringObj ( "-justification", -1 ) );
-
-		// GTK_JUSTIFY_LEFT | GTK_JUSTIFY_RIGHT | GTK_JUSTIFY_CENTER | GTK_JUSTIFY_FILL
-		switch ( tag->values->justification )
-		{
-			case GTK_JUSTIFY_LEFT:
-				{
-					sprintf ( tmp, "left" );
-				}
-				break;
-			case GTK_JUSTIFY_RIGHT:
-				{
-					sprintf ( tmp, "right" );
-				}
-				break;
-			case GTK_JUSTIFY_CENTER:
-				{
-					sprintf ( tmp, "center" );
-				}
-				break;
-			case GTK_JUSTIFY_FILL:
-				{
-					sprintf ( tmp, "fill" );
-				}
-				break;
-			default: {}
-		}
-
-		Tcl_ListObjAppendElement ( NULL, resList, Tcl_NewStringObj ( tmp, -1 ) );
-	}
-
-	/*  default indent */
-	if ( tag->indent_set )
-	{
-		Tcl_ListObjAppendElement ( NULL, resList, Tcl_NewStringObj ( "-indent", -1 ) );
-		sprintf ( tmp, "%d", tag->values->indent );
-		Tcl_ListObjAppendElement ( NULL, resList, Tcl_NewIntObj ( tag->values->indent ) );
-	}
-
-	/*  text rise, i.e. for superscript */
-	if ( tag->rise_set )
-	{
-		Tcl_ListObjAppendElement ( NULL, resList, Tcl_NewStringObj ( "-rise", -1 ) );
-		Tcl_ListObjAppendElement ( NULL, resList, Tcl_NewIntObj (  tag_appearance->rise ) );
-	}
-
-	/*  strikethrough or, overstrike */
-	if ( tag->strikethrough_set )
-	{
-		Tcl_ListObjAppendElement ( NULL, resList, Tcl_NewStringObj ( "-strikethrough", -1 ) );
-		Tcl_ListObjAppendElement ( NULL, resList, Tcl_NewIntObj (  tag_appearance->strikethrough ) );
-	}
-
-	/* right margin */
-	if ( tag->right_margin_set )
-	{
-		Tcl_ListObjAppendElement ( NULL, resList, Tcl_NewStringObj ( "-rightMargin", -1 ) );
-		Tcl_ListObjAppendElement ( NULL, resList, Tcl_NewIntObj (  tag->values->right_margin ) );
-	}
-
-	/* pixels above lines */
-	if ( tag->pixels_above_lines_set )
-	{
-		Tcl_ListObjAppendElement ( NULL, resList, Tcl_NewStringObj ( "-pixelsAboveLines", -1 ) );
-		Tcl_ListObjAppendElement ( NULL, resList, Tcl_NewIntObj (  tag->values->pixels_above_lines ) );
-	}
-
-	/* pixels below lines */
-	if ( tag->pixels_below_lines_set )
-	{
-		Tcl_ListObjAppendElement ( NULL, resList, Tcl_NewStringObj ( "-pixelsBelowLines", -1 ) );
-		Tcl_ListObjAppendElement ( NULL, resList, Tcl_NewIntObj (  tag->values->pixels_below_lines ) );
-	}
-
-	/* wrapmode? */
-	/*
-		if ( tag->pixels_inside_wrap_set )
-		{
-			Tcl_ListObjAppendElement ( NULL, resList, Tcl_NewStringObj ( "-wrapMode", -1 ) );
-			Tcl_ListObjAppendElement ( NULL, resList, Tcl_NewIntObj( tag->values->pixels_inside_wrap ) );
-		}
-	*/
-	if ( tag->tabs_set )
-	{
-		PangoTabArray *tabs = tag->values->tabs;
-	}
-
-	/* underline */
-	if ( tag->underline_set )
-	{
-		Tcl_ListObjAppendElement ( NULL, resList, Tcl_NewStringObj ( "-underline", -1 ) );
-
-		switch ( tag_appearance->underline )
-		{
-			case PANGO_UNDERLINE_NONE:
-				{
-					Tcl_ListObjAppendElement ( NULL, resList, Tcl_NewStringObj ( "none", -1 ) );
-				} break;
-			case PANGO_UNDERLINE_SINGLE:
-				{
-					Tcl_ListObjAppendElement ( NULL, resList, Tcl_NewStringObj ( "single", -1 ) );
-				} break;
-			case PANGO_UNDERLINE_DOUBLE:
-				{
-					Tcl_ListObjAppendElement ( NULL, resList, Tcl_NewStringObj ( "double", -1 ) );
-				} break;
-			case PANGO_UNDERLINE_LOW:
-				{
-					Tcl_ListObjAppendElement ( NULL, resList, Tcl_NewStringObj ( "low", -1 ) );
-				} break;
-			case PANGO_UNDERLINE_ERROR:
-				{
-					Tcl_ListObjAppendElement ( NULL, resList, Tcl_NewStringObj ( "error", -1 ) );
-				} break;
-			default: {}
-		}
-
-	}
-
-	/* wrapmode */
-	if ( tag->wrap_mode_set )
-	{
-
-		Tcl_ListObjAppendElement ( NULL, resList, Tcl_NewStringObj ( "-wrapMode", -1 ) );
-
-		switch ( tag->values->wrap_mode )
-		{
-			case GTK_WRAP_CHAR:
-				{
-					Tcl_ListObjAppendElement ( NULL, resList, Tcl_NewStringObj ( "char", -1 ) );
-				} break;
-			case GTK_WRAP_NONE:
-				{
-					Tcl_ListObjAppendElement ( NULL, resList, Tcl_NewStringObj ( "none", -1 ) );
-				} break;
-			case GTK_WRAP_WORD:
-				{
-					Tcl_ListObjAppendElement ( NULL, resList, Tcl_NewStringObj ( "word", -1 ) );
-				}
-			case GTK_WRAP_WORD_CHAR:
-				{
-					Tcl_ListObjAppendElement ( NULL, resList, Tcl_NewStringObj ( "word", -1 ) );
-				}
-				break;
-			default: {}
-		}
-
-
-	}
-
-	if ( tag->bg_full_height_set )
-	{
-		/*  Background is fit to full line height rather than
-		 *  baseline +/- ascent/descent (font height)
-		*/
-		guint bg_full_height;
-
-		//sprintf ( tmp, "bg_full_height %d", tag->values->pixels_inside_wrap );
-		//Tcl_ListObjAppendElement ( NULL, resList, Tcl_NewStringObj ( tmp, -1 ) );
-	}
-
-	/* invisible */
-	if ( tag->invisible_set )
-	{
-		Tcl_ListObjAppendElement ( NULL, resList, Tcl_NewStringObj ( "-invisible", -1 ) );
-		Tcl_ListObjAppendElement ( NULL, resList, Tcl_NewIntObj (  tag->values->invisible ) );
-
-	}
-
-	/* editable */
-	if ( tag->editable_set )
-	{
-		Tcl_ListObjAppendElement ( NULL, resList, Tcl_NewStringObj ( "-editable", -1 ) );
-		Tcl_ListObjAppendElement ( NULL, resList, Tcl_NewIntObj (  tag->values->editable ) );
-	}
-
-	if ( tag->language_set )
-	{
-		PangoLanguage *language;
-	}
-
-	/*  Whether to use background-related values; this is irrelevant for
-	 *  the values struct when in a tag, but is used for the composite
-	 *  values struct; it's true if any of the tags being composited
-	 *  had background stuff set.
-	 */
-	guint draw_bg = tag_appearance->draw_bg;
-
-	/*  These are only used when we are actually laying out and rendering
-	 *  a paragraph; not when a GtkTextAppearance is part of a
-	 *  GtkTextAttributes.
-	 */
-	guint inside_selection = tag_appearance->inside_selection;
-
-	guint is_text = tag_appearance->is_text;
-
-}
-
-
-/**
-\brief      Return list of tag name
-**/
-static void gnoclGetTagNames ( GtkTextTag * tag, gpointer data )
-{
-#ifdef DEBUG_TEXT
-	//g_print ( "%s 1 \n", __FUNCTION__ );
-#endif
-
-	if ( tag == NULL )
-	{
-		return;
-	}
-
-	char **str = data;
-
-	/*  modify the memory allocation here to use malloc and free to release it */
-
-	static char tmp[300];
-
-	sprintf ( tmp, "%s", tag->name );
-
-	*str = tmp;
-
-}
-
-
-/**
 \brief
 **/
-static int signalEmit ( Tcl_Interp * interp, Tcl_Obj * obj, int cmdNo, GtkTextBuffer * buffer )
+static int signalEmit ( Tcl_Interp *interp, Tcl_Obj *obj, int cmdNo, GtkTextBuffer *buffer )
 {
 
 	const char *signal = Tcl_GetString ( obj );
@@ -3008,7 +2081,7 @@ static int signalEmit ( Tcl_Interp * interp, Tcl_Obj * obj, int cmdNo, GtkTextBu
 /**
 \brief
 **/
-int gnoclTextCommand ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, Tcl_Obj *  const objv[], int cmdNo, int isTextWidget )
+int gnoclTextCommand ( GtkTextBuffer *buffer, Tcl_Interp *interp, int objc, Tcl_Obj *  const objv[], int cmdNo, int isTextWidget )
 {
 #ifdef DEBUG_TEXT
 	g_print ( "gnoclTextCommand %s %s\n", Tcl_GetString ( objv[cmdNo] ), Tcl_GetString ( objv[cmdNo+1] ) );
@@ -3067,7 +2140,7 @@ int gnoclTextCommand ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, Tc
 		idx += 3;
 	}
 
-//	g_print ( "1\n" );
+	g_print ( "1\n" );
 
 	switch ( idx )
 	{
@@ -3087,9 +2160,8 @@ int gnoclTextCommand ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, Tc
 
 		case PrintIdx:
 			{
-#ifdef DEBUG_TEXT
 				g_print ( "print\n" );
-#endif
+
 				/* reset parameters for this command and then call */
 				gnoclPrintCmd ( buffer, interp, objc, objv );
 
@@ -3115,11 +2187,9 @@ int gnoclTextCommand ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, Tc
 				// 0   1     2       3       4
 				// $id popup item    <path>
 				// $id popup subMenu <path1> <path2>
-#ifdef DEBUG_TEXT
 				g_print ( "PopupIdx %s\n", Tcl_GetString ( objv[cmdNo] ) );
 				g_print ( "PopupIdx %s\n", Tcl_GetString ( objv[cmdNo +1] ) );
 				g_print ( "PopupIdx %s\n", Tcl_GetString ( objv[cmdNo +2] ) );
-#endif
 
 				static char *popupOptions[] =
 				{
@@ -3173,34 +2243,28 @@ int gnoclTextCommand ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, Tc
 				gtk_text_buffer_get_bounds ( buffer, &start, &end );
 				data = gtk_text_buffer_serialize ( buffer, buffer, se_format, &start, &end, &length );
 
-				//g_print ( "%c", data );
-
-
-				output = fopen ( Tcl_GetString ( objv[cmdNo+1] ), "w" );
+				output = fopen ( Tcl_GetString ( objv[cmdNo+1] ), "wb" );
 				fwrite ( &length, sizeof ( gsize ), 1, output );
 				fwrite ( data, sizeof ( guint8 ), length, output );
 				fclose ( output );
 
 				g_free ( data );
-
 				return TCL_OK;
-
 			}
 
 			break;
 		case LoadIdx:
 		case DeSerializeIdx:  /* WJG 29/04/09 */
 			{
+				FILE        *input;
+				guint8      *data;
+				gsize        length;
+				GtkTextIter  iter;
+				GdkAtom        de_format;
 
-				FILE *input;
-				guint8 *data;
-				gsize length;
-				GtkTextIter iter;
-				GdkAtom de_format;
+				input = fopen ( Tcl_GetString ( objv[cmdNo+1] ), "rb" );
 
-				input = fopen ( Tcl_GetString ( objv[cmdNo+1] ), "r" );
-
-				// Return with error message if the file is not found.
+				/* Return with error message if the file is not found. */
 
 				if ( input == NULL )
 				{
@@ -3210,8 +2274,9 @@ int gnoclTextCommand ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, Tc
 					return TCL_OK;
 				}
 
-				// read data
+
 				fread ( &length, sizeof ( gsize ), 1, input );
+
 				data = malloc ( sizeof ( guint8 ) * length );
 				fread ( data, sizeof ( guint8 ), length, input );
 				fclose ( input );
@@ -3221,7 +2286,6 @@ int gnoclTextCommand ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, Tc
 				gtk_text_buffer_deserialize ( buffer, buffer, de_format, &iter, data, length, NULL );
 
 				g_free ( data );
-
 				return TCL_OK;
 			}
 
@@ -3411,6 +2475,7 @@ int gnoclTextCommand ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, Tc
 
 				}
 
+
 				Tcl_SetObjResult ( interp, resList );
 
 				return TCL_OK;
@@ -3453,7 +2518,7 @@ int gnoclTextCommand ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, Tc
 				/*  text erase/select/getChars startIndex ?endIndex? */
 				gint get_markup = 0;
 
-//				g_print ( "2\n" );
+				g_print ( "2\n" );
 
 				if ( objc == 6 )
 				{
@@ -3464,7 +2529,7 @@ int gnoclTextCommand ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, Tc
 					}
 				}
 
-//				g_print ( "3\n" );
+				g_print ( "3\n" );
 
 				if ( objc < cmdNo + 3 )
 				{
@@ -3472,16 +2537,18 @@ int gnoclTextCommand ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, Tc
 					return -1;
 				}
 
-//				g_print ( "4\n" );
+				g_print ( "4\n" );
 				/* get attributes */
 
 				if ( strcmp ( Tcl_GetString ( objv[cmdNo+1] ), "attributes" ) == 0 )
 				{
 
-//					g_print ( "attributes at %s\n", Tcl_GetString ( objv[cmdNo+2] ) );
-
 					GtkTextIter iter;
 					GtkTextAttributes values;
+
+					g_print ( "attributes at %s\n", Tcl_GetString ( objv[cmdNo+2] ) );
+
+
 
 					if ( posToIter ( interp, objv[cmdNo+2], buffer, &iter ) != TCL_OK )
 					{
@@ -3490,7 +2557,7 @@ int gnoclTextCommand ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, Tc
 
 					if ( gtk_text_iter_get_attributes ( &iter, &values ) )
 					{
-//						g_print ( "attributes at %s\n", Tcl_GetString ( objv[cmdNo+2] ) );
+						g_print ( "attributes at %s\n", Tcl_GetString ( objv[cmdNo+2] ) );
 						/*
 						GtkJustification justification;
 						GtkTextDirection direction;
@@ -3518,29 +2585,7 @@ int gnoclTextCommand ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, Tc
 					return TCL_OK;
 				}
 
-
-				if ( strcmp ( Tcl_GetString ( objv[cmdNo+1] ), "markup" ) == 0 )
-				{
-
-
-//					g_print ( "markup from %s to %s\n", Tcl_GetString ( objv[cmdNo+2] ), Tcl_GetString ( objv[cmdNo+3] ) );
-
-//					g_print ( "=====get as markup string\n" );
-
-
-					posToIter ( interp, objv[cmdNo+2], buffer, &startIter );
-					posToIter ( interp, objv[cmdNo+3], buffer, &endIter );
-
-					Tcl_Obj *res = getMarkUpString ( interp, buffer, &startIter, &endIter );
-
-					//char *txt = gtk_text_buffer_get_text ( buffer, &startIter, &endIter, 1 );
-					Tcl_SetObjResult ( interp, res );
-					return TCL_OK;
-
-
-				}
-
-//				g_print ( "6\n" );
+				g_print ( "6\n" );
 
 				if ( objc < cmdNo + 3 )
 				{
@@ -3548,14 +2593,14 @@ int gnoclTextCommand ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, Tc
 					return TCL_ERROR;
 				}
 
-//				g_print ( "7\n" );
+				g_print ( "7\n" );
 
 				if ( posToIter ( interp, objv[cmdNo+1], buffer, &startIter ) != TCL_OK )
 				{
 					return TCL_ERROR;
 				}
 
-//				g_print ( "8\n" );
+				g_print ( "8\n" );
 
 				if ( objc >= 4 )
 				{
@@ -3571,7 +2616,7 @@ int gnoclTextCommand ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, Tc
 					gtk_text_iter_backward_char ( &endIter );
 				}
 
-//				g_print ( "9\n" );
+				g_print ( "9\n" );
 
 				switch ( idx )
 				{
@@ -3589,13 +2634,13 @@ int gnoclTextCommand ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, Tc
 					case GetIdx:
 						{
 							/*  TODO: include_hidden_chars */
-//							g_print ( "10 ----\n" );
+							g_print ( "10 ----\n" );
 
 							if ( get_markup )
 							{
-//								g_print ( "-----get as markup string\n" );
+								g_print ( "-----get as markup string\n" );
 
-								Tcl_Obj *res = getMarkUpString ( interp, buffer, &startIter, &endIter );
+								Tcl_Obj *res = gnoclGetMarkUpString ( interp, buffer, &startIter, &endIter );
 
 								//char *txt = gtk_text_buffer_get_text ( buffer, &startIter, &endIter, 1 );
 								Tcl_SetObjResult ( interp, res );
@@ -3610,7 +2655,7 @@ int gnoclTextCommand ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, Tc
 						break;
 				}
 			}
-//			g_print ( "11\n" );
+			g_print ( "11\n" );
 			break;
 		case CutIdx:
 		case CopyIdx:
@@ -3876,16 +2921,14 @@ int gnoclTextCommand ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, Tc
 			{
 				/*  some DEBUG_TEXTging feedback */
 
-#ifdef DEBUG_TAGS
-				g_print ( "\tdump: %d %d: %s %s %s %s\n",
+#ifdef DEBUG_TEXT
+				g_print ( "dump: %d %d: %s %s %s %s \n",
 						  objc, cmdNo + 4,
 						  Tcl_GetString ( objv[cmdNo] ),
 						  Tcl_GetString ( objv[cmdNo+1] ),
 						  Tcl_GetString ( objv[cmdNo+2] ),
 						  Tcl_GetString ( objv[cmdNo+3] ) ) ;
 #endif
-
-
 
 				GtkTextIter startIter, endIter;
 
@@ -3910,7 +2953,7 @@ int gnoclTextCommand ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, Tc
 
 				if ( objc < cmdNo + 4 )
 				{
-					Tcl_WrongNumArgs ( interp, cmdNo + 1, objv, "?all|text|tags|window|images|marks? startIndex ?endIndex?" );
+					Tcl_WrongNumArgs ( interp, cmdNo + 1, objv, "?-all|-text|-tags|-window|-images|-marks? startIndex ?endIndex?" );
 					return TCL_ERROR;
 				}
 
@@ -3934,9 +2977,7 @@ int gnoclTextCommand ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, Tc
 					return TCL_ERROR;
 				}
 
-#ifdef DEBUG_TAGS
 				g_print ( "-----HERE\n" );
-#endif
 
 //getIdx ( cmds, objv[cmdNo+1], &idx );
 
@@ -3949,32 +2990,36 @@ int gnoclTextCommand ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, Tc
 				{
 					case AllIdx:
 						{
-							Tcl_Obj *res;
-							res = dumpAll ( interp,  buffer, &startIter, &endIter ) ;
-							Tcl_SetObjResult ( interp, res );
+							txt = "dump all... Feature not yet implmented\n";
+							Tcl_SetObjResult ( interp, Tcl_NewStringObj ( txt, -1 ) );
 							return TCL_OK;
 						}
 
 						break;
-					case TagsIdx:	/* include tagOn/Off changes in the text */
+						/* return details of tag transitions */
+					case TagsIdx:
 						{
 #ifdef DEBUG_TEXT
-							g_print ( "dump text+tags start\n" );
+							g_print ( "dump tags start\n" );
 #endif
-							GtkTextTagTable *tagtable = gtk_text_buffer_get_tag_table ( buffer );
+
+							/* obtain a list of tag state changes in the document */
+
+							//gnoclGetToggledTags ( interp, &startIter, &endIter );
+
+//							GtkTextTagTable *tagtable = gtk_text_buffer_get_tag_table ( buffer );
 
 							/*  get the settings of each tag in the buffer*/
 							/*  note, pass the address of the pointer to the data assigned by the called function */
-
-							//gtk_text_tag_table_foreach ( tagtable, gnoclGetTagProperties , &txt );
+//							gtk_text_tag_table_foreach ( tagtable, gnoclGetTagSettings , &txt );
 
 #ifdef DEBUG_TEXT
-							g_print ( "dump text+tags end\n" );
+							g_print ( "dump tags end\n" );
 #endif
 
-							//Tcl_SetObjResult ( interp, Tcl_NewStringObj ( txt, -1 ) );
+//							Tcl_SetObjResult ( interp, Tcl_NewStringObj ( txt, -1 ) );
 							/*  reset the outsput string by using null pointers */
-							//gnoclGetTagProperties ( NULL, NULL );
+							//gnoclGetTagSettings ( NULL, NULL );
 							return TCL_OK;
 						}
 
@@ -4019,6 +3064,21 @@ int gnoclTextCommand ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, Tc
 				}
 
 				return TCL_OK;
+				/*
+								// gint gtk_text_tag_table_get_size (GtkTextTagTable *table);
+								int tagTableSize = gtk_text_tag_table_get_size ( tagtable );
+				#ifdef DEBUG_TEXT
+								printf ( "~tagTableSize~    %d\n", tagTableSize );
+				#endif
+								// void gtk_text_tag_table_foreach (GtkTextTagTable *table, GtkTextTagTableForeach func, gpointer data);
+								//gtk_text_tag_table_foreach ( tagtable, testPrint , NULL );
+
+								//GtkTextTag*  gtk_text_tag_table_lookup (GtkTextTagTable *table, const gchar *name);
+								GtkTextTag *tag = gtk_text_tag_table_lookup ( tagtable, "_tag_rollOver" );
+				#ifdef DEBUG_TEXT
+								printf ( "~~tag~   %s\n", tag );
+				#endif
+				*/
 
 			}
 
@@ -4037,7 +3097,7 @@ int gnoclTextCommand ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, Tc
 \note        Unlike gnocl, Builder/Glade  not provide text objects within scrolled windows.
              Two handle functions are necessary, one for gnocl built widgets, and one for builder/glade widgets.
 **/
-static int textFunc ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj *  const objv[] )
+static int textFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *  const objv[] )
 {
 	GtkScrolledWindow   *scrolled = GTK_SCROLLED_WINDOW ( data );
 	GtkTextView     *text = GTK_TEXT_VIEW ( gtk_bin_get_child ( GTK_BIN ( scrolled ) ) );
@@ -4133,6 +3193,7 @@ static int textFunc ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * 
 				gint wx, wy; /* window coordinates */
 				gint bx, by; /* buffer coordinates */
 				gint line, row;
+				gchar str[16];
 
 				sscanf ( Tcl_GetString ( objv[2] ), "%d %d", &wx, &wy );
 
@@ -4146,7 +3207,7 @@ static int textFunc ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * 
 				line = gtk_text_iter_get_line ( &iter );
 				row = gtk_text_iter_get_line_offset ( &iter );
 
-				gchar str[16];
+
 				sprintf ( str, "%d %d", line, row );
 				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( str, -1 ) );
 
@@ -4162,6 +3223,7 @@ static int textFunc ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * 
 
 				GtkTextIter iter;
 				GdkRectangle rect;
+				gchar str[24];
 
 				if ( posToIter ( interp, objv[2], buffer, &iter ) != TCL_OK )
 				{
@@ -4173,7 +3235,7 @@ static int textFunc ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * 
 				// this line returns the buffer coordinates as window cooordinates!
 				gtk_text_view_buffer_to_window_coords ( text, GTK_TEXT_WINDOW_WIDGET, rect.x, rect.y, &wx, &wy );
 
-				gchar str[24];
+
 				sprintf ( str, "%d %d %d %d\n", wx, wy, rect.width, rect.height );
 				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( str, -1 ) );
 
@@ -4182,10 +3244,10 @@ static int textFunc ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * 
 		case 8: /* get visible rect */
 			{
 				GdkRectangle rect;
-
+				gchar str[24];
 				gtk_text_view_get_visible_rect ( text, &rect );
 
-				gchar str[24];
+
 				sprintf ( str, "%d %d %d %d\n", rect.x, rect.y, rect.width, rect.height );
 				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( str, -1 ) );
 
@@ -4212,11 +3274,12 @@ static int textFunc ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * 
 /**
 \brief      Handler for glade created instances that have no scrolled window.
 **/
-int textViewFunc ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj *  const objv[] )
+int textViewFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *  const objv[] )
 {
 
 	GtkTextView     *text = GTK_TEXT_VIEW ( data );
 	GtkTextBuffer  *buffer = gtk_text_view_get_buffer ( text );
+
 
 	if ( objc < 2 )
 	{
@@ -4275,7 +3338,7 @@ int textViewFunc ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj *  co
 /**
 \brief
 **/
-int gnoclTextCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj *  const objv[] )
+int gnoclTextCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *  const objv[] )
 {
 	int               ret, k;
 	GtkTextView       *textView;
