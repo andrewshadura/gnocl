@@ -63,6 +63,9 @@ static int optSizing ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_O
 static int ruleHint ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret );
 static int treeLinePattern ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret );
 static int gnoclOptSearchEntryWidget ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret );
+
+static gnoclOptColorEvenRow ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret ); /* stubb */
+
 /**
  */
 static const char refPrefix[] = "ref";
@@ -141,7 +144,6 @@ static GnoclOption treeListOptions[] =
 	{ "-name", GNOCL_STRING, "name" },
 	{ "-onButtonPress", GNOCL_OBJ, "P", gnoclOptOnButton },
 	{ "-onButtonRelease", GNOCL_OBJ, "R", gnoclOptOnButton },
-	{ "-onClicked", GNOCL_OBJ, "", gnoclOptOnColumnClicked },
 	{ "-onPopupMenu", GNOCL_OBJ, "popup-menu", gnoclOptCommand },
 	{ "-sizeGroup", GNOCL_OBJ, "s", gnoclOptSizeGroup },
 	{ "-widthGroup", GNOCL_OBJ, "w", gnoclOptSizeGroup },
@@ -150,8 +152,10 @@ static GnoclOption treeListOptions[] =
 	{ "-baseFont", GNOCL_OBJ, "Sans 14", gnoclOptGdkBaseFont },
 	{ "-baseColor", GNOCL_OBJ, "normal", gnoclOptGdkColorBase },
 
+	{ "-evenRowColor", GNOCL_OBJ, "", gnoclOptColorEvenRow }, /* still a code stub */
+
 	/* GtkTreeList properties, actual colours set by theme engine based
-	   upon other seetings,
+	   upon other settings,
 	   19/03/09
 	*/
 	{ "-ruleHint", GNOCL_BOOL, "rules-hint"},
@@ -213,7 +217,7 @@ static GnoclOption colOptions[] =
 	{ "-title", GNOCL_STRING, "title" },
 	{ "-visible", GNOCL_BOOL, "visible" },
 	{ "-onWidthChange", GNOCL_OBJ, "", gnoclOptNotify },
-
+	{ "-onClicked", GNOCL_OBJ, "", gnoclOptOnColumnClicked },
 	/* expiremental */
 	{ "-widthGroup", GNOCL_OBJ, "w", gnoclOptSizeGroup },
 
@@ -293,6 +297,17 @@ typedef struct
 */
 
 /**
+\brief	Set the treeview "even-row-color" propterty
+\note	Still a code stub.
+**/
+int gnoclOptColorEvenRow ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
+{
+	return TCL_OK;
+
+	//return modifyWidgetGdkColor ( interp, opt, obj, gtk_widget_modify_fg, G_STRUCT_OFFSET ( GtkStyle, fg ), ret );
+}
+
+/**
 **/
 gboolean  search_foreach_func ( GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer data )
 {
@@ -347,13 +362,16 @@ gboolean search_equal_func ( GtkTreeModel *model, gint column, const gchar *key,
 **/
 static int gnoclOptSearchEntryWidget ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
-	g_print ( "search entry widget = %s\n", Tcl_GetString ( opt->val.obj ) );
+
+#ifdef DEBUG_TREELIST
+	g_print ( "%s: search entry widget = %s\n", __FUNCTION__, Tcl_GetString ( opt->val.obj ) );
+#endif
 
 	GtkWidget *widget;
 
-	//widget = gnoclGetWidgetFromName ( cTcl_GetString ( opt->val.obj ), interp );
+	widget = gnoclGetWidgetFromName ( Tcl_GetString ( opt->val.obj ), interp );
 
-	//gtk_tree_view_set_search_entry ( (GTK_WIDGET ( obj )) , widget);
+	gtk_tree_view_set_search_entry ( ( GTK_WIDGET ( obj ) ) , widget );
 
 	return TCL_OK;
 
@@ -366,7 +384,7 @@ static int gnoclOptSearchEntryWidget ( Tcl_Interp *interp, GnoclOption *opt, GOb
 static int ruleHint ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
 #ifdef DEBUG_TREELIST
-	g_print ( "option = %s\n", opt->optName );
+	g_print ( "%s: option = %s\n", __FUNCTION__, opt->optName );
 #endif
 
 	/* obtain value passed to the option, then convert to an int */

@@ -39,10 +39,11 @@ static int GnoclOptMiscFp ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, 
 /**
 \brief
 **/
-void addFilterPatterns (Tcl_Interp *interp, GtkFileFilter *filter, gchar *pattern) {
+void addFilterPatterns ( Tcl_Interp *interp, GtkFileFilter *filter, gchar *pattern )
+{
 	int argc, code, i;
 	char *string;
-	char **argv;	
+	char **argv;
 
 	code = Tcl_SplitList ( interp, pattern, &argc, &argv );
 
@@ -50,7 +51,7 @@ void addFilterPatterns (Tcl_Interp *interp, GtkFileFilter *filter, gchar *patter
 	{
 		/* process patterns */
 		//gtk_file_filter_add_pattern (GtkFileFilter *filter, const gchar *pattern);
-		gtk_file_filter_add_pattern (filter, argv[i]);
+		gtk_file_filter_add_pattern ( filter, argv[i] );
 
 	}
 
@@ -64,7 +65,7 @@ void addFilterPatterns (Tcl_Interp *interp, GtkFileFilter *filter, gchar *patter
 int gnoclOptFileFilters (	Tcl_Interp *interp,	GnoclOption *opt,	GObject *obj,	Tcl_Obj **ret )
 {
 #ifdef DEBUG_FILECHOOSER
-	g_print ( "$s\n",__FUNCTION__ );
+	g_print ( "$s\n", __FUNCTION__ );
 #endif
 	int argc, code, i;
 	char *string;
@@ -75,15 +76,15 @@ int gnoclOptFileFilters (	Tcl_Interp *interp,	GnoclOption *opt,	GObject *obj,	Tc
 	GtkFileFilter *filter;
 
 	/* read pairs */
-	for ( i = 0; i < argc; i+=2 )
+	for ( i = 0; i < argc; i += 2 )
 	{
 		//filter = gnoclFileFilterFromName ( argv[i] );
 		/* filter name */
 		filter = gtk_file_filter_new ();
-		gtk_file_filter_set_name (filter, argv[i]);		
-		
-		addFilterPatterns(interp, filter, argv[i+1]);
-		
+		gtk_file_filter_set_name ( filter, argv[i] );
+
+		addFilterPatterns ( interp, filter, argv[i+1] );
+
 		/* add filter to the dialog */
 		gtk_file_chooser_add_filter ( GTK_FILE_CHOOSER ( obj ), filter );
 
@@ -134,8 +135,8 @@ static int doFileSelectionChanged ( GtkFileChooser *chooser, gpointer user_data 
 **/
 static GtkFileChooserConfirmation doOverwriteConfirm ( GtkFileChooser *chooser, gpointer user_data )
 {
-  char *uri;
-  uri = gtk_file_chooser_get_uri (chooser);
+	char *uri;
+	uri = gtk_file_chooser_get_uri ( chooser );
 
 	GnoclCommandData *cs = ( GnoclCommandData * ) user_data;
 
@@ -146,32 +147,32 @@ static GtkFileChooserConfirmation doOverwriteConfirm ( GtkFileChooser *chooser, 
 		{ 0 }
 	};
 
-	ps[0].val.str = gtk_file_chooser_get_uri (chooser);
+	ps[0].val.str = gtk_file_chooser_get_uri ( chooser );
 	ps[1].val.str = "action";
 	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
 
-/*
-if (is_uri_read_only (uri))
-    {
-      if (user_wants_to_replace_read_only_file (uri))
-        return GTK_FILE_CHOOSER_CONFIRMATION_ACCEPT_FILENAME;
-      else
-        return GTK_FILE_CHOOSER_CONFIRMATION_SELECT_AGAIN;
-    } else
-*/
-      return GTK_FILE_CHOOSER_CONFIRMATION_CONFIRM; // fall back to the default dialog
+	/*
+	if (is_uri_read_only (uri))
+	    {
+	      if (user_wants_to_replace_read_only_file (uri))
+	        return GTK_FILE_CHOOSER_CONFIRMATION_ACCEPT_FILENAME;
+	      else
+	        return GTK_FILE_CHOOSER_CONFIRMATION_SELECT_AGAIN;
+	    } else
+	*/
+	return GTK_FILE_CHOOSER_CONFIRMATION_CONFIRM; // fall back to the default dialog
 
 
-/*
-  if (is_uri_read_only (uri))
-    {
-      if (user_wants_to_replace_read_only_file (uri))
-        return GTK_FILE_CHOOSER_CONFIRMATION_ACCEPT_FILENAME;
-      else
-        return GTK_FILE_CHOOSER_CONFIRMATION_SELECT_AGAIN;
-    } else
-      return GTK_FILE_CHOOSER_CONFIRMATION_CONFIRM; // fall back to the default dialog
-*/
+	/*
+	  if (is_uri_read_only (uri))
+	    {
+	      if (user_wants_to_replace_read_only_file (uri))
+	        return GTK_FILE_CHOOSER_CONFIRMATION_ACCEPT_FILENAME;
+	      else
+	        return GTK_FILE_CHOOSER_CONFIRMATION_SELECT_AGAIN;
+	    } else
+	      return GTK_FILE_CHOOSER_CONFIRMATION_CONFIRM; // fall back to the default dialog
+	*/
 
 }
 
@@ -182,7 +183,7 @@ if (is_uri_read_only (uri))
 int gnoclOptOverwriteConfirm  ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
 #ifdef DEBUG_FILECHOOSER
-	g_print ( "$s\n",__FUNCTION__ );
+	g_print ( "$s\n", __FUNCTION__ );
 #endif
 
 	assert ( strcmp ( opt->optName, "-onConfirmOverwrite" ) == 0 );
@@ -197,7 +198,7 @@ int gnoclOptOverwriteConfirm  ( Tcl_Interp *interp, GnoclOption *opt, GObject *o
 int gnoclOptFileSelectionChanged  ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
 #ifdef DEBUG_FILECHOOSER
-	g_print ( "$s\n",__FUNCTION__ );
+	g_print ( "$s\n", __FUNCTION__ );
 #endif
 
 	assert ( strcmp ( opt->optName, "-onSelectionChanged" ) == 0 );

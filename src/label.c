@@ -172,12 +172,7 @@ static int setVal ( GtkLabel *label, const char *txt )
 /**
 \brief
 **/
-static char *traceFunc (
-	ClientData data,
-	Tcl_Interp *interp,
-	const char *name1,
-	const char *name2,
-	int flags )
+static char *traceFunc (	ClientData data,	Tcl_Interp *interp,	const char *name1,	const char *name2,	int flags )
 {
 	LabelParams *para = ( LabelParams * ) data;
 
@@ -198,9 +193,7 @@ static char *traceFunc (
 /**
 \brief
 **/
-static int setTextVariable (
-	LabelParams *para,
-	const char *val )
+static int setTextVariable (	LabelParams *para,	const char *val )
 {
 #ifdef DEBUG_LABEL
 	printf ( "label/staticFuncs/setTextVariable\n" );
@@ -268,19 +261,18 @@ static void destroyFunc (
 /**
 \brief
 **/
-static int configure (
-	Tcl_Interp *interp,
-	LabelParams *para,
-	GnoclOption options[] )
+static int configure ( Tcl_Interp *interp, LabelParams *para, GnoclOption options[] )
 {
 #ifdef DEBUG_LABEL
 	printf ( "label/staticFuncs/configure\n" );
 #endif
 
 
-	gnoclAttachOptCmdAndVar ( &options[onChangedIdx], &para->onChanged,
-							  &options[textVariableIdx], &para->textVariable, "changed", G_OBJECT ( para->label ),
-							  G_CALLBACK ( changedFunc ), interp, traceFunc, para );
+	gnoclAttachOptCmdAndVar (
+		&options[onChangedIdx], &para->onChanged,
+		&options[textVariableIdx], &para->textVariable,
+		"changed", G_OBJECT ( para->label ),
+		G_CALLBACK ( changedFunc ), interp, traceFunc, para );
 
 	if ( options[textVariableIdx].status == GNOCL_STATUS_CHANGED
 			&& options[valueIdx].status == 0  /* value is handled below */

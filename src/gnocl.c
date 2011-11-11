@@ -705,6 +705,9 @@ static GnoclCmd commands[] =
 	{ "paned", gnoclPanedCmd },
 	{ "plug", gnoclPlugCmd },
 	{ "progressBar", gnoclProgressBarCmd },
+
+	{ "pBar2", gnoclPBarCmd },
+
 	{ "radioButton", gnoclRadioButtonCmd },
 	{ "scale", gnoclScaleCmd },
 	{ "scrolledWindow", gnoclScrolledWindowCmd },
@@ -907,7 +910,7 @@ static void eventCheckProc ( ClientData clientData, int flags )
 
 /**
 \brief
-*/
+**/
 #ifdef GNOCL_USE_GNOME
 static GnomeAppBar *gnoclAppBar = NULL;
 int gnoclRegisterHintAppBar (

@@ -180,6 +180,8 @@ gnoclOptFunc gnoclOptOnScroll;
 
 int gnoclOptGeneric ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, const char *optName, const char *txt[], const int types[], Tcl_Obj **ret );
 
+gnoclOptFunc gnoclOptGdkColorEvenRow; /* still a stub, widget style settings */
+
 gnoclOptFunc gnoclOptOrientation;
 gnoclOptFunc gnoclOptNotify;
 gnoclOptFunc gnoclOptAnchor;
@@ -666,6 +668,9 @@ Tcl_ObjCmdProc gnoclToolPaletteCmd;
 Tcl_ObjCmdProc gnoclToolItemGroupCmd;
 Tcl_ObjCmdProc gnoclPlugCmd;
 Tcl_ObjCmdProc gnoclProgressBarCmd;
+
+Tcl_ObjCmdProc gnoclPBarCmd;
+
 Tcl_ObjCmdProc gnoclRadioButtonCmd;
 Tcl_ObjCmdProc gnoclScaleCmd;
 Tcl_ObjCmdProc gnoclScrolledWindowCmd;

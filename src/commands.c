@@ -350,7 +350,7 @@ int gnoclSignalStopCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj
 }
 
 /**
-\brief      
+\brief
 **/
 int gnoclSignalEmitCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * const objv[] )
 {

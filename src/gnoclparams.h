@@ -80,6 +80,19 @@ typedef struct
 
 typedef struct
 {
+	char       *name;
+	Tcl_Interp *interp;
+	GtkProgressBar *pbar;
+	char       *onFractionChanged;
+	char       *onTextChanged;
+	char       *variable;
+	int        inSetVar;
+	char       *textVariable;
+	int        inSetText;
+} ProgressBarParams;
+
+typedef struct
+{
 	GtkLabel    *label;
 	Tcl_Interp  *interp;
 	char        *name;

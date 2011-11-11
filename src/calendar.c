@@ -47,8 +47,8 @@ date    20/05/09
 \n
 \n     \%w widget name
 \n     \%g glade name
-\n     \%d day number (range 1 - 31)
-\n     \%m month number  (range 1 - 12)
+\n     \%d day number (range 1-31)
+\n     \%m month number  (range 1-12)
 \n     \%y year
 
 \b -onDoubleDaySelected \e string (default: "")
@@ -56,8 +56,8 @@ date    20/05/09
 \n
 \n     \%w widget name
 \n     \%g glade name
-\n     \%d day number (range 1 - 31)
-\n     \%m month number  (range 1 - 12)
+\n     \%d day number (range 1-31)
+\n     \%m month number  (range 1-12)
 \n     \%y year
 
 \b -onMonthChanged \e string (default: "")
@@ -65,8 +65,8 @@ date    20/05/09
 \n
 \n     \%w widget name
 \n     \%g glade name
-\n     \%d day number (range 1 - 31)
-\n     \%m month number  (range 1 - 12)
+\n     \%d day number (range 1-31)
+\n     \%m month number  (range 1-12)
 \n     \%y year
 
 \b -onNextMonth \e string (default: "")
@@ -74,8 +74,8 @@ date    20/05/09
 \n
 \n     \%w widget name
 \n     \%g glade name
-\n     \%d day number (range 1 - 31)
-\n     \%m month number  (range 1 - 12)
+\n     \%d day number (range 1-31)
+\n     \%m month number  (range 1-12)
 \n     \%y year
 
 \b -onNextYear \e string (default: "")
@@ -83,8 +83,8 @@ date    20/05/09
 \n
 \n     \%w widget name
 \n     \%g glade name
-\n     \%d day number (range 1 - 31)
-\n     \%m month number  (range 1 - 12)
+\n     \%d day number (range 1-31)
+\n     \%m month number  (range 1-12)
 \n     \%y year
 
 \b -onPrevMonth \e string (default: "")
@@ -92,8 +92,8 @@ date    20/05/09
 \n
 \n     \%w widget name
 \n     \%g glade name
-\n     \%d day number (range 1 - 31)
-\n     \%m month number  (range 1 - 12)
+\n     \%d day number (range 1-31)
+\n     \%m month number  (range 1-12)
 \n     \%y year
 
 \b -onPrevYear \e string (default: "")
@@ -101,8 +101,8 @@ date    20/05/09
 \n
 \n     \%w widget name
 \n     \%g glade name
-\n     \%d day number (range 1 - 31)
-\n     \%m month number  (range 1 - 12)
+\n     \%d day number (range 1-31)
+\n     \%m month number  (range 1-12)
 \n     \%y year
 
 \subsection cal3 COMMANDS
@@ -141,7 +141,7 @@ date    20/05/09
  \endverbatim
 
  \todo
- button - BLAH, BLAH
+ button-BLAH, BLAH
 **/
 
 #include "gnocl.h"
@@ -158,7 +158,7 @@ static void calendar_date_to_string ( CalendarParams *para, char *buffer, gint b
 
 	gtk_calendar_get_date ( GTK_CALENDAR ( para->calendar ), &year, &month, &day );
 	date = g_date_new_dmy ( day, month + 1, year );
-	g_date_strftime ( buffer, buff_len - 1, "%x", date );
+	g_date_strftime ( buffer, buff_len-1, "%x", date );
 
 	g_date_free ( date );
 }
@@ -177,18 +177,24 @@ static void calendar_set_detail ( CalendarParams *para, guint year, guint month,
 **/
 static gchar* calendar_get_detail ( CalendarParams *para, guint year, guint month, guint day )
 {
-
-	g_print ( "calendar_get_detail -1\n" );
+#ifdef DEBUG_CALENDAR
+	g_print ( "%s-1\n", __FUNCTION__ );
+#endif
 
 	const gchar *detail;
 	gchar *key;
 
 	key = g_strdup_printf ( "%04d-%02d-%02d", year, month + 1, day );
 
-	g_print ( "calendar_get_detail -2\n" );
+#ifdef DEBUG_CALENDAR
+	g_print ( "%s-2\n", __FUNCTION__ );
+#endif
+
 	detail = g_hash_table_lookup ( para->details, key );
 
-	g_print ( "calendar_get_detail -3\n" );
+#ifdef DEBUG_CALENDAR
+	g_print ( "%s-3\n", __FUNCTION__ );
+#endif
 
 	g_free ( key );
 
@@ -201,26 +207,41 @@ static gchar* calendar_get_detail ( CalendarParams *para, guint year, guint mont
 static void calendar_update_details ( CalendarParams *para )
 {
 
-	g_print ( "calendar_update_details -1\n" );
+#ifdef DEBUG_CALENDAR
+	g_print ( "%s-1\n", __FUNCTION__ );
+#endif
+
 	guint year, month, day;
 	gchar *detail;
 
-	g_print ( "calendar_update_details -2\n" );
+#ifdef DEBUG_CALENDAR
+	g_print ( "%s-2\n", __FUNCTION__ );
+#endif
 	gtk_calendar_get_date ( GTK_CALENDAR ( para->calendar ), &year, &month, &day );
 
-	g_print ( "calendar_update_details -3\n" );
+#ifdef DEBUG_CALENDAR
+	g_print ( "%s-3\n", __FUNCTION__ );
+#endif
 	detail = calendar_get_detail ( para, year, month, day );
 
-	g_print ( "calendar_update_details -4\n" );
+#ifdef DEBUG_CALENDAR
+	g_print ( "%s-4\n", __FUNCTION__ );
+#endif
 	g_signal_handler_block ( para->buffer, para->changed );
 
-	g_print ( "calendar_update_details -5\n" );
+#ifdef DEBUG_CALENDAR
+	g_print ( "%s-5\n", __FUNCTION__ );
+#endif
 	gtk_text_buffer_set_text ( para->buffer, detail ? detail : "", -1 );
 
-	g_print ( "calendar_update_details -6\n" );
+#ifdef DEBUG_CALENDAR
+	g_print ( "%s-6\n", __FUNCTION__ );
+#endif
 	g_signal_handler_unblock ( para->buffer, para->changed );
 
-	g_print ( "calendar_update_details -7\n" );
+#ifdef DEBUG_CALENDAR
+	g_print ( "%s-7\n", __FUNCTION__ );
+#endif
 
 	g_free ( detail );
 }
@@ -239,7 +260,9 @@ static gchar* calendar_detail_cb ( GtkCalendar *calendar, guint year, guint mont
 static void demonstrate_details ( CalendarParams *para )
 {
 
-	g_print ( "demonstrate_details\n" );
+#ifdef DEBUG_CALENDAR
+	g_print ( "%s-1\n", __FUNCTION__ );
+#endif
 
 	static char *rainbow[] = { "#900", "#980", "#390", "#095", "#059", "#309", "#908" };
 	GtkCalendar *calendar = GTK_CALENDAR ( para->calendar );
@@ -270,10 +293,10 @@ static void demonstrate_details ( CalendarParams *para )
 
 			detail = g_strdup_printf ( "<span color='%s'>yadda\n"
 									   "(%04d-%02d-%02d)</span>",
-									   rainbow[ ( day - 1 ) % 7],
+									   rainbow[ ( day-1 ) % 7],
 									   year, month, day );
 
-			calendar_set_detail ( para, year, month - 1, day, detail );
+			calendar_set_detail ( para, year, month-1, day, detail );
 		}
 
 	gtk_widget_queue_resize ( para->calendar );
@@ -290,7 +313,7 @@ static void destroyFunc (
 	gpointer data )
 {
 #ifdef DEBUG_ENTRY
-	printf ( "entry/staticFuncs/destroyFunc\n" );
+	g_print ( "entry/staticFuncs/destroyFunc\n" );
 #endif
 
 
@@ -315,7 +338,9 @@ date      10/05/2010
 */
 static gboolean doOnDoubleDaySelect ( GtkCalendar *calendar, gpointer data )
 {
-	g_print ( "doOnDoubleDaySelect\n" );
+#ifdef DEBUG_CALENDAR
+	g_print ( "%s-1\n", __FUNCTION__ );
+#endif
 
 	GnoclCommandData *cs = ( GnoclCommandData * ) data;
 
@@ -376,7 +401,9 @@ static gboolean doOnDoubleDaySelect ( GtkCalendar *calendar, gpointer data )
 **/
 int gnoclOptShowMonthChange ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
-	g_print ( "gnoclOptMonthChange\n" );
+#ifdef DEBUG_CALENDAR
+	g_print ( "%s-1\n", __FUNCTION__ );
+#endif" );
 	guint show;
 
 
@@ -405,7 +432,9 @@ int gnoclOptShowMonthChange ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj
 **/
 int gnoclOptMonth ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
-	g_print ( "gnoclOptMonth\n" );
+#ifdef DEBUG_CALENDAR
+	g_print ( " %s-1\n",__FUNCTION__ );
+#endif
 	guint month;
 
 	assert ( strcmp ( opt->optName, "-month" ) == 0 );
@@ -424,23 +453,25 @@ int gnoclOptMonth ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj 
 **/
 static gboolean doOnDaySelected ( GtkCalendar *calendar, gpointer data )
 {
-	g_print ( "doOnDaySelected\n" );
+#ifdef DEBUG_CALENDAR
+	g_print ( " %s-1\n",__FUNCTION__ );
+#endif);
 
 	GnoclCommandData *cs = ( GnoclCommandData * ) data;
 
 	GnoclPercSubst ps[] =
-	{
+		{
 
-		{ 'd', GNOCL_INT },    /* day */
-		{ 'm', GNOCL_INT },    /* month */
-		{ 'y', GNOCL_INT },    /* year */
-		{ 'w', GNOCL_STRING }, /* widget */
-		{ 'g', GNOCL_STRING }, /* glade name */
-		{ 'x', GNOCL_INT },    /* pointer x-position */
-		{ 'y', GNOCL_INT },    /* pointer y-position */
-		{ 's', GNOCL_STRING }, /* signal-type */
-		{ 0 }
-	};
+			{ 'd', GNOCL_INT },    /* day */
+			{ 'm', GNOCL_INT },    /* month */
+			{ 'y', GNOCL_INT },    /* year */
+			{ 'w', GNOCL_STRING }, /* widget */
+			{ 'g', GNOCL_STRING }, /* glade name */
+			{ 'x', GNOCL_INT },    /* pointer x-position */
+			{ 'y', GNOCL_INT },    /* pointer y-position */
+			{ 's', GNOCL_STRING }, /* signal-type */
+			{ 0 }
+		};
 
 	gint year, month, day;
 	gchar str[20];
@@ -469,7 +500,9 @@ static gboolean doOnDaySelected ( GtkCalendar *calendar, gpointer data )
 **/
 int gnoclOptOnDaySelected ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
-	g_print ( "gnoclOptOnDaySelected\n" );
+#ifdef DEBUG_CALENDAR
+	g_print ( " %s-1\n",__FUNCTION__ );
+#endif
 
 	assert ( strcmp ( opt->optName, "-onDaySelected" ) == 0 );
 	return gnoclConnectOptCmd ( interp, obj, "day-selected", G_CALLBACK ( doOnDaySelected ), opt, obj, ret );
@@ -497,23 +530,25 @@ int gnoclOptOnDoubleDaySelected ( Tcl_Interp *interp, GnoclOption *opt, GObject 
 
 static gboolean doOnMonthChanged ( GtkCalendar *calendar, gpointer data )
 {
-	g_print ( "doOnMonthChanged\n" );
+#ifdef DEBUG_CALENDAR
+	g_print ( " %s-1\n",__FUNCTION__ );
+#endif
 
 	GnoclCommandData *cs = ( GnoclCommandData * ) data;
 
 	GnoclPercSubst ps[] =
-	{
+		{
 
-		{ 'd', GNOCL_INT },    /* day */
-		{ 'm', GNOCL_INT },    /* month */
-		{ 'y', GNOCL_INT },    /* year */
-		{ 'w', GNOCL_STRING }, /* widget */
-		{ 'g', GNOCL_STRING }, /* glade name */
-		{ 'x', GNOCL_INT },    /* pointer x-position */
-		{ 'y', GNOCL_INT },    /* pointer y-position */
-		{ 's', GNOCL_STRING }, /* signal-type */
-		{ 0 }
-	};
+			{ 'd', GNOCL_INT },    /* day */
+			{ 'm', GNOCL_INT },    /* month */
+			{ 'y', GNOCL_INT },    /* year */
+			{ 'w', GNOCL_STRING }, /* widget */
+			{ 'g', GNOCL_STRING }, /* glade name */
+			{ 'x', GNOCL_INT },    /* pointer x-position */
+			{ 'y', GNOCL_INT },    /* pointer y-position */
+			{ 's', GNOCL_STRING }, /* signal-type */
+			{ 0 }
+		};
 
 	gint year, month, day;
 	gchar str[20];
@@ -550,23 +585,24 @@ int gnoclOptOnMonthChanged ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj,
 **/
 static gboolean doOnNextMonth ( GtkCalendar *calendar, gpointer data )
 {
-	g_print ( "doOnNextMonth\n" );
-
+#ifdef DEBUG_CALENDAR
+	g_print ( " %s-1\n",__FUNCTION__ );
+#endif
 	GnoclCommandData *cs = ( GnoclCommandData * ) data;
 
 	GnoclPercSubst ps[] =
-	{
+		{
 
-		{ 'd', GNOCL_INT },    /* day */
-		{ 'm', GNOCL_INT },    /* month */
-		{ 'y', GNOCL_INT },    /* year */
-		{ 'w', GNOCL_STRING }, /* widget */
-		{ 'g', GNOCL_STRING }, /* glade name */
-		{ 'x', GNOCL_INT },    /* pointer x-position */
-		{ 'y', GNOCL_INT },    /* pointer y-position */
-		{ 's', GNOCL_STRING }, /* signal-type */
-		{ 0 }
-	};
+			{ 'd', GNOCL_INT },    /* day */
+			{ 'm', GNOCL_INT },    /* month */
+			{ 'y', GNOCL_INT },    /* year */
+			{ 'w', GNOCL_STRING }, /* widget */
+			{ 'g', GNOCL_STRING }, /* glade name */
+			{ 'x', GNOCL_INT },    /* pointer x-position */
+			{ 'y', GNOCL_INT },    /* pointer y-position */
+			{ 's', GNOCL_STRING }, /* signal-type */
+			{ 0 }
+		};
 
 	gint year, month, day;
 	gchar str[20];
@@ -606,23 +642,25 @@ int gnoclOptonNextMonth ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tc
 **/
 static gboolean doOnPrevMonth ( GtkCalendar *calendar, gpointer data )
 {
-	g_print ( "doOnPrevMonth\n" );
+#ifdef DEBUG_CALENDAR
+	g_print ( " %s-1\n",__FUNCTION__ );
+#endif
 
 	GnoclCommandData *cs = ( GnoclCommandData * ) data;
 
 	GnoclPercSubst ps[] =
-	{
+		{
 
-		{ 'd', GNOCL_INT },    /* day */
-		{ 'm', GNOCL_INT },    /* month */
-		{ 'y', GNOCL_INT },    /* year */
-		{ 'w', GNOCL_STRING }, /* widget */
-		{ 'g', GNOCL_STRING }, /* glade name */
-		{ 'x', GNOCL_INT },    /* pointer x-position */
-		{ 'y', GNOCL_INT },    /* pointer y-position */
-		{ 's', GNOCL_STRING }, /* signal-type */
-		{ 0 }
-	};
+			{ 'd', GNOCL_INT },    /* day */
+			{ 'm', GNOCL_INT },    /* month */
+			{ 'y', GNOCL_INT },    /* year */
+			{ 'w', GNOCL_STRING }, /* widget */
+			{ 'g', GNOCL_STRING }, /* glade name */
+			{ 'x', GNOCL_INT },    /* pointer x-position */
+			{ 'y', GNOCL_INT },    /* pointer y-position */
+			{ 's', GNOCL_STRING }, /* signal-type */
+			{ 0 }
+		};
 
 	gint year, month, day;
 	gchar str[20];
@@ -661,23 +699,25 @@ int gnoclOpOnPrevMonth ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl
 **/
 static gboolean doOnNextYear ( GtkCalendar *calendar, gpointer data )
 {
-	g_print ( "doOnNextYear\n" );
+#ifdef DEBUG_CALENDAR
+	g_print ( " %s-1\n",__FUNCTION__ );
+#endif
 
 	GnoclCommandData *cs = ( GnoclCommandData * ) data;
 
 	GnoclPercSubst ps[] =
-	{
+		{
 
-		{ 'd', GNOCL_INT },    /* day */
-		{ 'm', GNOCL_INT },    /* month */
-		{ 'y', GNOCL_INT },    /* year */
-		{ 'w', GNOCL_STRING }, /* widget */
-		{ 'g', GNOCL_STRING }, /* glade name */
-		{ 'x', GNOCL_INT },    /* pointer x-position */
-		{ 'y', GNOCL_INT },    /* pointer y-position */
-		{ 's', GNOCL_STRING }, /* signal-type */
-		{ 0 }
-	};
+			{ 'd', GNOCL_INT },    /* day */
+			{ 'm', GNOCL_INT },    /* month */
+			{ 'y', GNOCL_INT },    /* year */
+			{ 'w', GNOCL_STRING }, /* widget */
+			{ 'g', GNOCL_STRING }, /* glade name */
+			{ 'x', GNOCL_INT },    /* pointer x-position */
+			{ 'y', GNOCL_INT },    /* pointer y-position */
+			{ 's', GNOCL_STRING }, /* signal-type */
+			{ 0 }
+		};
 
 	gint year, month, day;
 	gchar str[20];
@@ -718,23 +758,25 @@ int gnoclOptOnNextYear ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl
 **/
 static gboolean doOnPrevYear ( GtkCalendar *calendar, gpointer data )
 {
-	g_print ( "doOnPrevYear\n" );
+#ifdef DEBUG_CALENDAR
+	g_print ( " %s-1\n",__FUNCTION__ );
+#endif
 
 	GnoclCommandData *cs = ( GnoclCommandData * ) data;
 
 	GnoclPercSubst ps[] =
-	{
+		{
 
-		{ 'd', GNOCL_INT },    /* day */
-		{ 'm', GNOCL_INT },    /* month */
-		{ 'y', GNOCL_INT },    /* year */
-		{ 'w', GNOCL_STRING }, /* widget */
-		{ 'g', GNOCL_STRING }, /* glade name */
-		{ 'x', GNOCL_INT },    /* pointer x-position */
-		{ 'y', GNOCL_INT },    /* pointer y-position */
-		{ 's', GNOCL_STRING }, /* signal-type */
-		{ 0 }
-	};
+			{ 'd', GNOCL_INT },    /* day */
+			{ 'm', GNOCL_INT },    /* month */
+			{ 'y', GNOCL_INT },    /* year */
+			{ 'w', GNOCL_STRING }, /* widget */
+			{ 'g', GNOCL_STRING }, /* glade name */
+			{ 'x', GNOCL_INT },    /* pointer x-position */
+			{ 'y', GNOCL_INT },    /* pointer y-position */
+			{ 's', GNOCL_STRING }, /* signal-type */
+			{ 0 }
+		};
 
 	gint year, month, day;
 	gchar str[20];
@@ -779,83 +821,83 @@ void gnoclOptFont  ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj
 	GtkRcStyle *style;
 
 
-//	font = Tcl_GetStringFromObj ( opt->val.obj, NULL ) ;
+	//	font = Tcl_GetStringFromObj ( opt->val.obj, NULL ) ;
 
-//	style = gtk_rc_style_new ();
-//	pango_font_description_free ( style->font_desc );
-//	style->font_desc = pango_font_description_from_string ( font );
-//	gtk_widget_modify_style ( obj->window, style );
+	//	style = gtk_rc_style_new ();
+	//	pango_font_description_free ( style->font_desc );
+	//	style->font_desc = pango_font_description_from_string ( font );
+	//	gtk_widget_modify_style ( obj->window, style );
 }
 
 
 /*
-  "day"                      gint                  : Read / Write
-  "detail-height-rows"       gint                  : Read / Write
-  "detail-width-chars"       gint                  : Read / Write
-  "month"                    gint                  : Read / Write
-  "no-month-change"          gboolean              : Read / Write
-  "show-day-names"           gboolean              : Read / Write
-  "show-details"             gboolean              : Read / Write
-  "show-heading"             gboolean              : Read / Write
-  "show-week-numbers"        gboolean              : Read / Write
-  "year"                     gint                  : Read / Write
+"day"                      gint                  : Read / Write
+"detail-height-rows"       gint                  : Read / Write
+"detail-width-chars"       gint                  : Read / Write
+"month"                    gint                  : Read / Write
+"no-month-change"          gboolean              : Read / Write
+"show-day-names"           gboolean              : Read / Write
+"show-details"             gboolean              : Read / Write
+"show-heading"             gboolean              : Read / Write
+"show-week-numbers"        gboolean              : Read / Write
+"year"                     gint                  : Read / Write
 
 */
 
 /*
-  "day-selected"                                   : Run First
-  "day-selected-double-click"                      : Run First
-  "month-changed"                                  : Run First
-  "next-month"                                     : Run First
-  "next-year"                                      : Run First
-  "prev-month"                                     : Run First
-  "prev-year"
-  */
+"day-selected"                                   : Run First
+"day-selected-double-click"                      : Run First
+"month-changed"                                  : Run First
+"next-month"                                     : Run First
+"next-year"                                      : Run First
+"prev-month"                                     : Run First
+"prev-year"
+*/
 
 static GnoclOption calendarOptions[] =
-{
-	/* custom propeties */
-	{ "-font", GNOCL_OBJ, "", gnoclOptGdkBaseFont}, //gnoclOptSetFont}
-	{ "-baseColor", GNOCL_OBJ, "normal", gnoclOptGdkColorBase },
+	{
+		/* custom propeties */
+		{ "-font", GNOCL_OBJ, "", gnoclOptGdkBaseFont}, //gnoclOptSetFont}
+		{ "-baseColor", GNOCL_OBJ, "normal", gnoclOptGdkColorBase },
 
 
-	/* widget specific properties */
-	{ "-day", GNOCL_INT, "day" },
+		/* widget specific properties */
+		{ "-day", GNOCL_INT, "day" },
 
-	//{ "-month", GNOCL_INT, "month" },
-	{ "-month", GNOCL_OBJ, "", gnoclOptMonth },
-	{ "-year", GNOCL_INT, "year" },
-	{ "-rowHeight", GNOCL_INT, "detail-height-rows"  },
-	{ "-colWidth", GNOCL_INT, "detail-width-chars" },
+		//{ "-month", GNOCL_INT, "month" },
+		{ "-month", GNOCL_OBJ, "", gnoclOptMonth },
+		{ "-year", GNOCL_INT, "year" },
+		{ "-rowHeight", GNOCL_INT, "detail-height-rows"  },
+		{ "-colWidth", GNOCL_INT, "detail-width-chars" },
 
-	//{ "-noMonthChange", GNOCL_BOOL, "no-month-change" },
-	{ "-monthChange", GNOCL_OBJ, "", gnoclOptShowMonthChange },
-	{ "-dayNames", GNOCL_BOOL, "show-day-names" },
-	{ "-details", GNOCL_BOOL, "show-details" },
-	{ "-heading", GNOCL_BOOL, "show-heading" },
-	{ "-weekNumbers", GNOCL_BOOL, "show-week-numbers" },
+		//{ "-noMonthChange", GNOCL_BOOL, "no-month-change" },
+		{ "-monthChange", GNOCL_OBJ, "", gnoclOptShowMonthChange },
+		{ "-dayNames", GNOCL_BOOL, "show-day-names" },
+		{ "-details", GNOCL_BOOL, "show-details" },
+		{ "-heading", GNOCL_BOOL, "show-heading" },
+		{ "-weekNumbers", GNOCL_BOOL, "show-week-numbers" },
 
-	/* widget specific signals */
-	{ "-onDaySelected", GNOCL_OBJ, "", gnoclOptOnDaySelected },
-	{ "-onDoubleDaySelected", GNOCL_OBJ, "", gnoclOptOnDoubleDaySelected },
-	{ "-onMonthChanged", GNOCL_OBJ, "", gnoclOptOnMonthChanged },
-	{ "-onNextMonth", GNOCL_OBJ, "", gnoclOptonNextMonth },
-	{ "-onNextYear", GNOCL_OBJ, "", gnoclOptOnNextYear },
-	{ "-onPrevMonth", GNOCL_OBJ, "", gnoclOpOnPrevMonth },
-	{ "-onPrevYear", GNOCL_OBJ, "", gnoclOptOnPrevYear },
+		/* widget specific signals */
+		{ "-onDaySelected", GNOCL_OBJ, "", gnoclOptOnDaySelected },
+		{ "-onDoubleDaySelected", GNOCL_OBJ, "", gnoclOptOnDoubleDaySelected },
+		{ "-onMonthChanged", GNOCL_OBJ, "", gnoclOptOnMonthChanged },
+		{ "-onNextMonth", GNOCL_OBJ, "", gnoclOptonNextMonth },
+		{ "-onNextYear", GNOCL_OBJ, "", gnoclOptOnNextYear },
+		{ "-onPrevMonth", GNOCL_OBJ, "", gnoclOpOnPrevMonth },
+		{ "-onPrevYear", GNOCL_OBJ, "", gnoclOptOnPrevYear },
 
-	/* Inherited properties */
-	{ "-name", GNOCL_STRING, "name" },
-	{ "-data", GNOCL_OBJ, "", gnoclOptData },
-	{ "-name", GNOCL_STRING, "name" },
-	{ "-visible", GNOCL_BOOL, "visible" },
-	{ "-sensitive", GNOCL_BOOL, "sensitive" },
-	{ "-tooltip", GNOCL_OBJ, "", gnoclOptTooltip },
-	{ "-onShowHelp", GNOCL_OBJ, "", gnoclOptOnShowHelp },
+		/* Inherited properties */
+		{ "-name", GNOCL_STRING, "name" },
+		{ "-data", GNOCL_OBJ, "", gnoclOptData },
+		{ "-name", GNOCL_STRING, "name" },
+		{ "-visible", GNOCL_BOOL, "visible" },
+		{ "-sensitive", GNOCL_BOOL, "sensitive" },
+		{ "-tooltip", GNOCL_OBJ, "", gnoclOptTooltip },
+		{ "-onShowHelp", GNOCL_OBJ, "", gnoclOptOnShowHelp },
 
 
-	{ NULL },
-};
+		{ NULL },
+	};
 
 
 
@@ -870,7 +912,9 @@ date      10/05/2010
 */
 static int configure ( Tcl_Interp *interp, CalendarParams *para, GnoclOption options[] )
 {
-	g_print ( "configure\n" );
+#ifdef DEBUG_CALENDAR
+	g_print ( " %s-1\n",__FUNCTION__ );
+#endif
 
 	return TCL_OK;
 }
@@ -885,7 +929,9 @@ date      10/05/2010
 */
 int gnoclConfigcalendar ( Tcl_Interp *interp, GtkWidget *widget, Tcl_Obj *txtObj )
 {
-	printf ( "gnoclConfigArrowButton\n" );
+#ifdef DEBUG_CALENDAR
+	g_print ( " %s-1\n",__FUNCTION__ );
+#endif
 
 	GtkArrow *arrow;
 
@@ -907,7 +953,9 @@ date      10/05/2010
 */
 static int cget ( Tcl_Interp *interp, GtkWidget *widget, GnoclOption options[], int idx )
 {
-	printf ( "cget\n" );
+#ifdef DEBUG_CALENDAR
+	g_print ( " %s-1\n",__FUNCTION__ );
+#endif
 
 	const char *dataIDa = "gnocl::data1";
 	const char *dataIDb = "gnocl::data2";
@@ -917,56 +965,60 @@ static int cget ( Tcl_Interp *interp, GtkWidget *widget, GnoclOption options[], 
 
 	/* this will enable us to obtain widget data for the arrow object */
 	char *result = g_object_get_data ( G_OBJECT ( arrow ), dataIDa );
-	printf ( "cget result = %s\n", result );
 
-	result = g_object_get_data ( G_OBJECT ( arrow ), dataIDb );
-	printf ( "cget result = %s\n", result );
+
+#ifdef DEBUG_CALENDAR
+	g_print ( "cget result = %s\n", result );
+#endif
 
 	str = gnoclGetNameFromWidget ( arrow );
-	printf ( "configure %s\n", str );
 
+
+#ifdef DEBUG_CALENDAR
+	g_print ( "configure %s\n", str );
+#endif
 
 	/*-----*/
 	/*
-	    Tcl_Obj *obj = NULL;
+	Tcl_Obj *obj = NULL;
 
-	    if ( idx == textIdx )
-	    {
-	        obj = gnoclCgetButtonText ( interp, widget );
-	    }
+	if ( idx == textIdx )
+	{
+	obj = gnoclCgetButtonText ( interp, widget );
+	}
 
-	    else if ( idx == iconsIdx )
-	    {
-	        GtkWidget *image = gnoclFindChild ( GTK_WIDGET ( widget ), GTK_TYPE_IMAGE );
+	else if ( idx == iconsIdx )
+	{
+	GtkWidget *image = gnoclFindChild ( GTK_WIDGET ( widget ), GTK_TYPE_IMAGE );
 
-	        if ( image == NULL )
-	            obj = Tcl_NewStringObj ( "", 0 );
-	        else
-	        {
-	            gchar   *st;
-	            g_object_get ( G_OBJECT ( image ), "stock", &st, NULL );
+	if ( image == NULL )
+	obj = Tcl_NewStringObj ( "", 0 );
+	else
+	{
+	gchar   *st;
+	g_object_get ( G_OBJECT ( image ), "stock", &st, NULL );
 
-	            if ( st )
-	            {
-	                obj = Tcl_NewStringObj ( "%#", 2 );
-	                Tcl_AppendObjToObj ( obj, gnoclGtkToStockName ( st ) );
-	                g_free ( st );
-	            }
+	if ( st )
+	{
+	obj = Tcl_NewStringObj ( " % #", 2 );
+	Tcl_AppendObjToObj ( obj, gnoclGtkToStockName ( st ) );
+	g_free ( st );
+	}
 
-	            else
-	            {
-	                Tcl_SetResult ( interp, "Could not determine icon type.",
-	                                TCL_STATIC );
-	                return TCL_ERROR;
-	            }
-	        }
-	    }
+	else
+	{
+	Tcl_SetResult ( interp, "Could not determine icon type.",
+	TCL_STATIC );
+	return TCL_ERROR;
+	}
+	}
+	}
 
-	    if ( obj != NULL )
-	    {
-	        Tcl_SetObjResult ( interp, obj );
-	        return TCL_OK;
-	    }
+	if ( obj != NULL )
+	{
+	Tcl_SetObjResult ( interp, obj );
+	return TCL_OK;
+	}
 	*/
 
 
@@ -985,26 +1037,22 @@ int calendarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * cons
 {
 
 #ifdef DEBUG_CALENDAR
-	listParameters ( objc, objv, "calendarFunc" );
+	g_print(" %s-1\n",__FUNCTION__);
 #endif
 
 
 
 	static const char *cmds[] =
-	{
-		"detail", "delete",
-		"configure", "cget",
-		"get", "set",
-		"class", "mark",
-		NULL
-	};
+		{
+			"detail", "delete", "configure", "cget",
+			"get", "set", "class", "mark",
+			NULL
+		};
 
 	enum cmdIdx
 	{
-		DetailIdx, DeleteIdx,
-		ConfigureIdx, CgetIdx,
-		GetIdx, SetIdx,
-		ClassIdx, MarkIdx
+		DetailIdx, DeleteIdx, ConfigureIdx, CgetIdx,
+		GetIdx, SetIdx,	ClassIdx, MarkIdx
 	};
 
 	//GtkWidget *widget = GTK_WIDGET ( data );
@@ -1014,11 +1062,11 @@ int calendarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * cons
 	int idx;
 
 	/*
-		if ( objc < 2 )
-		{
-			Tcl_WrongNumArgs ( interp, 1, objv, "command" );
-			return TCL_ERROR;
-		}
+	if ( objc < 2 )
+	{
+	Tcl_WrongNumArgs ( interp, 1, objv, "command" );
+	return TCL_ERROR;
+	}
 	*/
 	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "command", TCL_EXACT, &idx ) != TCL_OK )
 	{
@@ -1032,7 +1080,9 @@ int calendarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * cons
 
 				if ( !strcmp ( Tcl_GetString ( objv[2] ), "add" ) )
 				{
-					g_print ( "DetailIdx 1\n" );
+#ifdef DEBUG_CALENDAR
+					g_print(" %s-DetailIdx-1\n",__FUNCTION__);
+#endif
 					gint ret;
 					gchar *date = NULL;
 					gchar *text = NULL;
@@ -1053,7 +1103,9 @@ int calendarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * cons
 
 					if ( !strcmp ( Tcl_GetString ( objv[3] ), "-detail" ) )
 					{
-						g_print ( "DetailIdx 2\n" );
+#ifdef DEBUG_CALENDAR
+						g_print(" %s-DetailIdx-2\n",__FUNCTION__);
+#endif
 						text = Tcl_GetString ( objv[4] );
 
 						if ( !strcmp ( Tcl_GetString ( objv[5] ), "-text" ) )
@@ -1064,15 +1116,16 @@ int calendarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * cons
 
 					}
 
-					g_print ( "DetailIdx 3\n" );
-
+#ifdef DEBUG_CALENDAR
+					g_print(" %s-DetailIdx-3\n",__FUNCTION__);
 					g_print ( "date add %s\n", date );
 					g_print ( "text add %s\n", text );
+#endif
 
 					/* Places a visual marker on a particular day. */
 					gtk_calendar_set_detail_func ( para->calendar, calendar_detail_cb, data, NULL );
 
-					sscanf ( date, "%d %d %d", &day, &month, &year );
+					sscanf ( date, " % d % d % d", &day, &month, &year );
 
 					calendar_set_detail ( para, year, month, day, text );
 
@@ -1082,19 +1135,25 @@ int calendarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * cons
 				if ( !strcmp ( Tcl_GetString ( objv[2] ), "remove" ) )
 				{
 
-					g_print ( "DetailIdx 4\n" );
+#ifdef DEBUG_CALENDAR
+					g_print(" %s-DetailIdx-4\n",__FUNCTION__);
+#endif
 					gint ret;
 					gint year, month, day;
-					sscanf ( Tcl_GetString ( objv[3] ), "%d %d %d", &day, &month, &year );
+					sscanf ( Tcl_GetString ( objv[3] ), " % d % d % d", &day, &month, &year );
 
-					g_print ( "detail remove %d\n", day );
 
+#ifdef DEBUG_CALENDAR
+					g_print(" %s-DetailIdx-4\n",__FUNCTION__);
+					g_print ( "detail remove % d\n", day );
+#endif
 					/* Places a visual marker on a particular day. */
 					ret = gtk_calendar_mark_day ( para->calendar, day );
 				}
 
-				g_print ( "DetailIdx 5\n" );
-
+#ifdef DEBUG_CALENDAR
+				g_print(" %s-DetailIdx-5\n",__FUNCTION__);
+#endif
 			}
 			break;
 		case ClassIdx:
@@ -1110,10 +1169,12 @@ int calendarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * cons
 		case ConfigureIdx:
 			{
 
-				g_print ( "ConfigureIdx 1\n" );
+#ifdef DEBUG_CALENDAR
+				g_print ( " %s-ConfigureIdx\n",__FUNCTION__ );
+#endif
 				int ret = TCL_ERROR;
 
-				if ( gnoclParseOptions ( interp, objc - 1, objv + 1, calendarOptions ) == TCL_OK )
+				if ( gnoclParseOptions ( interp, objc-1, objv + 1, calendarOptions ) == TCL_OK )
 				{
 					ret = gnoclSetOptions ( interp, calendarOptions, G_OBJECT ( para->calendar ), -1 );
 					ret = configure ( interp, para, calendarOptions );
@@ -1141,7 +1202,7 @@ int calendarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * cons
 				gtk_calendar_get_date ( para->calendar, &year, &month, &day );
 
 				/* correct month, jan = 0, dec = 11 */
-				sprintf ( str, "%d %d %d", day, month + 1, year );
+				sprintf ( str, " % d % d % d", day, month + 1, year );
 
 				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( str, -1 ) );
 			}
@@ -1156,7 +1217,7 @@ int calendarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * cons
 				}
 
 				gint year, month, day;
-				sscanf ( Tcl_GetString ( objv[2] ), "%d %d %d", &day, &month, &year );
+				sscanf ( Tcl_GetString ( objv[2] ), " % d % d % d", &day, &month, &year );
 				/*
 				gboolean gtk_calendar_select_month (GtkCalendar *calendar, guint month, guint year);
 				void gtk_calendar_select_day (GtkCalendar *calendar,guint day);
@@ -1166,7 +1227,7 @@ int calendarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * cons
 				*/
 
 				/* correct month, jan = 0, dec = 11 */
-				gtk_calendar_select_month ( para->calendar, month - 1, year );
+				gtk_calendar_select_month ( para->calendar, month-1, year );
 				gtk_calendar_select_day ( para->calendar, day );
 
 			}
@@ -1182,9 +1243,12 @@ int calendarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * cons
 
 				/* usage <widget-id> mark set|unset [day] */
 
-				g_print ( "subcommand = %s\n", Tcl_GetString ( objv[2] ) );
-				g_print ( "day = %d\n", Tcl_GetString ( objv[3] ) );
+#ifdef DEBUG_CALENDAR
+				g_print(" %s-MarkIdx-1\n",__FUNCTION__);
 
+				g_print ( "subcommand = %s\n", Tcl_GetString ( objv[2] ) );
+				g_print ( "day = % d\n", Tcl_GetString ( objv[3] ) );
+#endif
 				gint ret;
 				gint day;
 
@@ -1193,7 +1257,11 @@ int calendarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * cons
 				if ( !strcmp ( Tcl_GetString ( objv[2] ), "set" ) )
 				{
 
+#ifdef DEBUG_CALENDAR
+					g_print(" %s-MarkIdx-2\n",__FUNCTION__);
 					g_print ( "set $d\n", day );
+#endif
+
 
 					/* Places a visual marker on a particular day. */
 					ret = gtk_calendar_mark_day ( para->calendar, day );
@@ -1202,7 +1270,11 @@ int calendarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * cons
 
 				if ( !strcmp ( Tcl_GetString ( objv[2] ), "unset" ) )
 				{
+#ifdef DEBUG_CALENDAR
+					g_print("%s-MarkIdx-3\n",__FUNCTION__);
 					g_print ( "unset\n" );
+#endif				
+
 					/* Removes the visual marker from a particular day. */
 					ret = gtk_calendar_unmark_day ( para->calendar, day );
 
@@ -1211,16 +1283,19 @@ int calendarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * cons
 
 				if ( !strcmp ( Tcl_GetString ( objv[2] ), "clear" ) )
 				{
-
+#ifdef DEBUG_CALENDAR
+					g_print(" %s-MarkIdx-4\n",__FUNCTION__);
 					g_print ( "clear\n" );
+#endif
+
 					/* Remove all visual markers. */
 					gtk_calendar_clear_marks ( para->calendar );
 
 				}
 
 				/*
-								gboolean gtk_calendar_mark_day (GtkCalendar *calendar, guint day);
-								gboolean gtk_calendar_unmark_day (GtkCalendar *calendar, guint day);
+				gboolean gtk_calendar_mark_day (GtkCalendar *calendar, guint day);
+				gboolean gtk_calendar_unmark_day (GtkCalendar *calendar, guint day);
 				*/
 			}
 			break;
@@ -1264,7 +1339,7 @@ int gnoclCalendarCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * 
 {
 
 #ifdef DEBUG_CALENDAR
-	printf ( "gnoclCalendarCmd 1\n" );
+	g_print ( "gnoclCalendarCmd 1\n" );
 #endif
 
 	int ret = TCL_OK;
@@ -1284,7 +1359,7 @@ int gnoclCalendarCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * 
 	para->details = g_hash_table_new_full ( g_str_hash, g_str_equal, g_free, g_free );
 
 #ifdef DEBUG_CALENDAR
-	printf ( "gnoclCalendarCmd 2\n" );
+	g_print ( "gnoclCalendarCmd 2\n" );
 #endif
 
 	gtk_widget_show ( GTK_WIDGET ( para->calendar ) );
@@ -1306,7 +1381,7 @@ int gnoclCalendarCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * 
 	}
 
 #ifdef DEBUG_CALENDAR
-	printf ( "gnoclCalendarCmd 3\n" );
+	g_print ( "gnoclCalendarCmd 3\n" );
 #endif
 
 	/* STEP 4)  -everything has worked, register the widget with the Tcl interpretor. */

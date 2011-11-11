@@ -39,6 +39,15 @@ static int optUpdatePolicy ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj,
 static int setValue ( GtkScale *scale, double d );
 static void changedFunc ( GtkWidget *widget, gpointer data );
 
+static const int orientationIdx    = 0;
+static const int variableIdx       = 1;
+static const int onValueChangedIdx = 2;
+static const int lowerIdx          = 3;
+static const int upperIdx          = 4;
+static const int stepIncIdx        = 5;
+static const int pageIncIdx        = 6;
+static const int valueIdx          = 7;
+
 /* compare with spinButton widget which is very similar */
 GnoclOption scaleOptions[] =
 {
@@ -68,14 +77,7 @@ GnoclOption scaleOptions[] =
 };
 
 
-static const int orientationIdx    = 0;
-static const int variableIdx       = 1;
-static const int onValueChangedIdx = 2;
-static const int lowerIdx          = 3;
-static const int upperIdx          = 4;
-static const int stepIncIdx        = 5;
-static const int pageIncIdx        = 6;
-static const int valueIdx          = 7;
+
 
 
 /* moved to gnocl.h */
@@ -150,9 +152,7 @@ static int doCommand ( ScaleParams *para, Tcl_Obj *val, int background )
 static int setValue ( GtkScale *scale, double d )
 {
 	GtkAdjustment *adjust = gtk_range_get_adjustment ( GTK_RANGE ( scale ) );
-	int blocked = g_signal_handlers_block_matched (
-					  G_OBJECT ( adjust ), G_SIGNAL_MATCH_FUNC,
-					  0, 0, NULL, ( gpointer * ) changedFunc, NULL );
+	int blocked = g_signal_handlers_block_matched ( G_OBJECT ( adjust ), G_SIGNAL_MATCH_FUNC, 0, 0, NULL, ( gpointer * ) changedFunc, NULL );
 	gtk_adjustment_set_value ( adjust, d );
 
 	if ( blocked )
@@ -166,8 +166,7 @@ static int setValue ( GtkScale *scale, double d )
 /**
 \brief
 **/
-static char *traceFunc ( ClientData data,
-						 Tcl_Interp *interp, const char *name1, const char *name2, int flags )
+static char *traceFunc ( ClientData data, Tcl_Interp *interp, const char *name1, const char *name2, int flags )
 {
 	ScaleParams *para = ( ScaleParams * ) data;
 
@@ -239,6 +238,7 @@ static void changedFunc ( GtkWidget *widget, gpointer data )
 /**
 \brief
 **/
+
 static int configure ( Tcl_Interp *interp, ScaleParams *para, GnoclOption options[] )
 {
 
@@ -514,8 +514,7 @@ int gnoclScaleCmd ( ClientData data, Tcl_Interp *interp,
 
 	para->name = gnoclGetAutoWidgetId();
 
-	g_signal_connect ( G_OBJECT ( para->scale ), "destroy",
-					   G_CALLBACK ( destroyFunc ), para );
+	g_signal_connect ( G_OBJECT ( para->scale ), "destroy", G_CALLBACK ( destroyFunc ), para );
 
 	gnoclMemNameAndWidget ( para->name, GTK_WIDGET ( para->scale ) );
 
@@ -526,4 +525,4 @@ int gnoclScaleCmd ( ClientData data, Tcl_Interp *interp,
 	return TCL_OK;
 }
 
-/*****/
+

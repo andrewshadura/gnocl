@@ -28,16 +28,22 @@
 /**
 \brief
 **/
-static int optProgressBarOrientation ( Tcl_Interp *interp, GnoclOption *opt,
-									   GObject *obj, Tcl_Obj **ret )
+static int optProgressBarOrientation ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
-	const char *txt[] = { "leftToRight", "rightToLeft",
-						  "bottomToTop", "topToBottom", NULL
-						};
-	int types[] = { GTK_PROGRESS_LEFT_TO_RIGHT,
-					GTK_PROGRESS_RIGHT_TO_LEFT, GTK_PROGRESS_BOTTOM_TO_TOP,
-					GTK_PROGRESS_TOP_TO_BOTTOM
-				  };
+	const char *txt[] =
+	{
+		"leftToRight", "rightToLeft",
+		"bottomToTop", "topToBottom",
+		NULL
+	};
+
+	int types[] =
+	{
+		GTK_PROGRESS_LEFT_TO_RIGHT,
+		GTK_PROGRESS_RIGHT_TO_LEFT,
+		GTK_PROGRESS_BOTTOM_TO_TOP,
+		GTK_PROGRESS_TOP_TO_BOTTOM
+	};
 
 	assert ( sizeof ( GTK_PROGRESS_LEFT_TO_RIGHT ) == sizeof ( int ) );
 
@@ -64,7 +70,6 @@ static GnoclOption progressBarOptions[] =
 	{ "-tooltip", GNOCL_OBJ, "", gnoclOptTooltip },
 	{ NULL }
 };
-/*****/
 
 /*
 static int configure( Tcl_Interp *interp, GtkProgressBar *progressBar,
@@ -95,29 +100,33 @@ int progressBarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * c
 		return TCL_ERROR;
 	}
 
-	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "command",
-							   TCL_EXACT, &idx ) != TCL_OK )
+	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "command", TCL_EXACT, &idx ) != TCL_OK )
 		return TCL_ERROR;
 
 	switch ( idx )
 	{
 		case ClassIdx:
-			Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "progressBar", -1 ) );
+			{
+				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "progressBar", -1 ) );
+			}
 			break;
 		case DeleteIdx:
-			return gnoclDelete ( interp, GTK_WIDGET ( progressBar ), objc, objv );
+			{
+				return gnoclDelete ( interp, GTK_WIDGET ( progressBar ), objc, objv );
+			}
 
 		case ConfigureIdx:
 			{
-				int ret = gnoclParseAndSetOptions ( interp, objc - 1, objv + 1,
-													progressBarOptions, G_OBJECT ( progressBar ) );
+				int ret = gnoclParseAndSetOptions ( interp, objc - 1, objv + 1, progressBarOptions, G_OBJECT ( progressBar ) );
 				gnoclClearOptions ( progressBarOptions );
 				return ret;
 			}
 
 			break;
 		case PulseIdx:
-			gtk_progress_bar_pulse ( progressBar );
+			{
+				gtk_progress_bar_pulse ( progressBar );
+			}
 			break;
 	}
 
@@ -127,8 +136,7 @@ int progressBarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * c
 /**
 \brief
 **/
-int gnoclProgressBarCmd ( ClientData data, Tcl_Interp *interp,
-						  int objc, Tcl_Obj * const objv[] )
+int gnoclProgressBarCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
 	GtkProgressBar *progressBar;
 	int            ret;
@@ -142,8 +150,7 @@ int gnoclProgressBarCmd ( ClientData data, Tcl_Interp *interp,
 
 	progressBar = GTK_PROGRESS_BAR ( gtk_progress_bar_new( ) );
 
-	ret = gnoclSetOptions ( interp, progressBarOptions,
-							G_OBJECT ( progressBar ), -1 );
+	ret = gnoclSetOptions ( interp, progressBarOptions,	G_OBJECT ( progressBar ), -1 );
 	/*
 	if( ret == TCL_OK )
 	   ret = configure( interp, progressBar, progressBarOptions );
@@ -152,8 +159,7 @@ int gnoclProgressBarCmd ( ClientData data, Tcl_Interp *interp,
 
 	gtk_widget_show ( GTK_WIDGET ( progressBar ) );
 
-	return gnoclRegisterWidget ( interp, GTK_WIDGET ( progressBar ),
-								 progressBarFunc );
+	return gnoclRegisterWidget ( interp, GTK_WIDGET ( progressBar ), progressBarFunc );
 }
 
-/*****/
+

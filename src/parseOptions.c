@@ -1342,9 +1342,8 @@ int gnoclOptGdkColorBg ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl
 	return modifyWidgetGdkColor ( interp, opt, obj, gtk_widget_modify_bg, G_STRUCT_OFFSET ( GtkStyle, bg ), ret );
 }
 
-
 /**
- */
+**/
 int gnoclOptGdkColorFg ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
 	return modifyWidgetGdkColor ( interp, opt, obj, gtk_widget_modify_fg, G_STRUCT_OFFSET ( GtkStyle, fg ), ret );
@@ -3356,7 +3355,7 @@ static void doOnInteractiveSearch   ( GtkTreeView *treeview, gpointer user_data 
 
 	if ( entry != NULL )
 	{
-		ps[1].val.str = gnoclGetNameFromWidget ( entry );
+		ps[3].val.str = gnoclGetNameFromWidget ( entry );
 	}
 
 	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
@@ -3372,19 +3371,24 @@ static void doOnColumnClicked ( GtkTreeViewColumn *treeviewcolumn, gpointer user
 	g_print ( "%s\n", __FUNCTION__ );
 #endif
 
+	GtkWidget *tree;
+	gint col;
+
+	tree = gtk_tree_view_column_get_tree_view ( treeviewcolumn );
+
+	g_object_get ( tree, "search-column", &col, NULL );
 
 	GnoclCommandData *cs = ( GnoclCommandData * ) user_data;
 
 	GnoclPercSubst ps[] =
 	{
 		{ 'w', GNOCL_STRING },  /* widget */
-		{ 'g', GNOCL_STRING },  /* glade name */
+		{ 'c', GNOCL_INT },  	/* active column number */
 		{ 0 }
 	};
 
-	//ps[0].val.str = gnoclGetNameFromWidget ( toolbutton );
-	//ps[1].val.str = gtk_widget_get_name ( toolbutton );
-
+	ps[0].val.str = gnoclGetNameFromWidget ( tree );
+	ps[1].val.i = col;
 	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
 
 }
