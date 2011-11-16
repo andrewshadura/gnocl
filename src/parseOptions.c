@@ -1200,7 +1200,7 @@ int gnoclOptArrowTooltip ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, T
 int gnoclOptIconTooltip ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
 #ifdef DEBUG_PARSEOPTIONS
-	g_print ( "%s %s %s\n", __FUNCTION__, opt->propName, Tcl_GetString ( opt->val.obj ) )
+	g_print ( "%s %s %s\n", __FUNCTION__, opt->propName, Tcl_GetString ( opt->val.obj ) );
 #endif
 
 	assert ( *opt->propName == 'P' || *opt->propName == 'S' );
@@ -2093,6 +2093,48 @@ int gnoclOptCommand ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Ob
 
 	return gnoclConnectOptCmd ( interp, obj, opt->propName, G_CALLBACK ( doCommand ), opt, NULL, ret );
 }
+
+
+/**
+\brief
+**/
+static void doOnMoveHandle (GtkWidget *widget, GtkScrollType scroll_type, gpointer user_data) 
+{
+#ifdef DEBUG_PARSEOPTIONS
+	g_print ( "%s\n", __FUNCTION__ );
+#endif
+
+	GnoclCommandData *cs = ( GnoclCommandData * ) user_data;
+
+	GnoclPercSubst ps[] =
+	{
+		{ 'w', GNOCL_STRING },  /* widget */
+		{ 'g', GNOCL_STRING },  /* glade name */
+		{ 'p', GNOCL_INT}, 		/* handle position */
+		{ 0 }
+	};
+
+	ps[0].val.str = gnoclGetNameFromWidget ( widget );
+	ps[1].val.str = gtk_widget_get_name ( widget );
+	ps[2].val.i = gtk_paned_get_position ( widget);
+
+	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
+}
+
+
+
+/**
+\brief React to movement of the paned window handle
+**/
+int gnoclOptMoveHandle ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
+{
+
+	assert ( strcmp ( opt->optName, "-onHandleMoved" ) == 0 );
+	return gnoclConnectOptCmd ( interp, obj, "move-handle", G_CALLBACK ( doOnMoveHandle ), opt, NULL, ret );
+
+
+}
+
 
 /**
 \brief
@@ -2997,6 +3039,7 @@ int gnoclOptOnBackspace ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tc
 	assert ( strcmp ( opt->optName, "-onBackspace" ) == 0 );
 	return gnoclConnectOptCmd ( interp, obj,  "backspace" , G_CALLBACK ( doOnBackSpace ), opt, NULL, ret );
 }
+
 /**
 \brief
 **/
@@ -3019,7 +3062,6 @@ static void doOnNotify ( GObject *gobject, GParamSpec *pspec, gpointer user_data
 	GtkWidget * treeView;
 
 	treeView = gtk_tree_view_column_get_tree_view  ( GTK_TREE_VIEW_COLUMN ( gobject ) );
-
 
 	ps[0].val.str = gnoclGetNameFromWidget ( GTK_WIDGET ( treeView ) );
 	ps[1].val.str = gtk_widget_get_name ( gobject );

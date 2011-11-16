@@ -149,7 +149,6 @@ date    20/05/09
 #include <string.h>
 #include <assert.h>
 
-/**********************************************************************/
 
 static void calendar_date_to_string ( CalendarParams *para, char *buffer, gint buff_len )
 {
@@ -303,7 +302,6 @@ static void demonstrate_details ( CalendarParams *para )
 	calendar_update_details ( para );
 }
 
-/**********************************************************************/
 
 /**
 \brief	Function associated with the widget.
@@ -324,9 +322,6 @@ static void destroyFunc (
 
 	/* include some code to free-up the hash table and textbuffer */
 }
-
-
-
 
 
 /**
@@ -572,6 +567,9 @@ static gboolean doOnMonthChanged ( GtkCalendar *calendar, gpointer data )
 	return 0;
 }
 
+/**
+\brief     
+**/
 int gnoclOptOnMonthChanged ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
 	assert ( strcmp ( opt->optName, "-onMonthChanged" ) == 0 );
@@ -750,9 +748,6 @@ int gnoclOptOnNextYear ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl
 	return gnoclConnectOptCmd ( interp, obj, "next-year", G_CALLBACK ( doOnNextYear ), opt, NULL, ret );
 }
 
-
-
-
 /**
 \brief      Callback function to focus change event.
 **/
@@ -813,7 +808,6 @@ int gnoclOptOnPrevYear ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl
 /**
 \brief
 **/
-
 void gnoclOptFont  ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
 
@@ -899,17 +893,11 @@ static GnoclOption calendarOptions[] =
 		{ NULL },
 	};
 
-
-
-
 /**
 \brief
 \date
 **/
-/*
-author     William J Giddings
-date      10/05/2010
-*/
+
 static int configure ( Tcl_Interp *interp, CalendarParams *para, GnoclOption options[] )
 {
 #ifdef DEBUG_CALENDAR
@@ -923,10 +911,6 @@ static int configure ( Tcl_Interp *interp, CalendarParams *para, GnoclOption opt
 \brief
 \date
 **/
-/*
-author     William J Giddings
-date      10/05/2010
-*/
 int gnoclConfigcalendar ( Tcl_Interp *interp, GtkWidget *widget, Tcl_Obj *txtObj )
 {
 #ifdef DEBUG_CALENDAR
@@ -947,10 +931,6 @@ int gnoclConfigcalendar ( Tcl_Interp *interp, GtkWidget *widget, Tcl_Obj *txtObj
 \brief
 \date
 **/
-/*
-author     William J Giddings
-date      10/05/2010
-*/
 static int cget ( Tcl_Interp *interp, GtkWidget *widget, GnoclOption options[], int idx )
 {
 #ifdef DEBUG_CALENDAR
@@ -1029,10 +1009,6 @@ static int cget ( Tcl_Interp *interp, GtkWidget *widget, GnoclOption options[], 
 \brief
 \date
 **/
-/*
-author     William J Giddings
-date      10/05/2010
-*/
 int calendarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
 
@@ -1331,10 +1307,6 @@ int calendarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * cons
 \brief
 \date
 **/
-/*
-author     William J Giddings
-date      10/05/2010
-*/
 int gnoclCalendarCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
 

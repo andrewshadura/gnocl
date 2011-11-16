@@ -301,6 +301,7 @@ gnoclOptFunc gnoclOptOnDeleteFromCursor;
 gnoclOptFunc gnoclOptOnEntryInsert;
 gnoclOptFunc gnoclOptOnPreEditChanged;
 gnoclOptFunc gnoclOptOnQueryToolTip;
+gnoclOptFunc gnoclOptMoveHandle;
 
 int gnoclClearOptions ( GnoclOption *opts );
 int gnoclResetSetOptions ( GnoclOption *opts );

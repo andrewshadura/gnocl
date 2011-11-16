@@ -13,6 +13,7 @@
 
 /*
    History:
+   2011-11: added -onHandleMoved, cget
    2009-12: adapted for use in glade files.
    2008-10: added parent command
    2008-10: added class command
@@ -29,25 +30,27 @@
 #include <string.h>
 #include <assert.h>
 
+static const int orientIdx = 0;
+static const int resizeIdx = 1;
+static const int shrinkIdx = 2;
+static const int childrenIdx = 3;
+
 static GnoclOption panedOptions[] =
 {
 	{ "-orientation", GNOCL_OBJ, NULL },
 	{ "-resize", GNOCL_OBJ, NULL },
 	{ "-shrink", GNOCL_OBJ, NULL },
 	{ "-children", GNOCL_OBJ, NULL },
+	
 	{ "-position", GNOCL_INT, "position" },
 	/* What is this for? GNOCL_BOOL, "position-set" */
 	{ "-name", GNOCL_STRING, "name" },
 	{ "-visible", GNOCL_BOOL, "visible" },
 	{ "-sensitive", GNOCL_BOOL, "sensitive" },
+	{ "-onHandleMoved", GNOCL_OBJ, "move-handle", gnoclOptMoveHandle },
 
 	{ NULL },
 };
-
-static const int orientIdx = 0;
-static const int resizeIdx = 1;
-static const int shrinkIdx = 2;
-static const int childrenIdx = 3;
 
 /**
 \brief
@@ -108,6 +111,41 @@ static int addChildren ( GtkPaned *paned, Tcl_Interp *interp, Tcl_Obj *children,
 }
 
 /**
+\brief  Obtain current -option values.
+**/
+static int cget (   Tcl_Interp *interp, GtkPaned *paned,  GnoclOption options[],  int idx )
+{
+	if (idx == childrenIdx) {
+
+		gchar str[32];
+
+		sprintf(str,"%s %s",gnoclGetNameFromWidget ( gtk_paned_get_child1 (paned) ), 
+			gnoclGetNameFromWidget ( gtk_paned_get_child2 (paned) ) );
+
+		Tcl_SetObjResult ( interp, Tcl_NewStringObj ( str, -1 ));
+		return TCL_OK;
+		}
+
+	if (idx == orientIdx) {
+
+		gchar str[32];
+
+		if ( paned->priv->orientation == GTK_ORIENTATION_HORIZONTAL ) {
+			Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "horizontal", -1 ));
+		}
+
+		if ( paned->priv->orientation == GTK_ORIENTATION_VERTICAL ) {
+			Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "vertical", -1 ));
+		}
+		
+		return TCL_OK;
+		}
+
+	
+	return gnoclCgetNotImplemented ( interp, options + idx );
+}
+
+/**
 \brief
 **/
 static int configure ( Tcl_Interp *interp, GtkPaned *paned, GnoclOption options[] )
@@ -135,17 +173,46 @@ static int configure ( Tcl_Interp *interp, GtkPaned *paned, GnoclOption options[
 **/
 int panedFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-	static const char *cmds[] = {  "delete", "configure", "class", "parent", NULL };
-	enum cmdIdx { DeleteIdx, ConfigureIdx, ClassIdx, ParentIdx };
+	static const char *cmds[] = {  
+		"cget",
+		"delete", "configure", 
+		"class", "parent", 
+		NULL };
+	enum cmdIdx {
+		CgetIdx, 
+		DeleteIdx, ConfigureIdx, 
+		ClassIdx, ParentIdx,
+		 };
 	GtkPaned *paned = GTK_PANED ( data );
 	int idx;
 
-	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "command",
-							   TCL_EXACT, &idx ) != TCL_OK )
+	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "command",  TCL_EXACT, &idx ) != TCL_OK ) {
 		return TCL_ERROR;
-
+}
 	switch ( idx )
 	{
+		case CgetIdx:
+			{
+				int idx;
+
+				switch ( gnoclCget ( interp, objc, objv, G_OBJECT ( data ), panedOptions, &idx ) )
+				{
+					case GNOCL_CGET_ERROR:
+						{
+							return TCL_ERROR;
+						}
+					case GNOCL_CGET_HANDLED:
+						{
+							return TCL_OK;
+						}
+					case GNOCL_CGET_NOTHANDLED:
+						{
+							return cget ( interp, paned, panedOptions, idx );
+						}
+				}
+			}
+			break;
+
 		case ParentIdx:
 			/* get parent, WJG added 06/12/08 */
 			{
@@ -161,8 +228,8 @@ int panedFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const o
 			}
 
 			break;
-		case ClassIdx:
-			Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "paned", -1 ) );
+		case ClassIdx: {
+			Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "paned", -1 ) ); }
 			break;
 		case DeleteIdx:
 			return gnoclDelete ( interp, GTK_WIDGET ( paned ), objc, objv );

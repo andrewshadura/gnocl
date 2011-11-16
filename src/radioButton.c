@@ -802,4 +802,3 @@ int gnoclRadioButtonCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj
 	return TCL_OK;
 }
 
-/*****/
