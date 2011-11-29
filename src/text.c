@@ -344,7 +344,11 @@ static getAttributes ( Tcl_Interp *interp, GtkTextAttributes *values )
 			}			break;
 		default:
 			{
-				g_print ( "no justify\n" );
+
+#ifdef DEBUG_TEXT
+	g_print ("no justify %s\n", __FUNCTION__ );
+#endif				
+
 			}
 	}
 
@@ -358,15 +362,19 @@ static getAttributes ( Tcl_Interp *interp, GtkTextAttributes *values )
 		case GTK_TEXT_DIR_LTR:
 			{
 				direction = "left - to - right";
-			}			break;
+			}			
+			break;
 		case GTK_TEXT_DIR_RTL:
 			{
 				direction = "right - to - left";
-			}			break;
+			}			
 			break;
 		default:
 			{
-				g_print ( "no direction\n" );
+				#ifdef DEBUG_TEXT
+	g_print ("no direction %s\n", __FUNCTION__ );
+#endif
+
 			}
 	}
 
@@ -481,7 +489,7 @@ static int gnoclOptText ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tc
 	container =  gtk_widget_get_parent ( obj );
 
 #ifdef DEBUG_TEXT
-	printf ( "INSERT SOME INITIAL TEXT\n" );
+	g_print ( "INSERT SOME INITIAL TEXT\n" );
 #endif
 
 	return TCL_OK;
@@ -676,7 +684,10 @@ static int gnocOptTextTagLanguage ( Tcl_Interp * interp, GnoclOption * opt, GObj
 
 	i = getLanguage ( lang );
 
+#ifdef DEBUG_TEXT
 	g_print ( "idx = %d\n", i );
+#endif
+	
 
 
 	return TCL_OK;
@@ -914,7 +925,7 @@ static void doOnToggleCursorVisible ( GtkTextView * text_view, gpointer user_dat
 	};
 
 	ps[0].val.str = gnoclGetNameFromWidget ( text_view );
-	ps[1].val.str = gtk_widget_get_name ( text_view );
+	ps[1].val.str = gtk_widget_get_name ( GTK_WIDGET ( text_view ) );
 	ps[2].val.i = gtk_text_view_get_cursor_visible ( text_view );
 
 	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
@@ -946,6 +957,7 @@ static const int scrollBarIdx = 0;
 static const int textIdx = 1;
 static const int bufferIdx = 2;
 static const int useUndoIdx = 3;
+static const int dataIdx = 4;
 
 static GnoclOption textOptions[] =
 {
@@ -956,7 +968,8 @@ static GnoclOption textOptions[] =
 	{ "-text", GNOCL_STRING, NULL},
 	{ "-buffer", GNOCL_STRING, NULL},
 	{ "-useUndo", GNOCL_STRING, NULL},
-
+	{ "-data", GNOCL_OBJ, "", gnoclOptData },
+	
 	/* GtkTextView properties
 	"accepts-tab"              gboolean              : Read / Write
 	"buffer"                   GtkTextBuffer*        : Read / Write
@@ -1100,7 +1113,7 @@ static GnoclOption textOptions[] =
 	{ "-dragTargets", GNOCL_LIST, "s", gnoclOptDnDTargets },
 	{ "-onDropData", GNOCL_OBJ, "", gnoclOptOnDropData },
 	{ "-onDragData", GNOCL_OBJ, "", gnoclOptOnDragData },
-	{ "-data", GNOCL_OBJ, "", gnoclOptData },
+
 
 	{ "-hasTooltip", GNOCL_BOOL, "has-tooltip" },
 	{ "-onQueryTooltip", GNOCL_OBJ, "", gnoclOptOnQueryToolTip },
@@ -1771,7 +1784,7 @@ static int markCmd ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, Tcl_
 				// return a list of all the marks associated with the textBuffer, such a query is not supported within Gtk
 			}
 
-		case CgetIdx:
+		case CgetIdx:	// markCmd
 			{
 				/*  if cget implmented, then to get the position of a mark
 				*
@@ -2108,7 +2121,7 @@ int tagCmd ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, Tcl_Obj *  c
 
 			}
 			break;
-		case CgetIdx:
+		case CgetIdx:	// tagCmd
 			{
 				int     idx;
 				Tcl_Obj *resList;
@@ -2593,6 +2606,19 @@ static int configure ( Tcl_Interp * interp, GtkScrolledWindow * scrolled, GtkTex
 static int cget ( Tcl_Interp * interp, GtkTextView * text, GnoclOption options[], int idx )
 {
 	/* get the option from the array? */
+	Tcl_Obj *obj = NULL;
+
+	if ( idx == dataIdx )
+	{
+		obj = Tcl_NewStringObj ( g_object_get_data ( text, "gnocl::data" ), -1 );
+	}
+	
+	
+		if ( obj != NULL )
+	{
+		Tcl_SetObjResult ( interp, obj );
+		return TCL_OK;
+	}
 
 
 	return gnoclCgetNotImplemented ( interp, options + idx );
@@ -3008,11 +3034,13 @@ static int signalEmit ( Tcl_Interp * interp, Tcl_Obj * obj, int cmdNo, GtkTextBu
 /**
 \brief
 **/
-int gnoclTextCommand ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, Tcl_Obj *  const objv[], int cmdNo, int isTextWidget )
+int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl_Obj *  const objv[], int cmdNo, int isTextWidget )
 {
 #ifdef DEBUG_TEXT
 	g_print ( "gnoclTextCommand %s %s\n", Tcl_GetString ( objv[cmdNo] ), Tcl_GetString ( objv[cmdNo+1] ) );
 #endif
+
+	GtkTextBuffer  *buffer = gtk_text_view_get_buffer ( textView );
 
 	const char *cmds[] =
 	{
@@ -3646,14 +3674,15 @@ int gnoclTextCommand ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, Tc
 			}
 
 			break;
-		case CgetIdx:
+		case CgetIdx:	// gnoclTextCommand
 			{
-				/*  WJG started work on this one 19/03/08 */
-				printf ( "text cget not yet implemented\n" );
-				/*
+#ifdef DEBUG_TEXT
+	g_print ( "%s CgetIdx\n", __FUNCTION__ );
+#endif
+
 				int     idx;
 
-				switch ( gnoclCget ( interp, objc, objv, G_OBJECT ( para->text ), textOptions, &idx ) )
+				switch ( gnoclCget ( interp, objc, objv, G_OBJECT ( textView ), textOptions, &idx ) )
 				{
 					case GNOCL_CGET_ERROR:
 						{
@@ -3665,10 +3694,10 @@ int gnoclTextCommand ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, Tc
 						}
 					case GNOCL_CGET_NOTHANDLED:
 						{
-							return cget ( interp, para, textOptions, idx );
+							return cget ( interp, textView, textOptions, idx );
 						}
 				}
-				*/
+
 			}
 
 			break;
@@ -4074,7 +4103,7 @@ static int textFunc ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * 
 			case RedoIdx:  			return 10;
 	*/
 
-	switch ( gnoclTextCommand ( buffer, interp, objc, objv, 1, 1 ) )
+	switch ( gnoclTextCommand ( text, interp, objc, objv, 1, 1 ) )
 	{
 			/*  these are command which work upon the GtkTextView rather than the GtkTextBuffer */
 		case 0: /*  return TCL_OK */
@@ -4215,7 +4244,7 @@ static int textFunc ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * 
 int textViewFunc ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj *  const objv[] )
 {
 
-	GtkTextView     *text = GTK_TEXT_VIEW ( data );
+	GtkTextView    *text = GTK_TEXT_VIEW ( data );
 	GtkTextBuffer  *buffer = gtk_text_view_get_buffer ( text );
 
 	if ( objc < 2 )
@@ -4224,7 +4253,7 @@ int textViewFunc ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj *  co
 		return TCL_ERROR;
 	}
 
-	switch ( gnoclTextCommand ( buffer, interp, objc, objv, 1, 1 ) )
+	switch ( gnoclTextCommand ( text, interp, objc, objv, 1, 1 ) )
 	{
 			/*  these are command which work upon the GtkTextView rather than the GtkTextBuffer */
 		case 0:

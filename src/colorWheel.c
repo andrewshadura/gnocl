@@ -161,7 +161,9 @@ static gboolean doOnColorWheelMove ( GtkHSV *hsv, GtkDirectionType arg1, gpointe
 **/
 int gnoclOptOnColorWheelChanged ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
-	printf ( "gnoclOptOnColorWheelChanged\n" );
+#ifdef DEBUG_COLORWHEEL
+	g_print ( "%s\n", __FUNCTION__, );
+#endif
 	assert ( strcmp ( opt->optName, "-onChanged" ) == 0 );
 	return gnoclConnectOptCmd ( interp, obj, "changed", G_CALLBACK ( doOnColorWheelChanged ), opt, NULL, ret );
 }
@@ -174,7 +176,9 @@ int gnoclOptOnColorWheelChanged ( Tcl_Interp *interp, GnoclOption *opt, GObject 
 **/
 int gnoclOptOnColorWheelMove ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
-	printf ( "gnoclOptOnColorWheelMove\n" );
+#ifdef DEBUG_COLORWHEEL
+	g_print ( "%s\n", __FUNCTION__, );
+#endif
 	assert ( strcmp ( opt->optName, "-onMove" ) == 0 );
 	return gnoclConnectOptCmd ( interp, obj, "move", G_CALLBACK ( doOnColorWheelMove ), opt, NULL, ret );
 }
@@ -189,17 +193,17 @@ int gnoclOptOnColorWheelMove ( Tcl_Interp *interp, GnoclOption *opt, GObject *ob
 int gnoclOptColorWheelMetrics ( Tcl_Interp *interp, GnoclOption *opt,   GObject *obj, Tcl_Obj **ret )
 {
 
-	printf ( "gnoclOptColorWheelMetrics\n" );
+#ifdef DEBUG_COLORWHEEL
+	g_print ( "%s\n", __FUNCTION__, );
+#endif
 
 	switch ( opt->optName[1] )
 	{
 		case 'S':
 			{
-				g_printf ( "Set ColorWheel Size\n" );
 			} break;
 		case 'R':
 			{
-				g_printf ( "Set ColorWheel RingWidth\n" );
 			}      break;
 		default: {};
 	}
@@ -242,7 +246,10 @@ static GnoclOption colorWheelOptions[] =
 static int configure ( Tcl_Interp *interp, GtkWidget *hsv, GnoclOption options[] )
 {
 
-	printf ( "CONFIGURE\n" );
+#ifdef DEBUG_COLORWHEEL
+	g_print ( "%s\n", __FUNCTION__, );
+#endif
+
 
 	gint size;
 	gint ring_width;
@@ -258,7 +265,7 @@ static int configure ( Tcl_Interp *interp, GtkWidget *hsv, GnoclOption options[]
 		Tcl_GetIntFromObj ( NULL, options[sizeIdx].val.obj, &size );
 		/* reset hsv metrics */
 		gtk_hsv_set_metrics ( hsv, size, ring_width );
-		printf ( "\t -size value changed = %d\n", size );
+
 	}
 
 	if ( options[ringWidthIdx].status == GNOCL_STATUS_CHANGED )
@@ -268,7 +275,7 @@ static int configure ( Tcl_Interp *interp, GtkWidget *hsv, GnoclOption options[]
 		/* reset hsv metrics */
 		gtk_hsv_set_metrics ( hsv, size, ring_width );
 
-		printf ( "\t -ringWidth value changed = %d\n", ring_width ) ;
+
 	}
 
 	if ( options[colorRGBIdx].status == GNOCL_STATUS_CHANGED )
@@ -280,7 +287,7 @@ static int configure ( Tcl_Interp *interp, GtkWidget *hsv, GnoclOption options[]
 		/* reset hsv metrics */
 		//gtk_hsv_set_metrics ( hsv, size, ring_width );
 		gtk_hsv_set_color ( hsv, h, s, v );
-		printf ( "\t -colorRGB value changed = %s\n", clr ) ;
+
 	}
 
 	if ( options[colorHSVIdx].status == GNOCL_STATUS_CHANGED )
@@ -289,7 +296,7 @@ static int configure ( Tcl_Interp *interp, GtkWidget *hsv, GnoclOption options[]
 		Tcl_GetIntFromObj ( NULL, options[colorHSVIdx].val.obj, &ring_width );
 		/* reset hsv metrics */
 		gtk_hsv_set_color ( hsv, h, s, v );
-		printf ( "\t -colorHSV value changed = %d\n", ring_width ) ;
+
 	}
 
 
@@ -304,7 +311,9 @@ static int configure ( Tcl_Interp *interp, GtkWidget *hsv, GnoclOption options[]
 **/
 int gnoclConfigColorWheel ( Tcl_Interp *interp, GtkWidget *widget, Tcl_Obj *txtObj )
 {
-	printf ( "gnoclConfigcolorWheel\n" );
+#ifdef DEBUG_COLORWHEEL
+	g_print ( "%s\n", __FUNCTION__, );
+#endif
 
 	GtkArrow *arrow;
 
@@ -324,7 +333,9 @@ int gnoclConfigColorWheel ( Tcl_Interp *interp, GtkWidget *widget, Tcl_Obj *txtO
 **/
 static int cget ( Tcl_Interp *interp, GtkWidget *widget, GnoclOption options[], int idx )
 {
-	printf ( "cget\n" );
+#ifdef DEBUG_COLORWHEEL
+	g_print ( "%s\n", __FUNCTION__, );
+#endif
 
 	return gnoclCgetNotImplemented ( interp, options + idx );
 }
@@ -339,7 +350,8 @@ static int widgetFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *
 {
 
 #ifdef DEBUG_COLORWHEEL
-	g_printf ( "widgetFunc\n" );
+	g_print ( "%s\n", __FUNCTION__, );
+
 	gint _i;
 
 	for ( _i = 0; _i < objc; _i++ )
@@ -348,9 +360,6 @@ static int widgetFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *
 	}
 
 #endif
-
-
-	printf ( "widgetFunc\n" );
 
 	static const char *cmds[] = { "delete", "configure", "cget", "onClicked", "class", NULL };
 	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, OnClickedIdx, ClassIdx };

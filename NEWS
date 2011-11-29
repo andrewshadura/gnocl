@@ -1,3 +1,12 @@
+2011-11-29: 
+	gnocl::entry
+		-onIconPress 
+			%t now returns entry text content
+			added %b to review mouse button info
+
+	gnocl::text
+		-data
+
 2011-11-27
 	gnocl::fileChooserDialog
 		o new option -fileFilters

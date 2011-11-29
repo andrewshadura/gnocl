@@ -21,7 +21,7 @@ static void  doOnCurveChanged ( GtkIconView *iconview, GtkTreePath *path, gpoint
 	};
 
 	ps[0].val.str = gnoclGetNameFromWidget ( iconview );
-	ps[1].val.str = gtk_widget_get_name ( iconview );
+	ps[1].val.str = gtk_widget_get_name ( GTK_WIDGET ( iconview ) );
 	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
 	//}
 }

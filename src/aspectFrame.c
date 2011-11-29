@@ -93,15 +93,13 @@ static GnoclOption aspectFrameOptions[] =
 static int configure ( Tcl_Interp *interp, GtkWidget *widget, GnoclOption options[] )
 {
 #ifdef DEBUG_ASPECTFRAME
-	g_print ( "CONFIGURE \n" );
+	g_print ( "%s\n", __FUNCTION__, );
 #endif
 
 
 	if ( options[labelIdx].status == GNOCL_STATUS_CHANGED )
 	{
-#ifdef DEBUG_INFOBAR
-		g_print ( "CONFIGURE -> selectionMode -> %s\n", options[labelIdx].val.str );
-#endif
+
 		gtk_frame_set_label ( GTK_FRAME ( widget ), options[labelIdx].val.str );
 
 	}
@@ -115,16 +113,19 @@ static int configure ( Tcl_Interp *interp, GtkWidget *widget, GnoclOption option
 static int cget ( Tcl_Interp *interp, GtkWidget *widget, GnoclOption options[], int idx )
 {
 #ifdef DEBUG_ASPECTFRAME
-	printf ( "cget %d\n", idx );
+	g_print ( "%s\n", __FUNCTION__, );
 #endif
+
 
 	GtkAspectFrame *aspect_frame = GTK_ASPECT_FRAME ( widget );
 
+#ifdef DEBUG_ASPECTFRAME
 	g_printf ( "xalign     = %f\n", aspect_frame->xalign );
 	g_printf ( "yalign     = %f\n", aspect_frame->yalign );
 	g_printf ( "ratio      = %f\n", aspect_frame->ratio );
 	g_printf ( "obey-child = %d\n", aspect_frame->obey_child );
 	g_printf ( "label      = %s\n", gtk_frame_get_label ( GTK_FRAME ( aspect_frame ) ) );
+#endif
 
 	return TCL_OK;
 
@@ -215,8 +216,6 @@ static int aspectFrameFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_
 		case CgetIdx:
 			{
 				//return cget ( interp, widget, aspectFrameOptions, 1 );
-
-				g_print ( "option = %s\n", Tcl_GetString ( objv[2] ) );
 
 				int idx;
 

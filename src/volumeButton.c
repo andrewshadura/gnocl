@@ -27,7 +27,7 @@ static gboolean doOnPop ( GtkScaleButton *button, gpointer user_data )
 	};
 
 	ps[0].val.str = gnoclGetNameFromWidget ( button );
-	ps[1].val.str = gtk_widget_get_name ( button );
+	ps[1].val.str = gtk_widget_get_name ( GTK_WIDGET ( button ) );
 	ps[2].val.d = gtk_scale_button_get_value ( button );
 	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
 	//}

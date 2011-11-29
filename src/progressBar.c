@@ -141,8 +141,7 @@ int gnoclProgressBarCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj
 	GtkProgressBar *progressBar;
 	int            ret;
 
-	if ( gnoclParseOptions ( interp, objc, objv, progressBarOptions )
-			!= TCL_OK )
+	if ( gnoclParseOptions ( interp, objc, objv, progressBarOptions ) != TCL_OK )
 	{
 		gnoclClearOptions ( progressBarOptions );
 		return TCL_ERROR;

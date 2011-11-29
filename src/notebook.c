@@ -82,7 +82,7 @@ static int doOnCreateWindow ( GtkNotebook *source_notebook, GtkWidget *child, gi
 	gnoclMemNameAndWidget ( notebookName, notebook );
 
 	ps[0].val.str = gnoclGetNameFromWidget ( window );
-	ps[1].val.str = gtk_widget_get_name ( window );
+	ps[1].val.str = gtk_widget_get_name ( GTK_WIDGET ( window ) );
 	ps[2].val.str = gnoclGetNameFromWidget ( notebook );
 	ps[3].val.str = gnoclGetNameFromWidget ( child );
 	ps[4].val.str = gnoclGetNameFromWidget ( notebook );
@@ -119,9 +119,9 @@ static void _doOnCreateWindow ( GtkNotebook *notebook, GtkWidget *page, gint x, 
 	};
 
 	ps[0].val.str = gnoclGetNameFromWidget ( notebook );
-	ps[1].val.str = gtk_widget_get_name ( notebook );
-	ps[2].val.str = gnoclGetNameFromWidget ( page );
-	ps[3].val.str = gtk_widget_get_name ( page );
+	ps[1].val.str = gtk_widget_get_name ( GTK_WIDGET ( notebook ) );
+	ps[2].val.str = gnoclGetNameFromWidget ( GTK_WIDGET ( page ) );
+	ps[3].val.str = gtk_widget_get_name ( GTK_WIDGET ( page ) );
 	ps[4].val.i = x;
 	ps[5].val.i = y;
 
@@ -132,7 +132,9 @@ static void _doOnCreateWindow ( GtkNotebook *notebook, GtkWidget *page, gint x, 
 
 int gnoclOptOnCreateWindow ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
-	g_printf ( "gnoclOptOnCreateWindow\n" );
+#ifdef DEBUG_NOTEBOOK
+	g_print ( "%s\n", __FUNCTION__ );
+#endif
 	return gnoclConnectOptCmd ( interp, obj, "create-window", G_CALLBACK ( doOnCreateWindow ), opt, NULL, ret );
 }
 

@@ -111,7 +111,7 @@ static int toggleDoCommand ( GnoclToggleParams *para, Tcl_Obj *val, int bg )
 
 		ps[0].val.str = para->name;
 		ps[1].val.obj = val;
-		ps[2].val.str = gtk_widget_get_name ( para->widget );
+		ps[2].val.str = gtk_widget_get_name ( GTK_WIDGET ( para->widget ) );
 
 		return gnoclPercentSubstAndEval ( para->interp, ps, para->onToggled, bg );
 	}

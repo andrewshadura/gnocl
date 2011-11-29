@@ -273,12 +273,9 @@ static GnoclOption toggleRenderOptions[] =
 
 /**
 **/
-static const int noCellRenderOptions = sizeof ( cellRenderOptions )
-									   / sizeof ( GnoclOption );
-static const int noTextRenderOptions = sizeof ( textRenderOptions )
-									   / sizeof ( GnoclOption );
-static const int noToggleRenderOptions = sizeof ( toggleRenderOptions )
-		/ sizeof ( GnoclOption );
+static const int noCellRenderOptions = sizeof ( cellRenderOptions )  / sizeof ( GnoclOption );
+static const int noTextRenderOptions = sizeof ( textRenderOptions )  / sizeof ( GnoclOption );
+static const int noToggleRenderOptions = sizeof ( toggleRenderOptions ) / sizeof ( GnoclOption );
 
 /**
 **/
@@ -302,6 +299,11 @@ typedef struct
 **/
 int gnoclOptColorEvenRow ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
+
+#ifdef DEBUG_TREELIST
+	printf ( "%s\n", __FUNCTION__ );
+#endif
+
 	return TCL_OK;
 
 	//return modifyWidgetGdkColor ( interp, opt, obj, gtk_widget_modify_fg, G_STRUCT_OFFSET ( GtkStyle, fg ), ret );
@@ -311,6 +313,10 @@ int gnoclOptColorEvenRow ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, T
 **/
 gboolean  search_foreach_func ( GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer data )
 {
+#ifdef DEBUG_TREELIST
+	printf ( "%s\n", __FUNCTION__ );
+#endif
+
 	gchar *str;
 	gint column = 2;
 
@@ -325,6 +331,10 @@ gboolean  search_foreach_func ( GtkTreeModel *model, GtkTreePath *path, GtkTreeI
 **/
 gboolean search_equal_func ( GtkTreeModel *model, gint column, const gchar *key, GtkTreeIter *iter, gpointer search_data )
 {
+#ifdef DEBUG_TREELIST
+	printf ( "%s\n", __FUNCTION__ );
+#endif
+
 	gchar *str;
 	gchar *pos;
 	gboolean res;
@@ -452,6 +462,10 @@ static int optSizing ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_O
 **/
 static int getOffset ( TreeListParams *para, enum ConfigType type, int col )
 {
+#ifdef DEBUG_TREELIST
+	printf ( "%s\n", __FUNCTION__ );
+#endif
+
 	/*
 	   0 .. (N-1)                value
 	   N .. (2*N-1)              visible         bool
@@ -471,6 +485,10 @@ static int getOffset ( TreeListParams *para, enum ConfigType type, int col )
 **/
 static int getColumn ( GtkCellRenderer *renderer )
 {
+#ifdef DEBUG_TREELIST
+	printf ( "%s\n", __FUNCTION__ );
+#endif
+
 	return GPOINTER_TO_INT ( g_object_get_data ( G_OBJECT ( renderer ), "gnoclColumn" ) );
 }
 
@@ -479,6 +497,10 @@ static int getColumn ( GtkCellRenderer *renderer )
 **/
 static void destroyFunc ( GtkWidget *widget, gpointer data )
 {
+#ifdef DEBUG_TREELIST
+	printf ( "%s\n", __FUNCTION__ );
+#endif
+
 	TreeListParams *para = ( TreeListParams * ) data;
 
 	gnoclForgetWidgetFromName ( para->name );
@@ -494,6 +516,10 @@ static void destroyFunc ( GtkWidget *widget, gpointer data )
 **/
 static int addIterator ( TreeListParams *para, GtkTreeIter *iter )
 {
+#ifdef DEBUG_TREELIST
+	printf ( "%s\n", __FUNCTION__ );
+#endif
+
 	static int no;
 
 	GtkTreeIter *p = g_new ( GtkTreeIter, 1 );
@@ -527,6 +553,11 @@ static int removeIterFromId ( TreeListParams *para, int id )
 **/
 static void deleteCellData ( gpointer data )
 {
+#ifdef DEBUG_TREELIST
+	printf ( "%s\n", __FUNCTION__ );
+#endif
+
+
 	GnoclCommandData *cs = ( GnoclCommandData * ) data;
 	g_free ( cs->command );
 	g_free ( cs );
@@ -537,6 +568,10 @@ static void deleteCellData ( gpointer data )
 **/
 static Tcl_Obj *getObjFromCol ( GtkTreeModel *model, int colNo, GtkTreeIter *iter )
 {
+#ifdef DEBUG_TREELIST
+	printf ( "%s\n", __FUNCTION__ );
+#endif
+
 	Tcl_Obj *res;
 
 	switch ( gtk_tree_model_get_column_type ( model, colNo ) )
@@ -581,6 +616,9 @@ static Tcl_Obj *getObjFromCol ( GtkTreeModel *model, int colNo, GtkTreeIter *ite
 **/
 static Tcl_Obj *tclPathFromPath ( GtkTreePath *path )
 {
+#ifdef DEBUG_TREELIST
+	printf ( "%s\n", __FUNCTION__ );
+#endif
 	Tcl_Obj     *ret     = Tcl_NewListObj ( 0, NULL );
 	int         *indices = gtk_tree_path_get_indices ( path );
 	int         no       = gtk_tree_path_get_depth ( path );
@@ -601,6 +639,10 @@ static Tcl_Obj *tclPathFromPath ( GtkTreePath *path )
 **/
 static Tcl_Obj *tclPathFromIter ( GtkTreeModel *model, GtkTreeIter *iter )
 {
+#ifdef DEBUG_TREELIST
+	printf ( "%s\n", __FUNCTION__ );
+#endif
+
 	GtkTreePath *path = gtk_tree_model_get_path ( model, iter );
 	return tclPathFromPath ( path );
 }
@@ -611,6 +653,10 @@ static Tcl_Obj *tclPathFromIter ( GtkTreeModel *model, GtkTreeIter *iter )
 /* "1:2:3" -> "1 2 3" */
 static char *stringPathToTclPath ( char *path )
 {
+#ifdef DEBUG_TREELIST
+	printf ( "%s\n", __FUNCTION__ );
+#endif
+
 	char *ret = g_strdup ( path );
 	char *p;
 
@@ -625,6 +671,11 @@ static char *stringPathToTclPath ( char *path )
 **/
 static GtkTreeIter getLastVisibleChild ( GtkTreeView *view, GtkTreeModel *model, GtkTreeIter *parent )
 {
+#ifdef DEBUG_TREELIST
+	printf ( "%s\n", __FUNCTION__ );
+#endif
+
+
 	GtkTreeIter ret;
 	GtkTreeIter next;
 
@@ -657,9 +708,12 @@ static GtkTreeIter getLastVisibleChild ( GtkTreeView *view, GtkTreeModel *model,
 /**
 \brief
 **/
-static int getLastVisibleIter ( GtkTreeView *view, GtkTreeModel *model,
-								GtkTreeIter *ret )
+static int getLastVisibleIter ( GtkTreeView *view, GtkTreeModel *model,	GtkTreeIter *ret )
 {
+#ifdef DEBUG_TREELIST
+	printf ( "%s\n", __FUNCTION__ );
+#endif
+
 	GtkTreeIter iter, next;
 
 	if ( gtk_tree_model_get_iter_first ( model, &next ) == 0 )
@@ -684,6 +738,9 @@ static int getLastVisibleIter ( GtkTreeView *view, GtkTreeModel *model,
 **/
 static GtkTreePath *tclPathToPath ( Tcl_Interp *interp, Tcl_Obj *obj, GtkTreeModel *model )
 {
+#ifdef DEBUG_TREELIST
+	printf ( "%s\n", __FUNCTION__ );
+#endif
 	int k, len;
 	GtkTreePath *path;
 
@@ -750,6 +807,10 @@ cleanExit:
 **/
 static int iterIsNull ( const GtkTreeIter *iter )
 {
+#ifdef DEBUG_TREELIST
+	printf ( "%s\n", __FUNCTION__ );
+#endif
+
 	/* see setIterNull */
 	return iter->stamp == 0 && iter->user_data == NULL;
 }
@@ -759,6 +820,10 @@ static int iterIsNull ( const GtkTreeIter *iter )
 **/
 static void setIterNull ( GtkTreeIter *iter )
 {
+#ifdef DEBUG_TREELIST
+	printf ( "%s\n", __FUNCTION__ );
+#endif
+
 	/* must conform to iterIsNull */
 	iter->stamp = 0;
 	iter->user_data = NULL;
@@ -769,6 +834,10 @@ static void setIterNull ( GtkTreeIter *iter )
 **/
 static int iterFromTclPath ( Tcl_Interp *interp, Tcl_Obj *obj, GtkTreeModel *model, int allowEmpty, GtkTreeIter *iter )
 {
+#ifdef DEBUG_TREELIST
+	printf ( "%s\n", __FUNCTION__ );
+#endif
+
 	int len;
 	/* use list function here to avoid conversion to string and back to list */
 
@@ -814,6 +883,10 @@ static int iterFromTclPath ( Tcl_Interp *interp, Tcl_Obj *obj, GtkTreeModel *mod
 **/
 static int getRefFromTcl ( Tcl_Interp *interp, Tcl_Obj *obj, GHashTable *idToIter, GtkTreeIter *iter )
 {
+#ifdef DEBUG_TREELIST
+	printf ( "%s\n", __FUNCTION__ );
+#endif
+
 	/* use list function here to avoid conversion to string
 	   and back to list if it is a path */
 	int len;
@@ -849,6 +922,11 @@ static int getRefFromTcl ( Tcl_Interp *interp, Tcl_Obj *obj, GHashTable *idToIte
 **/
 static int getIterFromTcl ( Tcl_Interp *interp, Tcl_Obj *obj, GtkTreeModel *model, GHashTable *idToIter, int allowEmpty, GtkTreeIter *iter )
 {
+#ifdef DEBUG_TREELIST
+	printf ( "%s\n", __FUNCTION__ );
+#endif
+
+
 	if ( getRefFromTcl ( NULL, obj, idToIter, iter ) != TCL_OK && iterFromTclPath ( interp, obj, model, allowEmpty, iter ) != TCL_OK )
 	{
 		Tcl_AppendResult ( interp, " \"", Tcl_GetString ( obj ), "\" is neiter a valid path nor a valid iterator.", ( char * ) NULL );
@@ -869,6 +947,10 @@ typedef struct
 **/
 static void getSelectionForeach ( GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer data )
 {
+#ifdef DEBUG_TREELIST
+	printf ( "%s\n", __FUNCTION__ );
+#endif
+
 	SelectionStruct *ss = ( SelectionStruct * ) data;
 	Tcl_ListObjAppendElement ( ss->interp, ss->list, tclPathFromIter ( model, iter ) );
 }
@@ -878,6 +960,10 @@ static void getSelectionForeach ( GtkTreeModel *model, GtkTreePath *path, GtkTre
 **/
 static Tcl_Obj *getSelectionList ( Tcl_Interp *interp, GtkTreeSelection *selection )
 {
+#ifdef DEBUG_TREELIST
+	printf ( "%s\n", __FUNCTION__ );
+#endif
+
 	SelectionStruct  ss;
 
 	ss.interp = interp;
@@ -894,6 +980,10 @@ static Tcl_Obj *getSelectionList ( Tcl_Interp *interp, GtkTreeSelection *selecti
 **/
 static int doOnSelectionChanged ( Tcl_Interp *interp, TreeListParams *para, GtkTreeSelection *selection, const char *command, int background )
 {
+#ifdef DEBUG_TREELIST
+	printf ( "%s\n", __FUNCTION__ );
+#endif
+
 	GnoclPercSubst ps[] =
 	{
 		{ 'w', GNOCL_STRING },  /* widget */
@@ -917,6 +1007,10 @@ static int doOnSelectionChanged ( Tcl_Interp *interp, TreeListParams *para, GtkT
 **/
 static void onSelectionChanged ( GtkTreeSelection *selection, gpointer data )
 {
+#ifdef DEBUG_TREELIST
+	printf ( "%s\n", __FUNCTION__ );
+#endif
+
 	GnoclCommandData *cs = ( GnoclCommandData * ) data;
 	TreeListParams *para = ( TreeListParams * ) cs->data;
 
@@ -926,8 +1020,7 @@ static void onSelectionChanged ( GtkTreeSelection *selection, gpointer data )
 /**
 \brief
 **/
-static void rowExpandCollapseFunc ( GtkTreeView *treeview,
-									GtkTreeIter *iter, GtkTreePath *path, gpointer data )
+static void rowExpandCollapseFunc ( GtkTreeView *treeview, GtkTreeIter *iter, GtkTreePath *path, gpointer data )
 {
 	GnoclCommandData *cs = ( GnoclCommandData * ) data;
 	TreeListParams *para = ( TreeListParams * ) cs->data;
@@ -952,6 +1045,10 @@ static void rowExpandCollapseFunc ( GtkTreeView *treeview,
 **/
 static GtkTreeViewColumn *getValidColumn ( GtkTreeView *view, Tcl_Interp *interp, Tcl_Obj *obj, int *pCol )
 {
+#ifdef DEBUG_TREELIST
+	printf ( "%s\n", __FUNCTION__ );
+#endif
+
 	GtkTreeViewColumn *column;
 	int col;
 
@@ -976,6 +1073,9 @@ static GtkTreeViewColumn *getValidColumn ( GtkTreeView *view, Tcl_Interp *interp
 **/
 static int columnToNo ( GtkTreeView *view, GtkTreeViewColumn *column )
 {
+#ifdef DEBUG_TREELIST
+	printf ( "%s\n", __FUNCTION__ );
+#endif
 	int n = 0;
 	GtkTreeViewColumn *col;
 
@@ -999,9 +1099,12 @@ static int columnToNo ( GtkTreeView *view, GtkTreeViewColumn *column )
 /**
 \brief
 **/
-static GdkPixbuf *getPixbuf ( Tcl_Interp *interp,
-							  GtkTreeView *view, Tcl_Obj *obj )
+static GdkPixbuf *getPixbuf ( Tcl_Interp *interp, GtkTreeView *view, Tcl_Obj *obj )
 {
+#ifdef DEBUG_TREELIST
+	printf ( "%s\n", __FUNCTION__ );
+#endif
+
 	GdkPixbuf *pixbuf = NULL;
 
 	GnoclStringType type = gnoclGetStringType ( obj );
@@ -1029,8 +1132,7 @@ static GdkPixbuf *getPixbuf ( Tcl_Interp *interp,
 				GtkStockItem item;
 
 				if ( gnoclGetStockItem ( obj, interp, &item ) == TCL_OK )
-					pixbuf = gtk_widget_render_icon ( GTK_WIDGET ( view ),
-													  item.stock_id, size, NULL );
+					pixbuf = gtk_widget_render_icon ( GTK_WIDGET ( view ), item.stock_id, size, NULL );
 			}
 
 			break;
@@ -1048,6 +1150,10 @@ static GdkPixbuf *getPixbuf ( Tcl_Interp *interp,
 **/
 static int setCell ( Tcl_Interp *interp, GtkTreeView *view, GtkTreeIter *iter, int col, Tcl_Obj *obj, int isTree )
 {
+#ifdef DEBUG_TREELIST
+	printf ( "%s\n", __FUNCTION__ );
+#endif
+
 	GtkTreeModel *model = gtk_tree_view_get_model ( view );
 	GType type = gtk_tree_model_get_column_type ( model, col );
 
@@ -1157,6 +1263,10 @@ static int setCell ( Tcl_Interp *interp, GtkTreeView *view, GtkTreeIter *iter, i
 **/
 static Tcl_Obj *addRow ( TreeListParams *para, Tcl_Interp *interp, Tcl_Obj *child, GtkTreeIter *parentIter, int singleCol, int begin )
 {
+#ifdef DEBUG_TREELIST
+	printf ( "%s\n", __FUNCTION__ );
+#endif
+
 	GValue       value = { 0 };
 	GtkTreeIter  iter;
 	GtkTreeModel *model = gtk_tree_view_get_model ( para->view );
@@ -1280,6 +1390,9 @@ static Tcl_Obj *addRow ( TreeListParams *para, Tcl_Interp *interp, Tcl_Obj *chil
 **/
 static int addTreeChildren ( TreeListParams *para, Tcl_Interp *interp, Tcl_Obj *path, Tcl_Obj *children, int singleRow, int singleCol, int begin )
 {
+#ifdef DEBUG_TREELIST
+	printf ( "%s\n", __FUNCTION__ );
+#endif
 	GtkTreeModel *model = gtk_tree_view_get_model ( para->view );
 	int          n, noChilds = 1;
 	GtkTreeIter  parentIter;
@@ -1373,6 +1486,10 @@ errorExit:
 **/
 static int addListChildren ( TreeListParams *para, Tcl_Interp *interp, Tcl_Obj *children, int singleRow, int singleCol, int begin )
 {
+#ifdef DEBUG_TREELIST
+	printf ( "%s\n", __FUNCTION__ );
+#endif
+
 	int     n, noChilds = 1;
 	Tcl_Obj *ret = NULL;
 
@@ -1449,7 +1566,7 @@ errorExit:
 static int configure ( Tcl_Interp *interp,	TreeListParams *para,	GnoclOption options[] )
 {
 #ifdef DEBUG_TREELIST
-	g_print ( "treeList::configure %s \n", options[1] );
+	g_print ( "%s %s \n", __FUNCTION__, options[1] );
 #endif
 
 
@@ -1583,6 +1700,10 @@ static int configure ( Tcl_Interp *interp,	TreeListParams *para,	GnoclOption opt
 **/
 static int setSelection ( TreeListParams *para, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+#ifdef DEBUG_TREELIST
+	printf ( "%s\n", __FUNCTION__ );
+#endif
+
 	GnoclOption options[] =
 	{
 		{ "-add", GNOCL_BOOL, NULL },       /* 0 */
@@ -1610,46 +1731,63 @@ static int setSelection ( TreeListParams *para, Tcl_Interp *interp, int objc, Tc
 	if ( gnoclParseOptions ( interp, objc - 2, objv + 2, options ) != TCL_OK )
 	{
 		gnoclClearOptions ( options );
-		return TCL_ERROR;
+		{
+			return TCL_ERROR;
+		}
 	}
 
 	if ( options[addIdx].status == GNOCL_STATUS_CHANGED )
+	{
 		clear = ( options[addIdx].val.b == 0 );
+	}
 
 	if ( options[singleIdx].status == GNOCL_STATUS_CHANGED )
+	{
 		single = options[singleIdx].val.b;
+	}
 
 	if ( options[unselectIdx].status == GNOCL_STATUS_CHANGED )
+	{
 		unselect = options[unselectIdx].val.b;
+	}
 
 	gnoclClearOptions ( options );
 
 	select = gtk_tree_view_get_selection ( para->view );
 
-	g_signal_handlers_block_matched ( G_OBJECT ( select ),
-									  G_SIGNAL_MATCH_FUNC, 0, 0, NULL,
-									  ( gpointer * ) onSelectionChanged, NULL );
+	g_signal_handlers_block_matched ( G_OBJECT ( select ), G_SIGNAL_MATCH_FUNC, 0, 0, NULL, ( gpointer * ) onSelectionChanged, NULL );
 
 	if ( clear )
 	{
 		if ( unselect )
+		{
 			gtk_tree_selection_select_all ( select );
+		}
+
 		else
+		{
 			gtk_tree_selection_unselect_all ( select );
+		}
 	}
 
 	if ( single )
 	{
 		GtkTreeIter iter;
 
-		if ( getIterFromTcl ( interp, objv[2], model, para->idToIter,
-							  1, &iter ) != TCL_OK )
+		if ( getIterFromTcl ( interp, objv[2], model, para->idToIter, 1, &iter ) != TCL_OK )
+		{
 			goto cleanExit;
+		}
 
 		if ( unselect )
+		{
 			gtk_tree_selection_unselect_iter ( select, &iter );
+		}
+
 		else
+		{
 			gtk_tree_selection_select_iter ( select, &iter );
+		}
 	}
 
 	else
@@ -1657,14 +1795,21 @@ static int setSelection ( TreeListParams *para, Tcl_Interp *interp, int objc, Tc
 		int  k, no;
 
 		if ( Tcl_ListObjLength ( interp, objv[2], &no ) != TCL_OK )
+		{
 			goto cleanExit;
+		}
 
 		if ( no == 1 && strcmp ( Tcl_GetString ( objv[2] ), "all" ) == 0 )
 		{
 			if ( unselect )
+			{
 				gtk_tree_selection_unselect_all ( select );
+			}
+
 			else
+			{
 				gtk_tree_selection_select_all ( select );
+			}
 		}
 
 		else
@@ -1674,25 +1819,31 @@ static int setSelection ( TreeListParams *para, Tcl_Interp *interp, int objc, Tc
 				GtkTreeIter iter;
 
 				if ( Tcl_ListObjIndex ( interp, objv[2], k, &tp ) != TCL_OK  )
+				{
 					goto cleanExit;
+				}
 
-				if ( getIterFromTcl ( interp, tp, model, para->idToIter,
-									  1, &iter ) != TCL_OK )
+				if ( getIterFromTcl ( interp, tp, model, para->idToIter, 1, &iter ) != TCL_OK )
+				{
 					goto cleanExit;
+				}
 
 				if ( unselect )
+				{
 					gtk_tree_selection_unselect_iter ( select, &iter );
+				}
+
 				else
+				{
 					gtk_tree_selection_select_iter ( select, &iter );
+				}
 			}
 	}
 
 	ret = TCL_OK;
 
 cleanExit:
-	g_signal_handlers_unblock_matched ( G_OBJECT ( select ),
-										G_SIGNAL_MATCH_FUNC, 0, 0, NULL,
-										( gpointer * ) onSelectionChanged, NULL );
+	g_signal_handlers_unblock_matched ( G_OBJECT ( select ), G_SIGNAL_MATCH_FUNC, 0, 0, NULL, ( gpointer * ) onSelectionChanged, NULL );
 
 	return ret;
 }
@@ -1702,6 +1853,10 @@ cleanExit:
 **/
 static int getSelection ( TreeListParams *pp, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+#ifdef DEBUG_TREELIST
+	printf ( "%s\n", __FUNCTION__ );
+#endif
+
 	if ( objc != 2 )
 	{
 		Tcl_WrongNumArgs ( interp, 2, objv, "" );
@@ -1719,6 +1874,10 @@ static int getSelection ( TreeListParams *pp, Tcl_Interp *interp, int objc, Tcl_
 **/
 static gboolean iterIsEqual ( GtkTreeIter *a, GtkTreeIter *b )
 {
+#ifdef DEBUG_TREELIST
+	printf ( "%s\n", __FUNCTION__ );
+#endif
+
 	return a->user_data == b->user_data &&
 		   a->user_data2 == b->user_data2 &&
 		   a->user_data3 == b->user_data3;
@@ -1729,9 +1888,12 @@ static gboolean iterIsEqual ( GtkTreeIter *a, GtkTreeIter *b )
 **/
 static gboolean listRemoveIter ( gpointer key, gpointer value, gpointer data )
 {
+#ifdef DEBUG_TREELIST
+	printf ( "%s\n", __FUNCTION__ );
+#endif
+
 	return iterIsEqual ( ( GtkTreeIter * ) value, ( GtkTreeIter * ) data );
 }
-
 
 typedef struct
 {
@@ -1739,13 +1901,15 @@ typedef struct
 	GtkTreeIter  *iter;
 } TreeRemovePara;
 
-
-
 /**
 \brief
 **/
 static gboolean treeRemoveIter ( gpointer key, gpointer value, gpointer data )
 {
+#ifdef DEBUG_TREELIST
+	printf ( "%s\n", __FUNCTION__ );
+#endif
+
 	TreeRemovePara *p = ( TreeRemovePara * ) data;
 	GtkTreeIter    *v = ( GtkTreeIter * ) value;
 
@@ -1753,14 +1917,15 @@ static gboolean treeRemoveIter ( gpointer key, gpointer value, gpointer data )
 		   || gtk_tree_store_is_ancestor ( p->model, p->iter, v );
 }
 
-
-
 /**
 \brief
 **/
-static int storeRemove ( TreeListParams *para, Tcl_Interp *interp,
-						 GtkTreeModel *model, GtkTreeIter *iter )
+static int storeRemove ( TreeListParams *para, Tcl_Interp *interp, GtkTreeModel *model, GtkTreeIter *iter )
 {
+#ifdef DEBUG_TREELIST
+	printf ( "%s\n", __FUNCTION__ );
+#endif
+
 	/* since "row-deleted" is only called for the deleted row and not
 	   for its children, we have to be very ugly */
 	if ( para->isTree )
@@ -1786,6 +1951,10 @@ static int storeRemove ( TreeListParams *para, Tcl_Interp *interp,
 **/
 static int erase ( TreeListParams *para, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+#ifdef DEBUG_TREELIST
+	printf ( "%s\n", __FUNCTION__ );
+#endif
+
 	GtkTreeModel *model = gtk_tree_view_get_model ( para->view );
 	GtkTreeIter start;
 
@@ -1883,9 +2052,12 @@ static int erase ( TreeListParams *para, Tcl_Interp *interp, int objc, Tcl_Obj *
 /**
 \brief
 **/
-static int scrollToPos ( TreeListParams *para, Tcl_Interp *interp,
-						 int objc, Tcl_Obj * const objv[] )
+static int scrollToPos ( TreeListParams *para, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+#ifdef DEBUG_TREELIST
+	printf ( "%s\n", __FUNCTION__ );
+#endif
+
 	GnoclOption options[] =
 	{
 		{ "-align", GNOCL_OBJ, NULL },       /* 0 */
@@ -1910,8 +2082,7 @@ static int scrollToPos ( TreeListParams *para, Tcl_Interp *interp,
 
 	if ( options[alignIdx].status == GNOCL_STATUS_CHANGED )
 	{
-		if ( gnoclGetBothAlign ( interp, options[alignIdx].val.obj,
-								 &xAlign, &yAlign ) != TCL_OK )
+		if ( gnoclGetBothAlign ( interp, options[alignIdx].val.obj, &xAlign, &yAlign ) != TCL_OK )
 			goto cleanExit;
 
 		useAlign = 1;
@@ -1927,8 +2098,7 @@ static int scrollToPos ( TreeListParams *para, Tcl_Interp *interp,
 
 	if ( options[columnIdx].status == GNOCL_STATUS_CHANGED )
 	{
-		column = getValidColumn ( para->view, interp,
-								  options[columnIdx].val.obj, NULL );
+		column = getValidColumn ( para->view, interp, options[columnIdx].val.obj, NULL );
 
 		if ( column == NULL )
 		{
@@ -1966,9 +2136,11 @@ cleanExit:
 /**
 \brief
 **/
-static int collapse ( TreeListParams * para, Tcl_Interp * interp,
-					  int objc, Tcl_Obj * const objv[], int doCollapse )
+static int collapse ( TreeListParams * para, Tcl_Interp * interp, int objc, Tcl_Obj * const objv[], int doCollapse )
 {
+#ifdef DEBUG_TREELIST
+	printf ( "%s\n", __FUNCTION__ );
+#endif
 	GnoclOption options[] =
 	{
 		{ "-path", GNOCL_OBJ, NULL },       /* 0 */
@@ -2022,6 +2194,9 @@ cleanExit:
 **/
 static int getNumChildren ( TreeListParams * para, Tcl_Interp * interp, int objc, Tcl_Obj * const objv[] )
 {
+#ifdef DEBUG_TREELIST
+	printf ( "%s\n", __FUNCTION__ );
+#endif
 	int n;
 	GtkTreeModel *model = gtk_tree_view_get_model ( para->view );
 	GtkTreeIter  iter;
@@ -2060,6 +2235,10 @@ static int getNumChildren ( TreeListParams * para, Tcl_Interp * interp, int objc
 **/
 static int coordsToPath ( TreeListParams * para, Tcl_Interp * interp, int objc, Tcl_Obj * const objv[] )
 {
+#ifdef DEBUG_TREELIST
+	printf ( "%s\n", __FUNCTION__ );
+#endif
+
 	int               x, y;
 	GtkTreePath       *path;
 	GtkTreeViewColumn *column;
@@ -2113,6 +2292,10 @@ static int coordsToPath ( TreeListParams * para, Tcl_Interp * interp, int objc, 
 **/
 static int setCursor ( TreeListParams * para, Tcl_Interp * interp, int objc, Tcl_Obj * const objv[] )
 {
+#ifdef DEBUG_TREELIST
+	printf ( "%s\n", __FUNCTION__ );
+#endif
+
 	GnoclOption options[] =
 	{
 		{ "-column", GNOCL_INT, NULL },       /* 0 */
@@ -2172,9 +2355,12 @@ cleanExit:
 /**
 \brief
 **/
-static void defaultEditedFunc ( GtkCellEditable * cell, gchar * arg1,
-								gchar * arg2, gpointer data )
+static void defaultEditedFunc ( GtkCellEditable * cell, gchar * arg1, gchar * arg2, gpointer data )
 {
+#ifdef DEBUG_TREELIST
+	printf ( "%s\n", __FUNCTION__ );
+#endif
+
 	/* Does this have to be really so complicated? */
 	/* g_object_set( G_OBJECT( cell ), "text", arg2, NULL ); */
 	GtkTreeModel *model = ( GtkTreeModel * ) data;
@@ -2190,9 +2376,12 @@ static void defaultEditedFunc ( GtkCellEditable * cell, gchar * arg1,
 /**
 \brief
 **/
-static void editedFunc ( GtkCellEditable * cell, gchar * arg1,
-						 gchar * arg2, gpointer data )
+static void editedFunc ( GtkCellEditable * cell, gchar * arg1, gchar * arg2, gpointer data )
 {
+#ifdef DEBUG_TREELIST
+	printf ( "%s\n", __FUNCTION__ );
+#endif
+
 	GnoclCommandData *cs = ( GnoclCommandData * ) data;
 	TreeListParams   *para = ( TreeListParams * ) cs->data;
 
@@ -2217,9 +2406,12 @@ static void editedFunc ( GtkCellEditable * cell, gchar * arg1,
 /**
 \brief
 **/
-static void defaultToggledFunc ( GtkCellRendererToggle * cell, gchar * arg1,
-								 gpointer data )
+static void defaultToggledFunc ( GtkCellRendererToggle * cell, gchar * arg1, gpointer data )
 {
+#ifdef DEBUG_TREELIST
+	printf ( "%s\n", __FUNCTION__ );
+#endif
+
 	/* Does this have to be really so complicated? */
 	GtkTreeModel *model = ( GtkTreeModel * ) data;
 	GtkTreePath  *path = gtk_tree_path_new_from_string ( arg1 );
@@ -2238,8 +2430,7 @@ static void defaultToggledFunc ( GtkCellRendererToggle * cell, gchar * arg1,
 /**
 \brief
 **/
-static void toggledFunc ( GtkCellRendererToggle * cell, gchar * arg1,
-						  gpointer data )
+static void toggledFunc ( GtkCellRendererToggle * cell, gchar * arg1, gpointer data )
 {
 	GnoclCommandData *cs = ( GnoclCommandData * ) data;
 	TreeListParams   *para = ( TreeListParams * ) cs->data;
@@ -2264,14 +2455,21 @@ static void toggledFunc ( GtkCellRendererToggle * cell, gchar * arg1,
 **/
 static int appendOptions ( GnoclOption * dest, GnoclOption * src )
 {
+#ifdef DEBUG_TREELIST
+	printf ( "%s\n", __FUNCTION__ );
+#endif
 	GnoclOption *dp = dest;
 	GnoclOption *sp = src;
 
 	while ( dp->optName )
+	{
 		++dp;
+	}
 
 	while ( sp->optName )
+	{
 		++sp;
+	}
 
 	/* copy also the final NULL */
 	memcpy ( dp, src, ( sp - src + 1 ) * sizeof ( *src ) );
@@ -2284,10 +2482,15 @@ static int appendOptions ( GnoclOption * dest, GnoclOption * src )
 **/
 static int appendOneOption ( GnoclOption * dest, GnoclOption * src )
 {
+#ifdef DEBUG_TREELIST
+	printf ( "%s\n", __FUNCTION__ );
+#endif
 	GnoclOption *dp = dest;
 
 	while ( dp->optName )
+	{
 		++dp;
+	}
 
 	*dp = *src;
 
@@ -2302,6 +2505,10 @@ static int appendOneOption ( GnoclOption * dest, GnoclOption * src )
 static void cellDataFunc ( GtkTreeViewColumn * column, GtkCellRenderer * renderer,
 						   GtkTreeModel * model, GtkTreeIter * iter, gpointer data )
 {
+#ifdef DEBUG_TREELIST
+	printf ( "%s\n", __FUNCTION__ );
+#endif
+
 	GnoclCommandData *cs = ( GnoclCommandData * ) data;
 	TreeListParams   *para = ( TreeListParams * ) cs->data;
 	int              colNo = getColumn ( renderer );
@@ -2357,7 +2564,9 @@ static void cellDataFunc ( GtkTreeViewColumn * column, GtkCellRenderer * rendere
 		objv[0] = NULL;
 
 		for ( k = 0; k < no; ++k )
+		{
 			Tcl_ListObjIndex ( cs->interp, res, k, &objv[k+1] );
+		}
 
 		ret = gnoclParseOptions ( cs->interp, no + 1, objv, options );
 
@@ -2368,8 +2577,7 @@ static void cellDataFunc ( GtkTreeViewColumn * column, GtkCellRenderer * rendere
 			goto cleanExit;
 		}
 
-		if ( gnoclSetOptions ( cs->interp, options,
-							   G_OBJECT ( renderer ), -1 ) != TCL_OK )
+		if ( gnoclSetOptions ( cs->interp, options, G_OBJECT ( renderer ), -1 ) != TCL_OK )
 		{
 			goto cleanExit;
 		}
@@ -2392,9 +2600,11 @@ cleanExit:
 /**
 \brief
 **/
-static int columnCget ( TreeListParams * para, Tcl_Interp * interp,
-						int objc, Tcl_Obj * const objv[] )
+static int columnCget ( TreeListParams * para, Tcl_Interp * interp,	int objc, Tcl_Obj * const objv[] )
 {
+#ifdef DEBUG_TREELIST
+	printf ( "%s\n", __FUNCTION__ );
+#endif
 	GtkTreeViewColumn *column;
 	int idx;
 
@@ -2407,10 +2617,11 @@ static int columnCget ( TreeListParams * para, Tcl_Interp * interp,
 	column = getValidColumn ( para->view, interp, objv[2], NULL );
 
 	if ( column == NULL )
+	{
 		return TCL_ERROR;
+	}
 
-	switch ( gnoclCget ( interp, objc - 1, objv + 1, G_OBJECT ( column ),
-						 colOptions, &idx ) )
+	switch ( gnoclCget ( interp, objc - 1, objv + 1, G_OBJECT ( column ), colOptions, &idx ) )
 	{
 		case GNOCL_CGET_ERROR:
 			{
@@ -2444,6 +2655,9 @@ static int columnCget ( TreeListParams * para, Tcl_Interp * interp,
 **/
 static int columnConfigure ( TreeListParams * para, Tcl_Interp * interp, int objc, Tcl_Obj * const objv[] )
 {
+#ifdef DEBUG_TREELIST
+	printf ( "%s\n", __FUNCTION__ );
+#endif
 	const int noColOptions = sizeof ( colOptions ) / sizeof ( GnoclOption );
 	int       onCmdIdx = -1;
 	int       startRenderOptions;
@@ -2464,7 +2678,9 @@ static int columnConfigure ( TreeListParams * para, Tcl_Interp * interp, int obj
 	column = getValidColumn ( para->view, interp, objv[2], &colNo );
 
 	if ( column == NULL )
+	{
 		return TCL_ERROR;
+	}
 
 	rendList = gtk_tree_view_column_get_cell_renderers ( column );
 
@@ -2585,6 +2801,10 @@ cleanExit:
 **/
 static int getValue ( TreeListParams * para, Tcl_Interp * interp, int objc, Tcl_Obj * const objv[] )
 {
+#ifdef DEBUG_TREELIST
+	printf ( "%s\n", __FUNCTION__ );
+#endif
+
 	int          colNo;
 	GtkTreeIter  iter;
 	Tcl_Obj      *res;
@@ -2678,6 +2898,10 @@ char * getCellValue (GtkTreeModel *model, GtkTreeIter *iter, int colNo)
 **/
 static int getFullList ( TreeListParams * para, Tcl_Interp * interp, int objc, Tcl_Obj * const objv[] )
 {
+#ifdef DEBUG_TREELIST
+	printf ( "%s\n", __FUNCTION__ );
+#endif
+
 	int          colNo;
 	GtkTreeIter  iter;
 	Tcl_Obj      *res;
@@ -2839,6 +3063,9 @@ static int getFullList ( TreeListParams * para, Tcl_Interp * interp, int objc, T
 **/
 static int cellConfigure ( TreeListParams * para, Tcl_Interp * interp, int objc, Tcl_Obj * const objv[] )
 {
+#ifdef DEBUG_TREELIST
+	printf ( "%s\n", __FUNCTION__ );
+#endif
 	GnoclOption options[] =
 	{
 		{ "-value", GNOCL_OBJ, NULL },
@@ -2904,6 +3131,10 @@ cleanExit:
 **/
 static int addRows ( TreeListParams * para, Tcl_Interp * interp, int objc, Tcl_Obj * const objv[], int begin )
 {
+#ifdef DEBUG_TREELIST
+	printf ( "%s\n", __FUNCTION__ );
+#endif
+
 	GnoclOption options[] =
 	{
 		{ "-singleRow", GNOCL_BOOL, NULL },    /* 0 */
@@ -2965,6 +3196,10 @@ static int addRows ( TreeListParams * para, Tcl_Interp * interp, int objc, Tcl_O
 **/
 int treeListFunc ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * const objv[] )
 {
+#ifdef DEBUG_TREELIST
+	printf ( "%s\n", __FUNCTION__ );
+#endif
+
 	/* TODO "rowConfigure", "sort", */
 
 	const char *cmds[] =
@@ -3310,6 +3545,11 @@ int treeListFunc ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * con
 **/
 static int getGType ( Tcl_Interp * interp, Tcl_Obj * obj, GType * type, int * isMarkup )
 {
+#ifdef DEBUG_TREELIST
+	printf ( "%s\n", __FUNCTION__ );
+#endif
+
+
 	/* since G_TYPE_BOOLEAN does not support sorting, we use G_TYPE_UINT */
 	const char *txt[] =
 	{
@@ -3344,6 +3584,10 @@ static int getGType ( Tcl_Interp * interp, Tcl_Obj * obj, GType * type, int * is
 **/
 static int gnoclTreeListCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * const objv[], int isTree )
 {
+#ifdef DEBUG_TREELIST
+	printf ( "%s\n", __FUNCTION__ );
+#endif
+
 	TreeListParams   *para;
 	int              ret, k;
 	int              noColumns = -1;
@@ -3627,8 +3871,7 @@ static int gnoclTreeListCmd ( ClientData data, Tcl_Interp * interp, int objc, Tc
 
 	Tcl_SetObjResult ( interp, Tcl_NewStringObj ( para->name, -1 ) );
 
-	g_signal_connect ( G_OBJECT ( widget ), "destroy",
-					   G_CALLBACK ( destroyFunc ), para );
+	g_signal_connect ( G_OBJECT ( widget ), "destroy", G_CALLBACK ( destroyFunc ), para );
 
 	return TCL_OK;
 
@@ -3640,18 +3883,24 @@ clearExit:
 /**
  \brief     Create gnocl::tree object.
 **/
-int gnoclTreeCmd ( ClientData data, Tcl_Interp * interp,
-				   int objc, Tcl_Obj * const objv[] )
+int gnoclTreeCmd ( ClientData data, Tcl_Interp * interp,   int objc, Tcl_Obj * const objv[] )
 {
+#ifdef DEBUG_TREELIST
+	printf ( "%s\n", __FUNCTION__ );
+#endif
+
 	return gnoclTreeListCmd ( data, interp, objc, objv, 1 );
 }
 
 /**
  \brief     Create gnocl::list object.
 **/
-int gnoclListCmd ( ClientData data, Tcl_Interp * interp,
-				   int objc, Tcl_Obj * const objv[] )
+int gnoclListCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * const objv[] )
 {
+#ifdef DEBUG_TREELIST
+	printf ( "%s\n", __FUNCTION__ );
+#endif
+
 	return gnoclTreeListCmd ( data, interp, objc, objv, 0 );
 }
 

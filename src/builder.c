@@ -948,7 +948,7 @@ static GSList * getBuilderObjectNames ( GtkBuilder *builder )
 
 	for ( p = ( GSList * ) gtk_builder_get_objects ( builder ); p != NULL; p = p->next )
 	{
-		name =  gtk_widget_get_name ( p->data );
+		name =  gtk_widget_get_name ( GTK_WIDGET ( p->data ) );
 		namelist = g_slist_append ( namelist, ( gchar * ) name );
 	}
 

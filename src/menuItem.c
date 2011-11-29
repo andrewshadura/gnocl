@@ -194,6 +194,10 @@ int gnoclMenuItemHandleText ( Tcl_Interp *interp, GtkMenuItem *item,
 **/
 static int configure ( Tcl_Interp *interp, GtkMenuItem *label, GnoclOption options[] )
 {
+#ifdef DEBUG_MENUITEM
+	g_print ( "%s option = %s\n", __FUNCTION__, Tcl_GetString ( opt->val.obj ) );
+#endif
+
 	if ( options[textIdx].status == GNOCL_STATUS_CHANGED )
 	{
 		if ( gnoclMenuItemHandleText ( interp, label, options[textIdx].val.obj )
@@ -208,7 +212,6 @@ static int configure ( Tcl_Interp *interp, GtkMenuItem *label, GnoclOption optio
 
 	if ( options[iconIdx].status == GNOCL_STATUS_CHANGED )
 	{
-		g_print ( "configure - icon %s\n", Tcl_GetString ( options[iconIdx].val.obj ) );
 
 		GtkWidget *image;
 
@@ -235,7 +238,10 @@ static int configure ( Tcl_Interp *interp, GtkMenuItem *label, GnoclOption optio
 
 		Tcl_GetIntFromObj ( NULL, options[iconIdx].val.obj, &i );
 
+#ifdef DEBUG_TREELIST
 		g_print ( "configure -showImage %d\n", i );
+#endif
+
 
 		gtk_image_menu_item_set_always_show_image ( label, i );
 

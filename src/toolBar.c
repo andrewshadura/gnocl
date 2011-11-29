@@ -281,7 +281,10 @@ static int optOrientation ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, 
 **/
 static int optVisibility ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
+#ifdef DEBUG_TOOLBAR
 	g_print ( "GNOCL MESSAGE: ToolBar option \"-visibility\" not yet implemented.\n", __FUNCTION__ );
+#endif
+
 	return TCL_OK;
 }
 
@@ -922,7 +925,7 @@ static int radiotoolButtonFunc ( ClientData data, Tcl_Interp *interp, int objc, 
 static int menuButtonDoCommand ( ToolButtonMenuParams *para, int background )
 {
 #ifdef DEBUG_TOOLBAR
-	printf ( "menuButtonDoCommand\n" );
+	printf ( "%s\n", __FUNCTION__ );
 #endif
 
 	if ( para->onClicked )
@@ -949,7 +952,7 @@ static int menuButtonDoCommand ( ToolButtonMenuParams *para, int background )
 static int buttonDoCommand ( ToolButtonParams *para, int background )
 {
 #ifdef DEBUG_TOOLBAR
-	printf ( "buttonDoCommand\n" );
+	printf ( "%s\n", __FUNCTION__ );
 #endif
 
 	if ( para->onClicked )
@@ -975,9 +978,11 @@ static int buttonDoCommand ( ToolButtonParams *para, int background )
 **/
 static void radioButtonCallback ( GtkWidget *widget, gpointer data )
 {
-
+#ifdef DEBUG_TOOLBAR
+	printf ( "%s\n", __FUNCTION__ );
+#endif
 	ToolButtonParams *para = ( ToolButtonParams * ) data;
-	g_print ( "radioButtonCallback %s\n", para->name );
+
 
 	//buttonDoCommand ( para, 1 );
 }
@@ -987,9 +992,11 @@ static void radioButtonCallback ( GtkWidget *widget, gpointer data )
 **/
 static void buttonCallback ( GtkWidget *widget, gpointer data )
 {
-
+#ifdef DEBUG_TOOLBAR
+	printf ( "%s\n", __FUNCTION__ );
+#endif
 	ToolButtonParams *para = ( ToolButtonParams * ) data;
-	g_print ( "buttonCallback %s\n", para->name );
+
 
 	//buttonDoCommand ( para, 1 );
 }
@@ -999,9 +1006,11 @@ static void buttonCallback ( GtkWidget *widget, gpointer data )
 **/
 static void menuButtonCallback ( GtkWidget *widget, gpointer data )
 {
-
+#ifdef DEBUG_TOOLBAR
+	printf ( "%s\n", __FUNCTION__ );
+#endif
 	ToolButtonMenuParams *para = ( ToolButtonMenuParams * ) data;
-	g_print ( "menuButtonCallback %s\n", para->name );
+
 
 	menuButtonDoCommand ( para, 1 );
 

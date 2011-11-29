@@ -172,10 +172,12 @@ static void onResponse ( GtkDialog *dialog, gint arg1, gpointer data )
 
 	GnoclPercSubst ps[] =
 	{
+		//{ 'w', GNOCL_STRING },  /* widget */
 		{ 'v', GNOCL_OBJ },
 		{ 0 }
 	};
 
+	//ps[1].val.str = gnoclGetNameFromWidget ( GTK_WIDGET ( dialog ) );
 	ps[0].val.obj = getObjFromRet ( para, arg1 );
 
 	/* only for tests
@@ -211,8 +213,19 @@ static void onResponse ( GtkDialog *dialog, gint arg1, gpointer data )
 	   if dialog is modal we destroy the widget in gnoclMessageDialogCmd
 	   since we need para for the return value */
 
-	if ( para->isModal == 0 && para->ret != TCL_OK )
-		gtk_widget_destroy ( GTK_WIDGET ( dialog ) );
+	if ( 1 )
+	{
+		if ( para->isModal == 0 && para->ret != TCL_OK )
+		{
+			gtk_widget_destroy ( GTK_WIDGET ( dialog ) );
+		}
+
+		else
+		{
+			gtk_widget_destroy ( GTK_WIDGET ( dialog ) );
+		}
+	}
+
 }
 
 /**

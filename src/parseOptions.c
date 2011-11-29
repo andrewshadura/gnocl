@@ -12,6 +12,7 @@
 
 /*
    History:
+   2011-11: -onIconPress %t now returns entry text content. Added %b to review mouse button info.
    2009-12: added %g to those callback with %w substitutions, returns 'glade name'
         08: added padding big, small, default
         03: don't use Tcl_GetIndexFromObjStruct any more, since it is
@@ -1980,7 +1981,7 @@ static void doCommand ( GtkWidget *widget, gpointer data )
 	};
 
 	ps[0].val.str = gnoclGetNameFromWidget ( widget );
-	ps[1].val.str = gtk_widget_get_name ( widget );
+	ps[1].val.str = gtk_widget_get_name ( GTK_WIDGET ( widget ) );
 	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
 	//}
 }
@@ -2098,7 +2099,7 @@ int gnoclOptCommand ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Ob
 /**
 \brief
 **/
-static void doOnMoveHandle (GtkWidget *widget, GtkScrollType scroll_type, gpointer user_data) 
+static void doOnMoveHandle ( GtkWidget *widget, GtkScrollType scroll_type, gpointer user_data )
 {
 #ifdef DEBUG_PARSEOPTIONS
 	g_print ( "%s\n", __FUNCTION__ );
@@ -2116,7 +2117,7 @@ static void doOnMoveHandle (GtkWidget *widget, GtkScrollType scroll_type, gpoint
 
 	ps[0].val.str = gnoclGetNameFromWidget ( widget );
 	ps[1].val.str = gtk_widget_get_name ( widget );
-	ps[2].val.i = gtk_paned_get_position ( widget);
+	ps[2].val.i = gtk_paned_get_position ( widget );
 
 	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
 }
@@ -2569,7 +2570,7 @@ static gboolean doOnDeleteFromCursor ( GtkTextView *text_view, GtkDeleteType typ
 	};
 
 	ps[0].val.str = gnoclGetNameFromWidget ( text_view );
-	ps[1].val.str = gtk_widget_get_name ( text_view );
+	ps[1].val.str = gtk_widget_get_name ( GTK_WIDGET ( text_view ) );
 	ps[2].val.i = count;
 	ps[3].val.i = type;
 
@@ -2803,7 +2804,7 @@ static int doOnMoveViewport ( GtkTextView  *text_view, GtkScrollStep step, gint 
 	};
 
 	ps[0].val.str = gnoclGetNameFromWidget ( text_view );
-	ps[1].val.str = gtk_widget_get_name ( text_view );
+	ps[1].val.str = gtk_widget_get_name ( GTK_WIDGET ( text_view ) );
 	ps[2].val.i = count;
 	ps[3].val.i = step;
 
@@ -2895,8 +2896,8 @@ static void doOnSetAnchor ( GtkTextView *text_view, gpointer user_data )
 		{ 0 }
 	};
 
-	ps[0].val.str = gnoclGetNameFromWidget ( text_view );;
-	ps[1].val.str = gtk_widget_get_name ( text_view );;
+	ps[0].val.str = gnoclGetNameFromWidget ( text_view );
+	ps[1].val.str = gtk_widget_get_name ( GTK_WIDGET ( text_view ) );
 
 	/* convenience call, get the position of the insertion */
 	buffer = gtk_text_view_get_buffer ( text_view );
@@ -2948,8 +2949,8 @@ static void doOnScrollAdjustments ( GtkTextView *horizontal, GtkAdjustment *vert
 		{ 0 }
 	};
 
-	ps[0].val.str = gnoclGetNameFromWidget ( horizontal );;
-	ps[1].val.str = gtk_widget_get_name ( horizontal );;
+	ps[0].val.str = gnoclGetNameFromWidget ( horizontal );
+	ps[1].val.str = gtk_widget_get_name ( GTK_WIDGET ( horizontal ) );
 
 
 	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
@@ -2993,7 +2994,7 @@ static void doOnToggleOverWrite ( GtkTextView *text_view, gpointer user_data )
 	};
 
 	ps[0].val.str = gnoclGetNameFromWidget ( text_view );
-	ps[1].val.str = gtk_widget_get_name ( text_view );
+	ps[1].val.str = gtk_widget_get_name ( GTK_WIDGET ( text_view ) );
 	ps[1].val.str = gtk_text_view_get_overwrite ( text_view );
 
 	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
@@ -3064,7 +3065,7 @@ static void doOnNotify ( GObject *gobject, GParamSpec *pspec, gpointer user_data
 	treeView = gtk_tree_view_column_get_tree_view  ( GTK_TREE_VIEW_COLUMN ( gobject ) );
 
 	ps[0].val.str = gnoclGetNameFromWidget ( GTK_WIDGET ( treeView ) );
-	ps[1].val.str = gtk_widget_get_name ( gobject );
+	ps[1].val.str = gtk_widget_get_name ( GTK_WIDGET ( treeView ) );
 
 	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
 }
@@ -3189,7 +3190,7 @@ static gboolean doOnMoveFocus  ( GtkWidget *widget, int direction, gpointer data
 
 	ps[0].val.str = gnoclGetNameFromWidget ( widget );
 	ps[1].val.str = str;
-	ps[2].val.str = gtk_widget_get_name ( widget );
+	ps[2].val.str = gtk_widget_get_name ( GTK_WIDGET ( widget ) );
 
 	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
 	return 0;
@@ -3242,7 +3243,7 @@ static gboolean doOnEnterLeave ( GtkWidget *widget, GdkEventCrossing *event, gpo
 	ps[3].val.i = event->x_root;
 	ps[4].val.i = event->y_root;
 	ps[5].val.i = event->state;
-	ps[6].val.str = gtk_widget_get_name ( widget );
+	ps[6].val.str = gtk_widget_get_name ( GTK_WIDGET ( widget ) );
 
 	/* TODO: gnocl::buttonStateToList -> {MOD1 MOD3 BUTTON2...} */
 	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
@@ -3271,7 +3272,7 @@ static gboolean doOnFocus ( GtkWidget *widget, GdkEventFocus *event, gpointer da
 	ps[0].val.str = gnoclGetNameFromWidget ( gtk_widget_get_toplevel ( widget ) );
 	ps[1].val.str = gnoclGetNameFromWidget ( gtk_widget_get_parent ( widget ) );
 	ps[2].val.str = gnoclGetNameFromWidget ( widget );
-	ps[3].val.str = gtk_widget_get_name ( widget );
+	ps[3].val.str = gtk_widget_get_name ( GTK_WIDGET ( widget ) );
 
 	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
 	return 0;
@@ -3359,7 +3360,7 @@ static void doOnClicked   ( GtkToolButton *toolbutton, gpointer user_data )
 	};
 
 	ps[0].val.str = gnoclGetNameFromWidget ( toolbutton );
-	ps[1].val.str = gtk_widget_get_name ( toolbutton );
+	ps[1].val.str = gtk_widget_get_name ( GTK_WIDGET ( toolbutton ) );
 
 	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
 
@@ -3392,7 +3393,7 @@ static void doOnInteractiveSearch   ( GtkTreeView *treeview, gpointer user_data 
 
 
 	ps[0].val.str = gnoclGetNameFromWidget ( treeview );
-	ps[1].val.str = gtk_widget_get_name ( treeview );
+	ps[1].val.str = gtk_widget_get_name ( GTK_WIDGET ( treeview ) );
 	ps[2].val.i = gtk_tree_view_get_search_column ( treeview );;
 
 	if ( entry != NULL )
@@ -3448,9 +3449,10 @@ static void doOnIconPress ( GtkWidget *entry, GtkEntryIconPosition icon_pos, Gdk
 	GnoclPercSubst ps[] =
 	{
 		{ 'w', GNOCL_STRING },  /* widget */
-		{ 't', GNOCL_STRING },
+		{ 'b', GNOCL_STRING },
 		{ 'p', GNOCL_STRING },  /* icon position */
 		{ 'g', GNOCL_STRING },  /* glade name */
+		{ 't', GNOCL_STRING },  /* glade name */
 		{ 0 }
 	};
 
@@ -3476,7 +3478,9 @@ static void doOnIconPress ( GtkWidget *entry, GtkEntryIconPosition icon_pos, Gdk
 	}
 
 
-	ps[3].val.str = gtk_widget_get_name ( entry );
+	ps[3].val.str = gtk_widget_get_name ( GTK_WIDGET ( entry ) );
+	
+	ps[4].val.str = gtk_entry_get_text  ( GTK_WIDGET ( entry ) );
 
 	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
 }
@@ -3694,7 +3698,7 @@ static void doOnEvent (	GtkTextTag *texttag, GObject *widget, GdkEvent *event, G
 
 	/* initialize with default values */
 	ps[0].val.str = gnoclGetNameFromWidget ( widget );
-	ps[9].val.str = gtk_widget_get_name ( widget );
+	ps[9].val.str = gtk_widget_get_name ( GTK_WIDGET ( widget ) );
 
 	/* most of these events are not reported by the tag */
 
@@ -4481,7 +4485,7 @@ static void doOnValueChanged ( GtkScaleButton *button, gdouble value, gpointer u
 
 	ps[0].val.str = gnoclGetNameFromWidget ( button );
 	ps[1].val.d = value;
-	ps[2].val.str = gtk_widget_get_name ( button );
+	ps[2].val.str = gtk_widget_get_name ( GTK_WIDGET ( button ) );
 
 	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
 
@@ -4667,7 +4671,7 @@ static void doOnDeleteRange (
 \date
 \note
 **/
-static void doOnKey (   GtkWidget *widget,  GdkEventKey *event, gpointer data )
+static void doOnKey ( GtkWidget *widget, GdkEventKey *event, gpointer data )
 {
 	GnoclCommandData *cs = ( GnoclCommandData * ) data;
 
@@ -4692,7 +4696,6 @@ static void doOnKey (   GtkWidget *widget,  GdkEventKey *event, gpointer data )
 	ps[3].val.obj   = unicode ?  Tcl_NewUnicodeObj ( ( Tcl_UniChar * ) & unicode, 1 ) : Tcl_NewStringObj ( "", 0 );
 	ps[4].val.i     = event->state;
 	ps[5].val.str   = gtk_widget_get_name ( widget );
-
 
 	if ( event->type == GDK_KEY_PRESS )
 	{
@@ -5864,10 +5867,7 @@ int gnoclCgetOne ( 	Tcl_Interp *interp,	Tcl_Obj *obj, GObject *gObj, GnoclOption
 /**
 \brief	"populate-popup" signal handler.
 **/
-static void doOnPopulatePopup (
-	GtkTextView *textview,
-	GtkMenu *menu,
-	gpointer user_data )
+static void doOnPopulatePopup ( GtkTextView *textview, GtkMenu *menu, gpointer user_data )
 {
 	GnoclCommandData *cs = ( GnoclCommandData * ) user_data;
 
@@ -5882,7 +5882,7 @@ static void doOnPopulatePopup (
 	};
 
 	ps[0].val.str = gnoclGetNameFromWidget ( textview );
-	ps[1].val.str = gtk_widget_get_name ( textview );
+	ps[1].val.str = gtk_widget_get_name ( GTK_WIDGET ( textview ) );
 
 	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
 

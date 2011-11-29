@@ -75,13 +75,12 @@ static int configure ( Tcl_Interp *interp, GtkWidget *widget, GnoclOption option
 
 	/* this will enable us to obtain widget data for the arrow object */
 	char *result = g_object_get_data ( G_OBJECT ( arrow ), dataIDa );
-	printf ( "cget result = %s\n", result );
+
 
 	result = g_object_get_data ( G_OBJECT ( arrow ), dataIDb );
-	printf ( "cget result = %s\n", result );
 
 	str = gnoclGetNameFromWidget ( arrow );
-	printf ( "configure %s\n", str );
+
 	return TCL_OK;
 }
 
@@ -90,7 +89,9 @@ static int configure ( Tcl_Interp *interp, GtkWidget *widget, GnoclOption option
 **/
 int gnoclConfigArrowButton ( Tcl_Interp *interp, GtkWidget *widget, Tcl_Obj *txtObj )
 {
-	printf ( "gnoclConfigArrowButton\n" );
+#ifdef DEBUG_ARROWBUTTON
+	g_print ( "%s\n", __FUNCTION__, );
+#endif
 
 	GtkArrow *arrow;
 
@@ -108,7 +109,9 @@ int gnoclConfigArrowButton ( Tcl_Interp *interp, GtkWidget *widget, Tcl_Obj *txt
 **/
 static int cget ( Tcl_Interp *interp, GtkWidget *widget, GnoclOption options[], int idx )
 {
-	printf ( "cget\n" );
+#ifdef DEBUG_ARROWBUTTON
+	g_print ( "%s %s \n", __FUNCTION__, options[1] );
+#endif
 
 	const char *dataIDa = "gnocl::data1";
 	const char *dataIDb = "gnocl::data2";
@@ -118,14 +121,12 @@ static int cget ( Tcl_Interp *interp, GtkWidget *widget, GnoclOption options[], 
 
 	/* this will enable us to obtain widget data for the arrow object */
 	char *result = g_object_get_data ( G_OBJECT ( arrow ), dataIDa );
-	printf ( "cget result = %s\n", result );
+
 
 	result = g_object_get_data ( G_OBJECT ( arrow ), dataIDb );
-	printf ( "cget result = %s\n", result );
+
 
 	str = gnoclGetNameFromWidget ( arrow );
-	printf ( "configure %s\n", str );
-
 
 	/*-----*/
 
@@ -177,7 +178,9 @@ static int cget ( Tcl_Interp *interp, GtkWidget *widget, GnoclOption options[], 
 **/
 int arrowButtonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-	printf ( "arrowButtonFunc\n" );
+#ifdef DEBUG_ARROWBUTTON
+	g_print ( "%s\n", __FUNCTION__, );
+#endif
 
 	static const char *cmds[] = { "delete", "configure", "cget", "onClicked", "class", NULL };
 	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, OnClickedIdx, ClassIdx };
@@ -297,10 +300,6 @@ int gnoclArrowButtonCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj
 			return -1;
 		}
 
-		/*
-		printf ( "parsing %s -> %s\n", Tcl_GetString ( objv[k] ), arrowOptions[idx].optName );
-		*/
-
 		if ( strcmp ( Tcl_GetString ( objv[k] ), "-arrow" ) == 0 )
 		{
 			arrow_type = Tcl_GetString ( objv[k+1] );
@@ -331,7 +330,6 @@ int gnoclArrowButtonCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj
 
 	for ( idx = 0; idx <= 3 ; idx++ )
 	{
-		//printf ( "array item = %s\n", cmds[idx] );
 
 		if ( strcmp ( arrow_type, cmds[idx] ) == 0 )
 		{

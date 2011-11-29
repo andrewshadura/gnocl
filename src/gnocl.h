@@ -402,7 +402,7 @@ Tcl_Obj *gnoclCgetMenuItemText ( Tcl_Interp *interp, GtkMenuItem *item );
 int gnoclMenuItemHandleText ( Tcl_Interp *interp, GtkMenuItem *item, Tcl_Obj *textObj );
 
 /* in text.c */
-int gnoclTextCommand ( GtkTextBuffer *buffer, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[], int cmdNo, int allowDeleteConfigure );
+int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl_Obj *  const objv[], int cmdNo, int isTextWidget );
 
 /* in sourceVSiew.c */
 

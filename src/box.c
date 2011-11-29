@@ -120,7 +120,7 @@ static GnoclOption boxOptions[] =
 static int cget ( Tcl_Interp *interp, GtkWidget *widget, GnoclOption options[], int idx )
 {
 #ifdef DEBUG_BOX
-	printf ( "%s\n", __FUNCTION__ );
+	g_print ( "%s\n", __FUNCTION__ );
 #endif
 
 	Tcl_Obj *obj = NULL;

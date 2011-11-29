@@ -172,9 +172,20 @@ static int configure ( Tcl_Interp *interp, GtkMenu *menu, GnoclOption options[] 
 **/
 int menuFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-	static const char *cmds[] = { "delete", "configure", "add", "addBegin", "addEnd", "popup", "popdown", "class", NULL
-								};
-	enum cmdIdx { DeleteIdx, ConfigureIdx, AddIdx, BeginIdx, EndIdx, PopupIdx, PopdownIdx, ClassIdx };
+	static const char *cmds[] =
+	{
+		"delete", "configure", "add",
+		"addBegin", "addEnd", "popup",
+		"popdown", "class",
+		NULL
+	};
+
+	enum cmdIdx
+	{
+		DeleteIdx, ConfigureIdx, AddIdx,
+		BeginIdx, EndIdx, PopupIdx,
+		PopdownIdx, ClassIdx
+	};
 
 	GtkMenu *menu = GTK_MENU ( data );
 	int idx;
@@ -185,8 +196,7 @@ int menuFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const ob
 		return TCL_ERROR;
 	}
 
-	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "command",
-							   TCL_EXACT, &idx ) != TCL_OK )
+	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "command", TCL_EXACT, &idx ) != TCL_OK )
 		return TCL_ERROR;
 
 	switch ( idx )
@@ -201,8 +211,7 @@ int menuFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const ob
 			{
 				int ret = TCL_ERROR;
 
-				if ( gnoclParseAndSetOptions ( interp, objc - 1, objv + 1,
-											   menuOptions, G_OBJECT ( menu ) ) == TCL_OK )
+				if ( gnoclParseAndSetOptions ( interp, objc - 1, objv + 1, menuOptions, G_OBJECT ( menu ) ) == TCL_OK )
 				{
 					ret = configure ( interp, menu, menuOptions );
 				}
@@ -232,16 +241,16 @@ int menuFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const ob
 						   idx != BeginIdx );
 			}
 
-		case PopupIdx:
+		case PopupIdx: {
 			/* supply coordinates to accurately place the menu */
-			g_print ( "POPUP \n" );
 
 			MenuPositionData position_data;
 			position_data.x = atoi ( Tcl_GetString ( objv[2] ) );
 			position_data.y = atoi ( Tcl_GetString ( objv[3] ) );
 
+#ifdef DEBUG_MENU
 			g_print ( "POPUP x: %d y: %d\n", position_data.x, position_data.y );
-
+#endif
 
 			if ( position_data.x  != 0 && position_data.y  != 0 )
 			{
@@ -252,11 +261,13 @@ int menuFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const ob
 			{
 				gtk_menu_popup ( menu, NULL, NULL, NULL, NULL, 0, 0 );
 			}
-
+}
 			break;
 
 		case PopdownIdx:
+#ifdef DEBUG_ME
 			g_print ( "POPDOWN x: %d y: %d\n", objv[3], objv[4] );
+#endif
 			gtk_menu_popdown ( menu );
 			break;
 	}
@@ -268,8 +279,7 @@ int menuFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const ob
 /**
 \brief
 **/
-int gnoclMenuCmd ( ClientData data, Tcl_Interp *interp,
-				   int objc, Tcl_Obj * const objv[] )
+int gnoclMenuCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
 	int       ret;
 	GtkMenu   *menu;
