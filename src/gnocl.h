@@ -711,6 +711,7 @@ Tcl_ObjCmdProc gnoclStockItemCmd;
 Tcl_ObjCmdProc gnoclSoundCmd;
 Tcl_ObjCmdProc gnoclPointerCmd;
 Tcl_ObjCmdProc gnoclExecCmd;
+Tcl_ObjCmdProc gnoclShowUriCmd;
 Tcl_ObjCmdProc gnoclCairoCmd;
 
 #ifdef GNOCL_USE_GNOME

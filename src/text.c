@@ -346,8 +346,8 @@ static getAttributes ( Tcl_Interp *interp, GtkTextAttributes *values )
 			{
 
 #ifdef DEBUG_TEXT
-	g_print ("no justify %s\n", __FUNCTION__ );
-#endif				
+				g_print ( "no justify %s\n", __FUNCTION__ );
+#endif
 
 			}
 	}
@@ -362,17 +362,17 @@ static getAttributes ( Tcl_Interp *interp, GtkTextAttributes *values )
 		case GTK_TEXT_DIR_LTR:
 			{
 				direction = "left - to - right";
-			}			
+			}
 			break;
 		case GTK_TEXT_DIR_RTL:
 			{
 				direction = "right - to - left";
-			}			
+			}
 			break;
 		default:
 			{
-				#ifdef DEBUG_TEXT
-	g_print ("no direction %s\n", __FUNCTION__ );
+#ifdef DEBUG_TEXT
+				g_print ( "no direction %s\n", __FUNCTION__ );
 #endif
 
 			}
@@ -687,7 +687,7 @@ static int gnocOptTextTagLanguage ( Tcl_Interp * interp, GnoclOption * opt, GObj
 #ifdef DEBUG_TEXT
 	g_print ( "idx = %d\n", i );
 #endif
-	
+
 
 
 	return TCL_OK;
@@ -969,7 +969,7 @@ static GnoclOption textOptions[] =
 	{ "-buffer", GNOCL_STRING, NULL},
 	{ "-useUndo", GNOCL_STRING, NULL},
 	{ "-data", GNOCL_OBJ, "", gnoclOptData },
-	
+
 	/* GtkTextView properties
 	"accepts-tab"              gboolean              : Read / Write
 	"buffer"                   GtkTextBuffer*        : Read / Write
@@ -2612,9 +2612,9 @@ static int cget ( Tcl_Interp * interp, GtkTextView * text, GnoclOption options[]
 	{
 		obj = Tcl_NewStringObj ( g_object_get_data ( text, "gnocl::data" ), -1 );
 	}
-	
-	
-		if ( obj != NULL )
+
+
+	if ( obj != NULL )
 	{
 		Tcl_SetObjResult ( interp, obj );
 		return TCL_OK;
@@ -3677,7 +3677,7 @@ int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl
 		case CgetIdx:	// gnoclTextCommand
 			{
 #ifdef DEBUG_TEXT
-	g_print ( "%s CgetIdx\n", __FUNCTION__ );
+				g_print ( "%s CgetIdx\n", __FUNCTION__ );
 #endif
 
 				int     idx;

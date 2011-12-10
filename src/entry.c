@@ -70,7 +70,9 @@ static const int valueIdx         = 2;
 static const int cursorIdx        = 3;
 static const int primaryIconIdx   = 4;
 static const int secondaryIconIdx = 5;
-static const int dataIdx          = 6;
+static const int cursorPosIdx     = 6;
+static const int dataIdx          = 7;
+
 
 static GnoclOption entryOptions[] =
 {
@@ -81,8 +83,12 @@ static GnoclOption entryOptions[] =
 	{ "-showCursor", GNOCL_BOOL, NULL},       /* 3 */
 	{ "-primaryIcon", GNOCL_OBJ, NULL },      /* 4 */
 	{ "-secondaryIcon", GNOCL_OBJ, NULL },    /* 5 */
+	{ "-cursorPos", GNOCL_STRING, NULL }, /* 6 */
 
-	{ "-data", GNOCL_OBJ, "", gnoclOptData }, /* 6 */
+
+	{ "-data", GNOCL_OBJ, "", gnoclOptData }, /* 7 */
+
+
 	{ "-name", GNOCL_STRING, "name" },
 
 	{ "-hasFocus", GNOCL_BOOL, "has-focus" },
@@ -105,7 +111,6 @@ static GnoclOption entryOptions[] =
 	{ "-activate", GNOCL_BOOL, "activates-default" },
 	{ "-buffer", GNOCL_OBJ, "", NULL }, 							/* to be implemented */
 	{ "-capsLockWarning", GNOCL_BOOL, "caps-lock-warning" },
-	{ "-cursorPos", GNOCL_INT, "cursor-position" },
 	{ "-editable", GNOCL_BOOL, "editable" },
 	{ "-activate", GNOCL_BOOL, "activates-default" },
 	{ "-hasFrame", GNOCL_BOOL, "has-frame" },
@@ -457,11 +462,47 @@ static int configure (	Tcl_Interp *interp,	EntryParams *para,	GnoclOption option
 
 	if ( options[cursorIdx].status == GNOCL_STATUS_CHANGED )
 	{
+
 		gint *bool = options[cursorIdx].val.i;
 		gdk_window_set_cursor ( GTK_WIDGET ( para->entry )->window, bool );
 
 	}
 
+	if ( options[cursorPosIdx].status == GNOCL_STATUS_CHANGED )
+	{
+		char *str = options[cursorPosIdx].val.str;
+
+		gint len = strlen ( gtk_editable_get_chars ( para->entry, 0, -1 ) );
+		gint pos = atoi ( str );
+
+
+		if ( strcmp ( str, "end" ) == 0 )
+		{
+			gtk_editable_set_position ( para->entry, -1 );
+			return TCL_OK;
+
+		}
+
+		else if ( pos == -1 )
+		{
+			gtk_editable_set_position ( para->entry, -1 );
+		}
+
+		else if ( pos <= len )
+		{
+			gtk_editable_set_position ( para->entry, pos );
+		}
+
+		else
+		{
+			gtk_editable_set_position ( para->entry, -1 );
+		}
+
+		return TCL_OK;
+
+		//setVal ( para->entry, str );
+		//setVariable ( para, str );
+	}
 
 	/* set entry icon */
 	if ( options[primaryIconIdx].status == GNOCL_STATUS_CHANGED )

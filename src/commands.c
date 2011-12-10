@@ -12,6 +12,7 @@
 
 /*
    History:
+   2011-12: added gnocl::showURI
    2011-08: added gnocl::exec
    2010-04: added gnocl::sound moved to gnome package
    2010-10: added gnocl::stockItem
@@ -115,6 +116,31 @@ int gnoclExecCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * cons
 	}
 }
 
+
+/**
+\brief	Launch the default application to view specified URI.
+
+	file:///home/gnome/pict.jpg
+	http://www.gnome.org
+	mailto:me@gnome.org
+**/
+int gnoclShowUriCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
+{
+
+	gint ret = 0;
+	const char *uri = Tcl_GetString ( objv[1] );
+
+	if ( gtk_show_uri  ( NULL, uri, GDK_CURRENT_TIME, NULL ) )
+	{
+		return TCL_OK;
+	}
+
+	else
+	{
+		Tcl_SetResult ( interp, "ERROR: Invalid URI.\n" , TCL_STATIC );
+		return TCL_OK;
+	}
+}
 
 /**
 \brief      Manipulate the screen pointer.
@@ -427,9 +453,6 @@ int gnoclStringCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * c
 
 		case unichar_to_utf8_Idx:
 			{
-
-
-
 				gchar outbuf[6];
 
 				// gint g_unichar_to_utf8 (gunichar c, gchar *outbuf);
@@ -457,7 +480,6 @@ int gnoclStringCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * c
 
 	return TCL_OK;
 }
-
 
 
 /**

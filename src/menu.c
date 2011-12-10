@@ -241,27 +241,28 @@ int menuFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const ob
 						   idx != BeginIdx );
 			}
 
-		case PopupIdx: {
-			/* supply coordinates to accurately place the menu */
+		case PopupIdx:
+			{
+				/* supply coordinates to accurately place the menu */
 
-			MenuPositionData position_data;
-			position_data.x = atoi ( Tcl_GetString ( objv[2] ) );
-			position_data.y = atoi ( Tcl_GetString ( objv[3] ) );
+				MenuPositionData position_data;
+				position_data.x = atoi ( Tcl_GetString ( objv[2] ) );
+				position_data.y = atoi ( Tcl_GetString ( objv[3] ) );
 
 #ifdef DEBUG_MENU
-			g_print ( "POPUP x: %d y: %d\n", position_data.x, position_data.y );
+				g_print ( "POPUP x: %d y: %d\n", position_data.x, position_data.y );
 #endif
 
-			if ( position_data.x  != 0 && position_data.y  != 0 )
-			{
-				gtk_menu_popup ( menu, NULL, NULL, position_function, &position_data, 0, 0 );
-			}
+				if ( position_data.x  != 0 && position_data.y  != 0 )
+				{
+					gtk_menu_popup ( menu, NULL, NULL, position_function, &position_data, 0, 0 );
+				}
 
-			else
-			{
-				gtk_menu_popup ( menu, NULL, NULL, NULL, NULL, 0, 0 );
+				else
+				{
+					gtk_menu_popup ( menu, NULL, NULL, NULL, NULL, 0, 0 );
+				}
 			}
-}
 			break;
 
 		case PopdownIdx:

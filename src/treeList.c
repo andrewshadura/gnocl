@@ -2,6 +2,7 @@
 \brief
 \todo	add getColumn and getRow widget commands
 \history
+   2011-12: insertRow
    2011-06: getFullList
    2011-05: added options: -onInteractiveSearch
    2011-02: added options: -wrapMode, -wrapWidth, -gridLines
@@ -1260,11 +1261,18 @@ static int setCell ( Tcl_Interp *interp, GtkTreeView *view, GtkTreeIter *iter, i
 
 /**
 \brief
+\arguments
+	TreeListParams *para
+	Tcl_Interp *interp
+	Tcl_Obj *child
+	GtkTreeIter *parentIter
+	int singleCol
+	int insertPos
 **/
-static Tcl_Obj *addRow ( TreeListParams *para, Tcl_Interp *interp, Tcl_Obj *child, GtkTreeIter *parentIter, int singleCol, int begin )
+static Tcl_Obj *insertRow ( TreeListParams *para, Tcl_Interp *interp, Tcl_Obj *child, GtkTreeIter *parentIter, int singleCol, int insertPos )
 {
 #ifdef DEBUG_TREELIST
-	printf ( "%s\n", __FUNCTION__ );
+	printf ( "%s %d\n", __FUNCTION__, insertPos );
 #endif
 
 	GValue       value = { 0 };
@@ -1272,31 +1280,83 @@ static Tcl_Obj *addRow ( TreeListParams *para, Tcl_Interp *interp, Tcl_Obj *chil
 	GtkTreeModel *model = gtk_tree_view_get_model ( para->view );
 	int          nCol, col;
 
-	if ( begin )
+	switch ( insertPos )
 	{
-		if ( para->isTree )
+		case 0:
+			{
+				g_print ( "prepend\n" );
+
+				if ( para->isTree )
+				{
+					gtk_tree_store_prepend ( GTK_TREE_STORE ( model ), &iter, parentIter );
+				}
+
+				else
+				{
+					gtk_list_store_prepend ( GTK_LIST_STORE ( model ), &iter );
+				}
+			}
+			break;
+		case -1:
+			{
+				g_print ( "append\n" );
+
+				if ( para->isTree )
+				{
+					gtk_tree_store_append ( GTK_TREE_STORE ( model ), &iter, parentIter );
+				}
+
+				else
+				{
+					gtk_list_store_append ( GTK_LIST_STORE ( model ), &iter );
+				}
+			}
+			break;
+		default:
+			{
+				g_print ( "insert at %d\n", insertPos );
+
+				if ( para->isTree )
+				{
+					gtk_tree_store_append ( GTK_TREE_STORE ( model ), &iter, parentIter );
+				}
+
+				else
+				{
+					//gtk_list_store_append ( GTK_LIST_STORE ( model ), &iter );
+					gtk_list_store_insert ( GTK_LIST_STORE ( model ), &iter, insertPos );
+				}
+			}
+	}
+
+	/*
+		if ( insertPos )
 		{
-			gtk_tree_store_prepend ( GTK_TREE_STORE ( model ), &iter, parentIter );
+			if ( para->isTree )
+			{
+				gtk_tree_store_prepend ( GTK_TREE_STORE ( model ), &iter, parentIter );
+			}
+
+			else
+			{
+				gtk_list_store_prepend ( GTK_LIST_STORE ( model ), &iter );
+			}
 		}
 
 		else
 		{
-			gtk_list_store_prepend ( GTK_LIST_STORE ( model ), &iter );
-		}
-	}
+			if ( para->isTree )
+			{
+				gtk_tree_store_append ( GTK_TREE_STORE ( model ), &iter, parentIter );
+			}
 
-	else
-	{
-		if ( para->isTree )
-		{
-			gtk_tree_store_append ( GTK_TREE_STORE ( model ), &iter, parentIter );
-		}
+			else
+			{
+				gtk_list_store_append ( GTK_LIST_STORE ( model ), &iter );
 
-		else
-		{
-			gtk_list_store_append ( GTK_LIST_STORE ( model ), &iter );
+			}
 		}
-	}
+	*/
 
 	g_value_init ( &value, G_TYPE_BOOLEAN );
 
@@ -1388,7 +1448,7 @@ static Tcl_Obj *addRow ( TreeListParams *para, Tcl_Interp *interp, Tcl_Obj *chil
 /**
 \brief
 **/
-static int addTreeChildren ( TreeListParams *para, Tcl_Interp *interp, Tcl_Obj *path, Tcl_Obj *children, int singleRow, int singleCol, int begin )
+static int addTreeChildren ( TreeListParams *para, Tcl_Interp *interp, Tcl_Obj *path, Tcl_Obj *children, int singleRow, int singleCol, int insertPos )
 {
 #ifdef DEBUG_TREELIST
 	printf ( "%s\n", __FUNCTION__ );
@@ -1439,7 +1499,7 @@ static int addTreeChildren ( TreeListParams *para, Tcl_Interp *interp, Tcl_Obj *
 			goto errorExit;
 		}
 
-		tp = addRow ( para, interp, tp, pIter, singleCol, begin );
+		tp = insertRow ( para, interp, tp, pIter, singleCol, insertPos );
 
 		if ( tp == NULL )
 		{
@@ -1483,11 +1543,18 @@ errorExit:
 
 /**
 \brief
+\arguments
+	TreeListParams *para
+	Tcl_Interp *interp
+	Tcl_Obj *children
+	int singleRow
+	int singleCol
+	int insertPos					flag, 0 = beginning, -1 = end
 **/
-static int addListChildren ( TreeListParams *para, Tcl_Interp *interp, Tcl_Obj *children, int singleRow, int singleCol, int begin )
+static int addListChildren ( TreeListParams *para, Tcl_Interp *interp, Tcl_Obj *children, int singleRow, int singleCol, int insertPos )
 {
 #ifdef DEBUG_TREELIST
-	printf ( "%s\n", __FUNCTION__ );
+	g_print ( "%s\n", __FUNCTION__ );
 #endif
 
 	int     n, noChilds = 1;
@@ -1518,7 +1585,7 @@ static int addListChildren ( TreeListParams *para, Tcl_Interp *interp, Tcl_Obj *
 			goto errorExit;
 		}
 
-		tp = addRow ( para, interp, tp, NULL, singleCol, begin );
+		tp = insertRow ( para, interp, tp, NULL, singleCol, insertPos );
 
 		if ( tp == NULL )
 		{
@@ -1557,8 +1624,6 @@ errorExit:
 
 	return TCL_ERROR;
 }
-
-
 
 /**
 \brief      Configure the GtkTreeView widget.
@@ -3129,11 +3194,13 @@ cleanExit:
 /**
 \brief
 **/
-static int addRows ( TreeListParams * para, Tcl_Interp * interp, int objc, Tcl_Obj * const objv[], int begin )
+static int addRow ( TreeListParams * para, Tcl_Interp * interp, int objc, Tcl_Obj * const objv[], int insertPos )
 {
 #ifdef DEBUG_TREELIST
 	printf ( "%s\n", __FUNCTION__ );
 #endif
+
+	g_print ( "%s\n", __FUNCTION__ );
 
 	GnoclOption options[] =
 	{
@@ -3144,7 +3211,7 @@ static int addRows ( TreeListParams * para, Tcl_Interp * interp, int objc, Tcl_O
 	const int singleRowIdx = 0;
 	const int singleColIdx = 1;
 
-	int offset = 2;
+	int offset = 3; //2
 	int singleRow = 0;
 	int singleCol = 0;
 
@@ -3159,8 +3226,9 @@ static int addRows ( TreeListParams * para, Tcl_Interp * interp, int objc, Tcl_O
 		++offset;
 	}
 
-	else if ( objc < 3 )
+	else if ( objc < 3 ) // was objc < 3
 	{
+		g_print ( "HERE\n" );
 		Tcl_WrongNumArgs ( interp, 2, objv, "row - list" );
 		return TCL_ERROR;
 	}
@@ -3185,10 +3253,10 @@ static int addRows ( TreeListParams * para, Tcl_Interp * interp, int objc, Tcl_O
 
 	if ( para->isTree )
 	{
-		return addTreeChildren ( para, interp, objv[2], objv[3], singleRow, singleCol, begin );
+		return addTreeChildren ( para, interp, objv[2], objv[3], singleRow, singleCol, insertPos );
 	}
 
-	return addListChildren ( para, interp, objv[2], singleRow, singleCol, begin );
+	return addListChildren ( para, interp, objv[3], singleRow, singleCol, insertPos );
 }
 
 /**
@@ -3197,15 +3265,16 @@ static int addRows ( TreeListParams * para, Tcl_Interp * interp, int objc, Tcl_O
 int treeListFunc ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * const objv[] )
 {
 #ifdef DEBUG_TREELIST
-	printf ( "%s\n", __FUNCTION__ );
+	g_print ( "%s\n", __FUNCTION__ );
 #endif
 
 	/* TODO "rowConfigure", "sort", */
 
 	const char *cmds[] =
 	{
-		"delete", "configure", "add", "addBegin",
-		"addEnd", "getSelection", "setSelection", "onSelectionChanged",
+		"delete", "configure",
+		"add", "addBegin", "addEnd", "insert",
+		"getSelection", "setSelection", "onSelectionChanged",
 		"columnConfigure", "columnCget", "get",
 
 		"getfulllist",
@@ -3219,8 +3288,9 @@ int treeListFunc ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * con
 
 	enum cmdIdx
 	{
-		DeleteIdx, ConfigureIdx, AddIdx, BeginIdx,
-		EndIdx, GetSelectionIdx, SetSelectionIdx, OnSelectionChangedIdx,
+		DeleteIdx, ConfigureIdx,
+		AddIdx, AddBeginIdx, AddEndIdx, InsertIdx,
+		GetSelectionIdx, SetSelectionIdx, OnSelectionChangedIdx,
 		ColumnConfigureIdx, ColumnCgetIdx, GetIdx,
 
 		GetFullListIdx,
@@ -3383,11 +3453,56 @@ int treeListFunc ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * con
 
 			break;
 		case AddIdx:
-		case BeginIdx:
-		case EndIdx:
 			{
-				return addRows ( para, interp, objc, objv, idx == BeginIdx );
+#ifdef DEBUG_TREELIST
+				g_printf ( "%s AddIdx %s\n", __FUNCTION__, Tcl_GetString ( objv[s] ) );
+#endif
+				gint row;
+
+				if  ( Tcl_GetIntFromObj ( NULL, objv[2], &row ) == TCL_OK )
+				{
+					return addRow ( para, interp, objc, objv, row );
+				}
+
+				/* add the end of the list */
+				return addRow ( para, interp, objc, objv, -1 );
 			}
+			break;
+		case AddEndIdx:
+			{
+#ifdef DEBUG_TREELIST
+				g_printf ( "%s AddEndIdx\n", __FUNCTION__ );
+#endif
+				return addRow ( para, interp, objc, objv, -1 );
+			}
+			break;
+		case AddBeginIdx:
+			{
+#ifdef DEBUG_TREELIST
+				g_printf ( "%s AddBeginIdx\n", __FUNCTION__ );
+#endif
+
+				return addRow ( para, interp, objc, objv, 0 );
+			}
+			break;
+		case InsertIdx:
+			{
+#ifdef DEBUG_TREELIST
+				g_print ( "%s InsertIdx\n", __FUNCTION__ );
+#endif
+				g_print ( " %s\n", Tcl_GetString ( objv[3] ) );
+
+				gint row;
+				Tcl_GetIntFromObj ( NULL, objv[2], &row );
+
+				GtkTreeIter iter;
+				GtkTreeIter selected;
+				GtkTreeModel *model = gtk_tree_view_get_model ( para->view );
+
+				gtk_list_store_append ( GTK_LIST_STORE ( model ), &iter );
+				gtk_list_store_insert ( GTK_LIST_STORE ( model ), &iter, row );
+			}
+			return TCL_OK;
 		case ColumnConfigureIdx:
 			{
 				return columnConfigure ( para, interp, objc, objv );
@@ -3404,7 +3519,6 @@ int treeListFunc ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * con
 			{
 				return getFullList ( para, interp, objc, objv );
 			}
-
 		case CellConfigureIdx:
 			{
 				return cellConfigure ( para, interp, objc, objv );
@@ -3475,8 +3589,7 @@ int treeListFunc ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * con
 					return TCL_ERROR;
 				}
 
-				if ( iterFromTclPath ( interp, objv[2], model, 0,
-									   &iter ) != TCL_OK )
+				if ( iterFromTclPath ( interp, objv[2], model, 0, &iter ) != TCL_OK )
 					return TCL_ERROR;
 
 				no = addIterator ( para, &iter );

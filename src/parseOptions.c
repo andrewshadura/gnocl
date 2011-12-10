@@ -3479,7 +3479,7 @@ static void doOnIconPress ( GtkWidget *entry, GtkEntryIconPosition icon_pos, Gdk
 
 
 	ps[3].val.str = gtk_widget_get_name ( GTK_WIDGET ( entry ) );
-	
+
 	ps[4].val.str = gtk_entry_get_text  ( GTK_WIDGET ( entry ) );
 
 	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );

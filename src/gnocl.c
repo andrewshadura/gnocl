@@ -755,6 +755,7 @@ static GnoclCmd commands[] =
 	{ "signalStop", gnoclSignalStopCmd },
 	{ "pointer", gnoclPointerCmd },
 	{ "exec", gnoclExecCmd },
+	{ "showURI", gnoclShowUriCmd },
 	{ "signalEmit", gnoclSignalEmitCmd },
 	{ "beep", gnoclBeepCmd },
 //	{ "string", gnoclStringCmd },
