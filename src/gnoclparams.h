@@ -53,6 +53,7 @@ typedef struct
 	Tcl_Interp  *interp;
 	char        *name;
 	char        *variable;
+	char        *focus;
 	char        *onChanged;
 	int         inSetVar;
 	gboolean	check;

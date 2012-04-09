@@ -390,8 +390,21 @@ static int cget ( Tcl_Interp *interp, ScaleParams *para,
 int scaleFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 
 {
-	static const char *cmds[] = { "delete", "configure", "cget", "onValueChanged", "class", NULL };
-	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, OnValueChangedIdx, ClassIdx };
+	static const char *cmds[] =
+	{
+		"delete", "configure",
+		"cget", "onValueChanged",
+		"class",
+		NULL
+	};
+
+	enum cmdIdx
+	{
+		DeleteIdx, ConfigureIdx,
+		CgetIdx, OnValueChangedIdx,
+		ClassIdx
+	};
+
 	ScaleParams *para = ( ScaleParams * ) data;
 	GtkWidget   *widget = GTK_WIDGET ( para->scale );
 	int idx;

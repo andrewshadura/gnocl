@@ -185,8 +185,7 @@ static int socketFunc ( ClientData data, Tcl_Interp *interp,
 /**
 \brief
 **/
-int gnoclSocketCmd ( ClientData data, Tcl_Interp *interp,
-					 int objc, Tcl_Obj * const objv[] )
+int gnoclSocketCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
 	int       ret;
 	GtkSocket *socket;

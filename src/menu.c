@@ -318,3 +318,4 @@ int gnoclMenuCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * cons
 
 	return gnoclRegisterWidget ( interp, GTK_WIDGET ( menu ), menuFunc );
 }
+

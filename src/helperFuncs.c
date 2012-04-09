@@ -12,6 +12,7 @@
 
 /*
    History:
+   2012-03: added trim
    2010-10: added stringtype
    2010-07: added cmds2list
    2009-01: added getIdx
@@ -36,6 +37,31 @@ typedef struct
 	GtkWidget *widget;
 	GtkType   type;
 } FindWidgetStruct;
+
+/**
+ Remove white spaces on both sides of a string.
+**/
+
+char *trim ( char *s )
+{
+	char *ptr;
+
+	if ( !s )
+	{
+		return NULL;   // handle NULL string
+	}
+
+	if ( !*s )
+	{
+		return s;      // handle empty string
+	}
+
+	for ( ptr = s + strlen ( s ) - 1; ( ptr >= s ) && isspace ( *ptr ); --ptr );
+
+	ptr[1] = '\0';
+	return s;
+}
+
 
 /**
 \brief	Write fucntion and step to stdout.

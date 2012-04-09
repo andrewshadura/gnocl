@@ -12,6 +12,7 @@
 
 /*
    History:
+   2012-03: added gnocl::lset
    2011-12: added gnocl::showURI
    2011-08: added gnocl::exec
    2010-04: added gnocl::sound moved to gnome package
@@ -98,6 +99,41 @@ static void post_process ( GPid pid, int status, gpointer data )
 	printf ( "---------------------->Child is done\n" );
 }
 
+/**
+\brief	block create a set of values, stripping away leading '
+**/
+int gnoclSetOpts ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
+{
+
+	int argc, code, i;
+	char *string;
+	char **argv;
+
+	char str[50];
+
+	code = Tcl_SplitList ( interp, Tcl_GetString ( objv[1] ), &argc, &argv );
+
+	for ( i = 0; i < argc; i += 2 )
+	{
+		sprintf ( str, "%s", argv[i] );
+
+		if ( str[0] == '-' )
+		{
+			Tcl_SetVar ( interp, substring ( argv[i], 1, strlen ( argv[i] ) ), argv[i+1], NULL );
+		}
+
+		else
+		{
+			Tcl_SetVar ( interp, argv[i], argv[i+1], NULL );
+		}
+	}
+
+	Tcl_Free ( ( char * ) argv );
+
+	return TCL_OK;
+}
+
+
 /*
 \brief  Spawn a background process.
 */
@@ -106,14 +142,18 @@ int gnoclExecCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * cons
 
 	GPid cpid;
 	char *com[] = {"./ls"};
+	char str[6];
 
 	g_print ( "cmd = %s\n", Tcl_GetString ( objv[1] ) );
 
 	if ( g_spawn_async ( NULL, com, NULL, G_SPAWN_DO_NOT_REAP_CHILD, NULL, NULL, &cpid, NULL ) )
 	{
-		printf ( "Child pid: %d\n", cpid );
+		sprintf ( str, "%d", cpid );
 		g_child_watch_add ( cpid, ( GChildWatchFunc ) post_process, NULL );
 	}
+
+	Tcl_SetResult ( interp, str , TCL_STATIC );
+	return TCL_OK;
 }
 
 
@@ -1205,7 +1245,7 @@ gnocl::stockItem add <option val ...>
 **/
 static int createStockItem ( Tcl_Interp * interp, GnoclStringType type, gchar * stockName, gchar * label, gchar * icon )
 {
-
+	g_print ( "%s\n", __FUNCTION__ );
 	GtkIconFactory *factory;
 	GtkIconSet *iconset;
 	GtkIconSource *source;
@@ -1259,6 +1299,8 @@ static int createStockItem ( Tcl_Interp * interp, GnoclStringType type, gchar * 
 int gnoclStockItemCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * const objv[] )
 {
 
+	g_print ( "%s\n", __FUNCTION__ );
+
 #ifdef DEBUG_COMMANDS
 	listParameters ( objc, objv, "gnoclStockItemCmd" );
 #endif
@@ -1302,6 +1344,8 @@ int gnoclStockItemCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj 
 					label = Tcl_GetString ( objv[i+1] );
 					gtkName = createStockName ( "gtk", objv[i+1] );
 
+					g_print ( "name = %s\n", gtkName );
+
 				}
 				break;
 			case IconIdx:
@@ -1316,13 +1360,13 @@ int gnoclStockItemCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj 
 						case GNOCL_STR_STR:
 						case GNOCL_STR_FILE:
 							{
-								//g_print ( "file\n" );
+								g_print ( "file\n" );
 								icon = gnoclGetString ( objv[i+1] );
 
 							} break;
 						case GNOCL_STR_BUFFER:
 							{
-								//g_print ( "buffer\n" );
+								g_print ( "buffer\n" );
 								icon = gnoclGetString ( objv[i+1] );
 							} break;
 
@@ -1343,10 +1387,7 @@ int gnoclStockItemCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj 
 		i += 2;
 	}
 
-
-
 	createStockItem ( interp, type, gtkName->str, label, icon );
-
 
 	return TCL_OK;
 }

@@ -649,6 +649,9 @@ static GnoclCmd commands[] =
 	{ "dial", gnoclDialCmd },
 	{ "imageViewer", gnoclImageViewerCmd },
 
+	/* recent manager */
+	{ "recentManager", gnoclRecentManagerCmd},
+
 	/* gnocl only widget */
 	{ "splashScreen", gnoclSplashScreenCmd },
 	{ "debug", gnoclDebugCmd },
@@ -706,6 +709,10 @@ static GnoclCmd commands[] =
 	{ "plug", gnoclPlugCmd },
 	{ "progressBar", gnoclProgressBarCmd },
 
+	/* move megawidgets into seprate package? */
+	{ "labelEntry", gnoclLabelEntryCmd },
+
+
 	{ "pBar2", gnoclPBarCmd },
 
 	{ "radioButton", gnoclRadioButtonCmd },
@@ -755,6 +762,7 @@ static GnoclCmd commands[] =
 	{ "signalStop", gnoclSignalStopCmd },
 	{ "pointer", gnoclPointerCmd },
 	{ "exec", gnoclExecCmd },
+	{ "setOpts", gnoclSetOpts},
 	{ "showURI", gnoclShowUriCmd },
 	{ "signalEmit", gnoclSignalEmitCmd },
 	{ "beep", gnoclBeepCmd },

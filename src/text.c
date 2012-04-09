@@ -90,7 +90,7 @@
 
 static int textFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *  const objv[] );
 static int cget ( Tcl_Interp *interp, GtkTextView *text, GnoclOption options[], int idx );
-static void gnoclGetTagRanges ( GtkTextBuffer *buffer, gchar *tagName );
+static void gnoclGetTagRanges ( Tcl_Interp * interp, GtkTextBuffer * buffer, gchar * tagName );
 static void getTagName ( GtkTextTag *tag, gpointer data );
 static void gnoclGetTagProperties ( GtkTextTag * tag, Tcl_Obj *resList );
 
@@ -2017,7 +2017,7 @@ int tagCmd ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, Tcl_Obj *  c
 				resList = Tcl_NewListObj ( 0, NULL );
 
 				GtkTextTagTable *table = gtk_text_buffer_get_tag_table ( buffer );
-				GtkTextTag *tag =   gtk_text_tag_table_lookup ( table, Tcl_GetString ( objv[3] ) );
+				GtkTextTag *tag = gtk_text_tag_table_lookup ( table, Tcl_GetString ( objv[3] ) );
 
 				gnoclGetTagProperties ( tag, resList );
 
@@ -2103,7 +2103,7 @@ int tagCmd ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, Tcl_Obj *  c
 #ifdef DEBUG_TAGS
 				g_print ( "\ttag ranges\n" );
 #endif
-				gnoclGetTagRanges ( buffer, Tcl_GetString ( objv[cmdNo+1] ) );
+				gnoclGetTagRanges ( interp, buffer, Tcl_GetString ( objv[cmdNo+1] ) );
 			}
 			break;
 		case SetIdx:
@@ -2627,7 +2627,7 @@ static int cget ( Tcl_Interp * interp, GtkTextView * text, GnoclOption options[]
 /**
 \brief	Return a list of all occuranances of a named tag within a buffer
 **/
-static void gnoclGetTagRanges ( GtkTextBuffer * buffer, gchar * tagName )
+static void gnoclGetTagRanges ( Tcl_Interp * interp, GtkTextBuffer * buffer, gchar * tagName )
 {
 #ifdef DEBUG_TEXT
 	g_print ( "%s %s\n", __FUNCTION__, tagName );
@@ -2637,7 +2637,14 @@ static void gnoclGetTagRanges ( GtkTextBuffer * buffer, gchar * tagName )
 	GtkTextIter iter;
 	GtkTextTag *tag;
 	GtkTextTagTable *table;
-	gint cc;
+	gint line;
+	gint offset;
+
+	Tcl_Obj *res;
+	res = Tcl_NewStringObj ( "", 0 );
+
+	static char s1[300];
+	static char s2[10];
 
 	gtk_text_buffer_get_start_iter ( buffer, &iter );
 	table = gtk_text_buffer_get_tag_table ( buffer );
@@ -2646,9 +2653,17 @@ static void gnoclGetTagRanges ( GtkTextBuffer * buffer, gchar * tagName )
 
 	while ( ( gtk_text_iter_forward_to_tag_toggle ( &iter, tag ) ) == TRUE )
 	{
-		cc = gtk_text_iter_get_offset ( &iter );
-		printf ( "cc: %d\n", cc );
+		line = gtk_text_iter_get_line ( &iter );
+		offset = gtk_text_iter_get_offset ( &iter );
+
+		sprintf ( s2, "%d %d ", line, offset  );
+		strcat ( s1, s2 );
 	}
+
+
+	Tcl_AppendStringsToObj ( res, trim ( s1 ), ( char * ) NULL );
+	Tcl_SetObjResult ( interp, res );
+	return TCL_OK;
 }
 
 
@@ -2657,7 +2672,7 @@ static void gnoclGetTagRanges ( GtkTextBuffer * buffer, gchar * tagName )
 **/
 static void getTagName ( GtkTextTag * tag, gpointer data )
 {
-#ifdef DEBUG_TAG
+#ifdef DEBUG_TAGS
 	g_print ( "%s %s\n", __FUNCTION__, tag->name );
 #endif
 
@@ -2690,8 +2705,8 @@ static void getTagName ( GtkTextTag * tag, gpointer data )
 **/
 static void gnoclGetTagProperties ( GtkTextTag *tag, Tcl_Obj *resList )
 {
-#ifdef DEBUG_TAG
-	g_print ( "%s\n", __FUNCTION__ );
+#ifdef DEBUG_TAGS
+	g_print ( "%s start\n", __FUNCTION__ );
 #endif
 
 	if ( tag == NULL )
@@ -2703,7 +2718,7 @@ static void gnoclGetTagProperties ( GtkTextTag *tag, Tcl_Obj *resList )
 
 	static char tmp[300];
 
-	GtkTextAppearance *tag_appearance;
+	GtkTextAppearance *tag_appearance; // use tag->values->appearance.underline etc.
 
 	/*  Individual chunks of this can be set/unset as a group */
 	PangoFontDescription *font;
@@ -2724,16 +2739,45 @@ static void gnoclGetTagProperties ( GtkTextTag *tag, Tcl_Obj *resList )
 	gchar **fontFamily;
 	gchar **fontDesc;
 
+#ifdef DEBUG_TAGS
+	g_print ( "%s 1\n", __FUNCTION__ );
+#endif
+
 	/* priority */
 	Tcl_ListObjAppendElement ( NULL, resList, Tcl_NewStringObj ( "-priority", -1 ) );
-	sprintf ( tmp, "%d", tag->priority );
-	Tcl_ListObjAppendElement ( NULL, resList, Tcl_NewStringObj ( tmp, -1 ) );
+	//sprintf ( tmp, "%d", tag->priority );
+	//Tcl_ListObjAppendElement ( NULL, resList, Tcl_NewStringObj ( tmp, -1 ) );
+	Tcl_ListObjAppendElement ( NULL, resList, Tcl_NewIntObj ( tag->priority ) );
+
+#ifdef DEBUG_TAGS
+	g_print ( "%s priority\n", __FUNCTION__ );
+#endif
 
 	/* font */
-	//if ( tag->family_set ) {
-	Tcl_ListObjAppendElement ( NULL, resList, Tcl_NewStringObj ( "-font", -1 ) );
 
-	g_object_get ( G_OBJECT ( tag ), "font", &fontName, "family", &fontFamily, "font-desc", fontDesc,  NULL );
+#ifdef DEBUG_TAGS
+	g_print ( "%s font start\n", __FUNCTION__ );
+#endif
+
+	/* these need to be concatenated into a meaningfull string */
+	g_object_get ( G_OBJECT ( tag ), "font", &fontName, NULL );
+	g_object_get ( G_OBJECT ( tag ), "family", &fontFamily, NULL );
+	g_object_get ( G_OBJECT ( tag ), "font-desc", &fontDesc, NULL );
+
+#ifdef DEBUG_TAGS
+	g_print ( "%s font middle\n", __FUNCTION__ );
+
+	g_print ( "family = %s\n", fontFamily );
+	g_print ( "desc   = %s\n", fontDesc );
+
+#endif
+
+	if ( fontName != NULL )
+	{
+		Tcl_ListObjAppendElement ( NULL, resList, Tcl_NewStringObj ( "-font", -1 ) );
+
+	}
+
 	sprintf ( tmp, "%s", fontName  );
 	Tcl_ListObjAppendElement ( NULL, resList, Tcl_NewStringObj ( tmp, -1 ) );
 
@@ -2742,13 +2786,20 @@ static void gnoclGetTagProperties ( GtkTextTag *tag, Tcl_Obj *resList )
 		sprintf ( tmp, "%s", fontFamily );
 		Tcl_ListObjAppendElement ( NULL, resList, Tcl_NewStringObj ( tmp,  -1 ) );
 	*/
-	//}
+
+#ifdef DEBUG_TAGS
+	g_print ( "%s font end\n", __FUNCTION__ );
+#endif
 
 	/*  background stipple */
 	if ( tag->bg_stipple_set )
 	{
 		GdkBitmap *bg_stipple  = tag_appearance->bg_stipple;
 	}
+
+#ifdef DEBUG_TAGS
+	g_print ( "%s stipple\n", __FUNCTION__ );
+#endif
 
 
 	/*  background colour */
@@ -2760,6 +2811,10 @@ static void gnoclGetTagProperties ( GtkTextTag *tag, Tcl_Obj *resList )
 		Tcl_ListObjAppendElement ( NULL, resList, Tcl_NewStringObj ( tmp,  -1 ) );
 	}
 
+#ifdef DEBUG_TAGS
+	g_print ( "%s backgroun\n", __FUNCTION__ );
+#endif
+
 	/*  foreground colour */
 	if ( tag->fg_color_set )
 	{
@@ -2768,6 +2823,10 @@ static void gnoclGetTagProperties ( GtkTextTag *tag, Tcl_Obj *resList )
 		sprintf ( tmp, "%d %d %d", fg_color.red, fg_color.green, fg_color.blue );
 		Tcl_ListObjAppendElement ( NULL, resList, Tcl_NewStringObj ( tmp, -1 ) );
 	}
+
+#ifdef DEBUG_TAGS
+	g_print ( "%s foreground\n", __FUNCTION__ );
+#endif
 
 	/*  font scaling */
 	if ( tag->scale_set )
@@ -2837,7 +2896,7 @@ static void gnoclGetTagProperties ( GtkTextTag *tag, Tcl_Obj *resList )
 	if ( tag->strikethrough_set )
 	{
 		Tcl_ListObjAppendElement ( NULL, resList, Tcl_NewStringObj ( "-strikethrough", -1 ) );
-		Tcl_ListObjAppendElement ( NULL, resList, Tcl_NewIntObj (  tag_appearance->strikethrough ) );
+		Tcl_ListObjAppendElement ( NULL, resList, Tcl_NewIntObj ( tag->values->appearance.strikethrough ) );
 	}
 
 	/* right margin */
@@ -2874,12 +2933,15 @@ static void gnoclGetTagProperties ( GtkTextTag *tag, Tcl_Obj *resList )
 		PangoTabArray *tabs = tag->values->tabs;
 	}
 
+	/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 	/* underline */
+	/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 	if ( tag->underline_set )
 	{
 		Tcl_ListObjAppendElement ( NULL, resList, Tcl_NewStringObj ( "-underline", -1 ) );
 
-		switch ( tag_appearance->underline )
+		//switch ( tag_appearance->underline )
+		switch ( tag->values->appearance.underline )
 		{
 			case PANGO_UNDERLINE_NONE:
 				{
@@ -2901,7 +2963,10 @@ static void gnoclGetTagProperties ( GtkTextTag *tag, Tcl_Obj *resList )
 				{
 					Tcl_ListObjAppendElement ( NULL, resList, Tcl_NewStringObj ( "error", -1 ) );
 				} break;
-			default: {}
+			default:
+				{
+					Tcl_ListObjAppendElement ( NULL, resList, Tcl_NewStringObj ( "single", -1 ) );
+				}
 		}
 
 	}
@@ -2983,6 +3048,9 @@ static void gnoclGetTagProperties ( GtkTextTag *tag, Tcl_Obj *resList )
 
 	guint is_text = tag_appearance->is_text;
 
+#ifdef DEBUG_TAGS
+	g_print ( "%s end\n", __FUNCTION__ );
+#endif
 }
 
 
@@ -3191,18 +3259,17 @@ int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl
 			{
 
 				FILE        *output;
-				guint8      *data;
-				gsize       length;
-				GtkTextIter  start, end;
-				GdkAtom se_format;
+				guint8		*data;
+				gsize		length;
+				GtkTextIter	start, end;
+				GdkAtom		se_format;
 
 				se_format = gtk_text_buffer_register_serialize_tagset ( buffer, "default" );
 
 				gtk_text_buffer_get_bounds ( buffer, &start, &end );
 				data = gtk_text_buffer_serialize ( buffer, buffer, se_format, &start, &end, &length );
 
-				//g_print ( "%c", data );
-
+				g_print ( "%s", data );
 
 				output = fopen ( Tcl_GetString ( objv[cmdNo+1] ), "w" );
 				fwrite ( &length, sizeof ( gsize ), 1, output );
@@ -3995,7 +4062,7 @@ int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl
 							/*  get the settings of each tag in the buffer*/
 							/*  note, pass the address of the pointer to the data assigned by the called function */
 
-							//gtk_text_tag_table_foreach ( tagtable, gnoclGetTagProperties , &txt );
+							gtk_text_tag_table_foreach ( tagtable, gnoclGetTagProperties, &txt ); //
 
 #ifdef DEBUG_TEXT
 							g_print ( "dump text+tags end\n" );

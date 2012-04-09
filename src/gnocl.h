@@ -20,6 +20,9 @@
 #include "tcl.h"
 #include <gtk/gtk.h>
 
+#include <string.h>
+#include <assert.h>
+
 /* set some padding values */
 #define GNOCL_PAD_TINY  2
 #define GNOCL_PAD_SMALL 4
@@ -72,8 +75,7 @@ char *gnoclGetAutoWidgetId ( void );
 const char *gnoclGetNameFromWidget ( GtkWidget *widget );
 GtkWidget *gnoclGetWidgetFromName ( const char *name, Tcl_Interp *interp );
 GtkWidget *gnoclChildNotPacked ( const char *name, Tcl_Interp *interp );
-int gnoclAssertNotPacked ( GtkWidget *child, Tcl_Interp *interp,
-						   const char *name );
+int gnoclAssertNotPacked ( GtkWidget *child, Tcl_Interp *interp,  const char *name );
 
 int gnoclGetBothAlign ( Tcl_Interp *interp, Tcl_Obj *obj, gfloat *xAlign,
 						gfloat *yAlign );
@@ -410,6 +412,7 @@ int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl
  * recentChooserDialog declarations
  */
 int gnoclRecentChooserDialogCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] );
+int gnoclRecentManagerCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] );
 int gnoclPageSetupDialogCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] );
 int gnoclPrintDialogCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] );
 
@@ -647,6 +650,10 @@ Tcl_ObjCmdProc gnoclExpanderCmd;
 Tcl_ObjCmdProc gnoclFileSelectionCmd;
 Tcl_ObjCmdProc gnoclFileChooserCmd;
 
+/* move megawidgets into a separate package? */
+Tcl_ObjCmdProc gnoclLabelEntryCmd;
+
+
 /* anticipate some problems with this clashing old codes */
 Tcl_ObjCmdProc gnoclFileChooserDialogCmd;
 Tcl_ObjCmdProc gnoclFontSelectionDialogCmd;
@@ -711,6 +718,7 @@ Tcl_ObjCmdProc gnoclStockItemCmd;
 Tcl_ObjCmdProc gnoclSoundCmd;
 Tcl_ObjCmdProc gnoclPointerCmd;
 Tcl_ObjCmdProc gnoclExecCmd;
+Tcl_ObjCmdProc gnoclSetOpts;
 Tcl_ObjCmdProc gnoclShowUriCmd;
 Tcl_ObjCmdProc gnoclCairoCmd;
 

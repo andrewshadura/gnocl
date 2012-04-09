@@ -12,6 +12,8 @@
 
 /*
    History:
+   2012-01-03: added options
+					-focusIn -focusOut
    2011-07-03: cget -data now works properly
    2011-06-30: added options
    					-dropTargets, -dragTargets, -onDropData, -onDragData
@@ -83,27 +85,18 @@ static GnoclOption entryOptions[] =
 	{ "-showCursor", GNOCL_BOOL, NULL},       /* 3 */
 	{ "-primaryIcon", GNOCL_OBJ, NULL },      /* 4 */
 	{ "-secondaryIcon", GNOCL_OBJ, NULL },    /* 5 */
-	{ "-cursorPos", GNOCL_STRING, NULL }, /* 6 */
-
-
+	{ "-cursorPos", GNOCL_STRING, NULL },     /* 6 */
 	{ "-data", GNOCL_OBJ, "", gnoclOptData }, /* 7 */
-
-
 	{ "-name", GNOCL_STRING, "name" },
-
 	{ "-hasFocus", GNOCL_BOOL, "has-focus" },
 	{ "-heightGroup", GNOCL_OBJ, "h", gnoclOptSizeGroup },
-
 	{ "-onRealize", GNOCL_OBJ, "realize", gnoclOptCommand },
 	{ "-onShowHelp", GNOCL_OBJ, "", gnoclOptOnShowHelp },
 	{ "-sensitive", GNOCL_BOOL, "sensitive" },
 	{ "-sizeGroup", GNOCL_OBJ, "s", gnoclOptSizeGroup },
-
 	{ "-tooltip", GNOCL_OBJ, "", gnoclOptTooltip },
 	{ "-visible", GNOCL_BOOL, "visible" },
-
 	{ "-widthGroup", GNOCL_OBJ, "w", gnoclOptSizeGroup },
-
 	{ "-baseFont", GNOCL_OBJ, "Sans 14", gnoclOptGdkBaseFont },
 	{ "-baseColor", GNOCL_OBJ, "normal", gnoclOptGdkColorBase },
 
@@ -122,7 +115,7 @@ static GnoclOption entryOptions[] =
 	{ "-overwriteMode", GNOCL_BOOL, "overwrite-mode" },
 	{ "-activatePrimaryIcon", GNOCL_BOOL, "primary-icon-activatable" },
 	{ "-primaryIconSensitive", GNOCL_BOOL, "primary-icon-sensitive" },
-	//{ "-progressFraction", GNOCL_DOUBLE, "progress-fraction" },
+	{ "-progressFraction", GNOCL_DOUBLE, "progress-fraction" },
 	{ "-pulseStep", GNOCL_DOUBLE, "progress-pulse-step" },
 	{ "-scrollOffset", GNOCL_INT, "scroll-offset" },
 	{ "-activateSecondaryIcon", GNOCL_BOOL, "secondary-icon-activatable" },
@@ -169,6 +162,10 @@ static GnoclOption entryOptions[] =
 	{ "-dragTargets", GNOCL_LIST, "s", gnoclOptDnDTargets },
 	{ "-onDropData", GNOCL_OBJ, "", gnoclOptOnDropData },
 	{ "-onDragData", GNOCL_OBJ, "", gnoclOptOnDragData },
+
+
+	{ "-onFocusIn", GNOCL_OBJ, "I", gnoclOptOnFocus },
+	{ "-onFocusOut", GNOCL_OBJ, "O", gnoclOptOnFocus },
 
 	{ NULL }
 };

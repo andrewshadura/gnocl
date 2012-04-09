@@ -61,7 +61,6 @@ static GnoclOption aboutDialogOptions[] =
 {
 	/* widget properties */
 	{ "-logo", GNOCL_OBJ, NULL },
-
 	{ "-artists", GNOCL_LIST, "artists", optStrv },
 	{ "-authors", GNOCL_LIST, "authors", optStrv },
 	{ "-comments", GNOCL_STRING, "comments" },

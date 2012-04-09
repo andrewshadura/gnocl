@@ -1,3 +1,34 @@
+2012-04:
+	gnocl::dialog
+		 o new options 
+			-height, -width, -x, -y
+
+2012-03:
+	new command
+		gnocl::setOpts
+			set blocks of variables or lists of '-' prefixed proc switches
+		
+	gnocl::text
+		o implemented tag sub-command 'ranges'. 
+
+2012-01: 
+	gnocl::dialog
+		o added "other" to the range of dialog types, i.e. no icon.
+        o implemented automatic setting of type to "other" if -child option set.
+        
+2012-01-03
+	gnocl::entry
+		o new options 
+			-onFocusIn, -onFocusOut
+		
+2012-01-01
+	gnocl version 0.9.96 released
+	
+2011-12-31
+	new commands
+		gnocl::menuRecentChooser
+		gnocl::recentManager
+
 2011-12-10
 	new command
 		gnocl::showURI
@@ -13,7 +44,8 @@
 
 2011-11-27
 	gnocl::fileChooserDialog
-		o new option -fileFilters
+		o new option 
+			-fileFilters
 
 2011-08-20
     gnocl::exec
@@ -243,6 +275,8 @@
 	gnocl::window
 		o new option
 			-onExpose
+			
+			
 	gnocl::winfo
 		o geometry
 			fixed problems in getting accurate width and height values
@@ -322,7 +356,7 @@
 		o new command
 
 2010-10-05
-	gnocl::toogleButton
+	gnocl::toggleButton
 		o completed support for the -icon option
 
 2010-09-22
@@ -418,7 +452,7 @@
 			-onConfirmOverwrite
 			-onFolderChanged
 			-onFileActivated
-			-onSelectiobChanged
+			-onSelectionChanged
 			-onUpdatePreview
 
 	gnocl::statusIcon
@@ -473,7 +507,7 @@
 			-onPrevYear
 			-onNextMonth
 			-onPrevMonth
-			-year 2056
+			-year
 			-month
 			-day
 			-weekNumbers
@@ -484,7 +518,7 @@
 			-colWidth
 
 2010-04-30
-	gnocl:;textBuffer
+	gnocl::textBuffer
 		o new options
 			-onPasteDone
 			-onInsertPixBuf

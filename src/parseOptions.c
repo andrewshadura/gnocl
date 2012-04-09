@@ -5339,8 +5339,7 @@ int gnoclOptLabelFull ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_
 \date
 \note
 **/
-int gnoclOptDnDTargets ( Tcl_Interp *interp, GnoclOption *opt,
-						 GObject *obj, Tcl_Obj **ret )
+int gnoclOptDnDTargets ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
 	const int isSource = ( opt->propName[0] == 's' );
 

@@ -377,7 +377,8 @@ void gnoclGetTagRanges ( GtkTextBuffer *buffer, gchar *tagName )
 	GtkTextIter iter;
 	GtkTextTag *tag;
 	GtkTextTagTable *table;
-	gint cc;
+	gint line;
+	gint offset;
 
 	gtk_text_buffer_get_start_iter ( buffer, &iter );
 	table = gtk_text_buffer_get_tag_table ( buffer );
@@ -386,8 +387,9 @@ void gnoclGetTagRanges ( GtkTextBuffer *buffer, gchar *tagName )
 
 	while ( ( gtk_text_iter_forward_to_tag_toggle ( &iter, tag ) ) == TRUE )
 	{
-		cc = gtk_text_iter_get_offset ( &iter );
-		printf ( "cc: %d\n", cc );
+		line = gtk_text_iter_get_line ( &iter );
+		offset = gtk_text_iter_get_offset ( &iter );
+		printf ( "line %d offset\n", line, offset );
 	}
 }
 

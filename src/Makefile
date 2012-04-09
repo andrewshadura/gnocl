@@ -4,12 +4,12 @@
 #---------------
 # AUTHORS
 #   Peter G Baum, 2005
-#   William J Giddings. 2010
+#   William J Giddings. 2012
 #---------------
 
 PACKAGE_NAME := gnocl
 PACKAGE_REQUIRE_NAME := Gnocl
-VERSION := 0.9.95
+VERSION := 0.9.96
 
 CFLAGS += -pedantic -fPIC -w -Os
 
@@ -21,7 +21,7 @@ ADDCFLAGS := -DVERSION=\"$(VERSION)\" \
 	-I/usr/include/libglade-2.0
 
 LIBS := $(shell pkg-config \
-	--libs gtk+-2.0 libglade-2.0 libnotify libcanberra) \
+	--libs gtk+-2.0 libglade-2.0 libnotify gtkimageview) \
 	-ltclstub$(TCL_VERSION)
 
 GTK_OBJ := \
@@ -57,7 +57,6 @@ GTK_OBJ := \
 	expander.o \
 	fileChooser.o \
 	fileChooserButton.o \
-	fileFilter.o \
 	fill.o \
 	fixed.o \
 	fontButton.o \
@@ -70,6 +69,8 @@ GTK_OBJ := \
 	iconView.o \
 	infoBar.o \
 	inputDialog.o \
+	./imageViewer/gtk-image-viewer-fixed.o \
+	imageViewer.o \
 	image.o \
 	itemGroup.o \
 	label.o \
@@ -101,6 +102,7 @@ GTK_OBJ := \
 	radioButton.o \
 	recentChooser.o \
 	recentChooserDialog.o \
+	recentManager.o \
 	ruler.o \
 	scale.o \
 	scaleButton.o \

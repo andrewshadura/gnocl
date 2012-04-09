@@ -12,6 +12,13 @@
 
 /*
    History:
+   2012-04: added -height, -width, -x and -y options
+   2012-01: added "other" to the range of dialog types, i.e. no icon.
+            implemented automatic setting of type to "other" if -child option set.
+   2011-12: -onReponse event handler, new % sustitution parameter
+				 %r (response identifier)
+				 %d  widget data
+			new option -data
    2009-12: module renamed back to messageDialog
    2009-12: added -visible
         10: added onKey{Press,Release}
@@ -43,6 +50,11 @@ static const int defaultButtonIdx = 3;
 static const int typeIdx          = 4;
 static const int modalIdx         = 5;
 static const int onResponseIdx    = 6;
+static const int setSizeIdx       = 7;
+static const int xIdx           = 8;
+static const int yIdx           = 9;
+static const int widthIdx       = 10;
+static const int heightIdx      = 11;
 
 /* todo, organise ioptions to widget specific, followed by inherited */
 static GnoclOption dialogOptions[] =
@@ -54,6 +66,15 @@ static GnoclOption dialogOptions[] =
 	{ "-type", GNOCL_OBJ, NULL },              /* 4 */
 	{ "-modal", GNOCL_BOOL, NULL },            /* 5 */
 	{ "-onResponse", GNOCL_STRING, NULL },     /* 6 */
+	{ "-setSize", GNOCL_DOUBLE, NULL },        /* 7 */
+
+
+	{ "-x", GNOCL_INT, NULL },                           /* 8 */
+	{ "-y", GNOCL_INT, NULL },                           /* 9 */
+	{ "-width", GNOCL_INT, NULL },                       /* 10 */
+	{ "-height", GNOCL_INT, NULL },                      /* 11 */
+
+
 	{ "-allowGrow", GNOCL_BOOL, "allow-grow" },
 	{ "-allowShrink", GNOCL_BOOL, "allow-shrink" },
 	{ "-defaultHeight", GNOCL_INT, "default-height" },
@@ -78,8 +99,7 @@ static GnoclOption dialogOptions[] =
 	{ "-typeHint", GNOCL_OBJ, "", gnoclOptWindowTypeHint },
 	{ "-tooltip", GNOCL_OBJ, "", gnoclOptTooltip },
 	{ "-visible", GNOCL_BOOL, "visible" },
-
-
+	{ "-data", GNOCL_OBJ, "", gnoclOptData },
 
 	/* inherited windows option */
 	{ "-keepAbove", GNOCL_OBJ, "", gnoclOptKeepAbove },
@@ -107,9 +127,39 @@ typedef struct
 /**
 \brief
 **/
-static int configure ( Tcl_Interp *interp, GtkAboutDialog *dialog,
-					   GnoclOption options[] )
+static int configure ( Tcl_Interp *interp, GtkAboutDialog *dialog, GnoclOption options[] )
 {
+
+	/* resize window in proportion to the screen */
+	if ( dialogOptions[setSizeIdx].status == GNOCL_STATUS_CHANGED )
+	{
+
+		gint width = 0;
+		gint height = 0;
+		GdkScreen *screen;
+
+		screen = gdk_screen_get_default();
+
+		width = gdk_screen_get_width ( screen );
+		height = gdk_screen_get_height ( screen );
+
+//		g_print ( "size = %f\n", dialogOptions[setSizeIdx].val.d );
+//		g_print ( "w = %f ; h = %f\n", dialogOptions[setSizeIdx].val.d * ( float ) width , dialogOptions[setSizeIdx].val.d * ( float ) height );
+
+		float w, h;
+
+		w = dialogOptions[setSizeIdx].val.d * ( float ) width;
+		h =  dialogOptions[setSizeIdx].val.d * ( float ) height;
+
+		width = ( gint ) w;
+		height = ( gint ) h;
+
+//		g_print ( "width = %d ; height = %d\n", width, height );
+
+		gtk_window_resize ( dialog, width, height );
+
+	}
+
 
 	return TCL_OK;
 }
@@ -120,9 +170,20 @@ static int configure ( Tcl_Interp *interp, GtkAboutDialog *dialog,
 **/
 static int getType ( Tcl_Interp *interp, GnoclOption *opt, int *type )
 {
-	const char *txt[] = { "info", "warning", "question", "error", NULL
-						};
-	const int types[] = { GTK_MESSAGE_INFO, GTK_MESSAGE_WARNING, GTK_MESSAGE_QUESTION, GTK_MESSAGE_ERROR };
+	const char *txt[] =
+	{
+		"info", "warning",
+		"question", "error",
+		"other",
+		NULL
+	};
+
+	const int types[] =
+	{
+		GTK_MESSAGE_INFO, GTK_MESSAGE_WARNING,
+		GTK_MESSAGE_QUESTION, GTK_MESSAGE_ERROR,
+		GTK_MESSAGE_OTHER
+	};
 
 	if ( opt->status == GNOCL_STATUS_CHANGED )
 	{
@@ -153,9 +214,36 @@ static Tcl_Obj *getObjFromRet ( DialogParams *para, int ret )
 	{
 		case GTK_RESPONSE_NONE:
 			return Tcl_NewStringObj ( "#NONE", -1 );
+
 		case GTK_RESPONSE_DELETE_EVENT:
 			return Tcl_NewStringObj ( "#DELETE", -1 );
+
+		case GTK_RESPONSE_ACCEPT:
+			return Tcl_NewStringObj ( "#ACCEPT", -1 );
+
+		case GTK_RESPONSE_OK:
+			return Tcl_NewStringObj ( "#OK", -1 );
+
+		case GTK_RESPONSE_CANCEL:
+			return Tcl_NewStringObj ( "#CANCEL", -1 );
+
+		case GTK_RESPONSE_CLOSE:
+			return Tcl_NewStringObj ( "#CLOSE", -1 );
+
+		case GTK_RESPONSE_YES:
+			return Tcl_NewStringObj ( "#YES", -1 );
+
+		case GTK_RESPONSE_NO:
+			return Tcl_NewStringObj ( "#NO", -1 );
+
+		case GTK_RESPONSE_APPLY:
+			return Tcl_NewStringObj ( "#APPLY", -1 );
+
+		case GTK_RESPONSE_HELP:
+			return Tcl_NewStringObj ( "#HELP", -1 );
+
 		default: ;
+
 	}
 
 	assert ( ret >= 0 );
@@ -168,17 +256,22 @@ static Tcl_Obj *getObjFromRet ( DialogParams *para, int ret )
 **/
 static void onResponse ( GtkDialog *dialog, gint arg1, gpointer data )
 {
+
 	DialogParams *para = ( DialogParams * ) data;
 
 	GnoclPercSubst ps[] =
 	{
 		//{ 'w', GNOCL_STRING },  /* widget */
 		{ 'v', GNOCL_OBJ },
+		{ 'r', GNOCL_INT}, 	/* reposonse identifier */
+		{ 'd', GNOCL_STRING},
 		{ 0 }
 	};
 
 	//ps[1].val.str = gnoclGetNameFromWidget ( GTK_WIDGET ( dialog ) );
 	ps[0].val.obj = getObjFromRet ( para, arg1 );
+	ps[1].val.i = arg1;
+	ps[2].val.str = g_object_get_data ( G_OBJECT ( dialog ), "gnocl::data" );
 
 	/* only for tests
 	Tcl_AllowExceptions( para->interp );
@@ -187,8 +280,7 @@ static void onResponse ( GtkDialog *dialog, gint arg1, gpointer data )
 	printf( "in onResponse: %s -> %d %s\n", para->onResponse,
 	      para->ret, Tcl_GetString( Tcl_GetObjResult( para->interp ) ) );
 	*/
-	para->ret = gnoclPercentSubstAndEval ( para->interp, ps,
-										   para->onResponse, 0 );
+	para->ret = gnoclPercentSubstAndEval ( para->interp, ps, para->onResponse, 0 );
 	/*
 	   we get TCL_ERROR if break is executed in a proc
 	   we get TCL_BREAK if break is directly executed in onResponse
@@ -510,6 +602,79 @@ int gnoclDialogCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * co
 			gtk_container_add ( GTK_CONTAINER ( para->dialog->vbox ), child );
 	}
 
+
+	/* resize window in proportion to the screen */
+	if ( dialogOptions[setSizeIdx].status == GNOCL_STATUS_CHANGED )
+	{
+
+		gint width = 0;
+		gint height = 0;
+		GdkScreen *screen;
+
+		screen = gdk_screen_get_default();
+
+		width = gdk_screen_get_width ( screen );
+		height = gdk_screen_get_height ( screen );
+
+		float w, h;
+
+		w = dialogOptions[setSizeIdx].val.d * ( float ) width;
+		h =  dialogOptions[setSizeIdx].val.d * ( float ) height;
+
+		width = ( gint ) w;
+		height = ( gint ) h;
+
+		gtk_window_set_default_size ( para->dialog, width, height );
+
+	}
+
+	/* set width and height */
+	if ( dialogOptions[widthIdx].status == GNOCL_STATUS_CHANGED
+			&& dialogOptions[heightIdx].status == GNOCL_STATUS_CHANGED )
+	{
+		gtk_window_resize ( para->dialog, dialogOptions[widthIdx].val.i,
+							dialogOptions[heightIdx].val.i );
+	}
+
+	else if ( dialogOptions[widthIdx].status == GNOCL_STATUS_CHANGED
+			  || dialogOptions[heightIdx].status == GNOCL_STATUS_CHANGED )
+	{
+		int width, height;
+		gtk_window_get_size ( para->dialog, &width, &height );
+
+		if ( dialogOptions[widthIdx].status == GNOCL_STATUS_CHANGED )
+			width = dialogOptions[widthIdx].val.i;
+		else
+			height = dialogOptions[heightIdx].val.i;
+
+		gtk_window_resize ( para->dialog, width, height );
+	}
+
+
+
+	/* make only one move if x and y are set */
+	if ( dialogOptions[xIdx].status == GNOCL_STATUS_CHANGED
+			&& dialogOptions[xIdx].status == GNOCL_STATUS_CHANGED )
+	{
+		gtk_window_move ( para->dialog, dialogOptions[xIdx].val.i, dialogOptions[yIdx].val.i );
+	}
+
+	else if ( dialogOptions[xIdx].status == GNOCL_STATUS_CHANGED
+			  || dialogOptions[yIdx].status == GNOCL_STATUS_CHANGED )
+	{
+		int x, y;
+		gtk_window_get_position ( para->dialog, &x, &y );
+
+		if ( dialogOptions[xIdx].status == GNOCL_STATUS_CHANGED )
+			x = dialogOptions[xIdx].val.i;
+		else
+			y = dialogOptions[yIdx].val.i;
+
+		gtk_window_move ( para->dialog, x, y );
+	}
+
+
+
 	para->interp = interp;
 
 	para->name = NULL;
@@ -524,13 +689,11 @@ int gnoclDialogCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * co
 	else
 		para->onResponse = g_strdup ( "break" );
 
-	g_signal_connect ( G_OBJECT ( para->dialog ), "response",
-					   G_CALLBACK ( onResponse ), para );
+	g_signal_connect ( G_OBJECT ( para->dialog ), "response", G_CALLBACK ( onResponse ), para );
 
 	if ( dialogOptions[buttonsIdx].status == GNOCL_STATUS_CHANGED )
 	{
-		if ( handleButtons ( interp, para->dialog, para,
-							 dialogOptions[buttonsIdx].val.obj ) != TCL_OK )
+		if ( handleButtons ( interp, para->dialog, para, dialogOptions[buttonsIdx].val.obj ) != TCL_OK )
 		{
 			goto clearError3;
 		}
@@ -548,8 +711,7 @@ int gnoclDialogCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * co
 
 	if ( dialogOptions[defaultButtonIdx].status == GNOCL_STATUS_CHANGED )
 	{
-		gtk_dialog_set_default_response ( para->dialog,
-										  dialogOptions[defaultButtonIdx].val.i );
+		gtk_dialog_set_default_response ( para->dialog, dialogOptions[defaultButtonIdx].val.i );
 	}
 
 	else
@@ -560,6 +722,17 @@ int gnoclDialogCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * co
 
 	ret = gnoclSetOptions ( interp, dialogOptions, G_OBJECT ( para->dialog ), -1 );
 
+
+	/* no icon if -child option is set */
+	/* GtkDialog has not property nameed 'message-type'.
+	/*
+
+		if ( dialogOptions[childIdx].status == GNOCL_STATUS_CHANGED )
+		{
+			g_object_set ( G_OBJECT ( para->dialog ), "message-type", GTK_MESSAGE_OTHER, NULL );
+		}
+	*/
+
 	gtk_widget_show ( GTK_WIDGET ( para->dialog ) );
 	/* gnoclClearOptions must be called before we enter the
 	   gtk event loop: we can't be called recursively! */
@@ -568,8 +741,7 @@ int gnoclDialogCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * co
 	if ( ret != TCL_OK )
 		goto clearError2;
 
-	g_signal_connect ( G_OBJECT ( para->dialog ), "destroy",
-					   G_CALLBACK ( destroyFunc ), para );
+	g_signal_connect ( G_OBJECT ( para->dialog ), "destroy", G_CALLBACK ( destroyFunc ), para );
 
 	if ( para->isModal )
 	{
@@ -585,7 +757,8 @@ int gnoclDialogCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * co
 
 		Tcl_SetObjResult ( interp, getObjFromRet ( para, ret ) );
 
-		gtk_widget_destroy ( GTK_WIDGET ( para->dialog ) );
+		/* removed, because it causes warnings when the dialog is closed */
+		//gtk_widget_destroy ( GTK_WIDGET ( para->dialog ) );
 	}
 
 	else
@@ -612,4 +785,3 @@ clearError1:
 	return TCL_ERROR;
 }
 
-/*****/

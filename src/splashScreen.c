@@ -26,14 +26,9 @@ take an optional graphic,
 #include "gnocl.h"
 #include "gnoclparams.h"
 
-#include <string.h>
-#include <assert.h>
-
-
 static const int widthIdx			= 0;
 static const int heightIdx			= 1;
 static const int backgroundColorIdx = 3;
-
 static const int progressBarIdx		= 4;
 static const int appNameIdx			= 5;
 static const int versionIdx			= 6;

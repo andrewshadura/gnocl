@@ -249,6 +249,7 @@ static GnoclOption radioOptions[] =
 
 
 
+
 /* moved to gnocl.h */
 /*
 typedef struct
@@ -372,6 +373,8 @@ int getTextAndIcon ( Tcl_Interp *interp, GtkToolbar *toolbar,
 	/* stock item */
 	if ( type & GNOCL_STR_STOCK )
 	{
+
+		g_print ( "STOCK\n" );
 		GtkStockItem stockItem;
 		GtkIconSize sz;
 
@@ -388,6 +391,7 @@ int getTextAndIcon ( Tcl_Interp *interp, GtkToolbar *toolbar,
 	/* file */
 	else if ( type & GNOCL_STR_FILE )
 	{
+		g_print ( "FILE\n" );
 		GError *error = NULL;
 		GdkPixbuf *pixbuf = NULL;
 
@@ -399,6 +403,7 @@ int getTextAndIcon ( Tcl_Interp *interp, GtkToolbar *toolbar,
 	/* buffer */
 	else if ( type & GNOCL_STR_BUFFER )
 	{
+		g_print ( "BUFFER\n" );
 		GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file ( icon, NULL );
 		GtkWidget *image = gtk_image_new_from_pixbuf ( pixbuf );
 
@@ -1082,6 +1087,7 @@ static int menuButtonConfigure ( Tcl_Interp *interp, ToolButtonMenuParams *para,
 
 	if ( options[menuButtonIconIdx].status == GNOCL_STATUS_CHANGED )
 	{
+
 		para->item = gtk_menu_tool_button_new_from_stock  ( GTK_STOCK_COPY );
 	}
 
