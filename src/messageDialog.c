@@ -624,15 +624,17 @@ int gnoclDialogCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * co
 		width = ( gint ) w;
 		height = ( gint ) h;
 
-		gtk_window_set_default_size ( para->dialog, width, height );
+		gtk_window_set_default_size ( GTK_WINDOW ( para->dialog ), width, height );
 
 	}
 
-	/* set width and height */
+
+
+	// set width and height
 	if ( dialogOptions[widthIdx].status == GNOCL_STATUS_CHANGED
 			&& dialogOptions[heightIdx].status == GNOCL_STATUS_CHANGED )
 	{
-		gtk_window_resize ( para->dialog, dialogOptions[widthIdx].val.i,
+		gtk_window_resize ( GTK_WINDOW ( para->dialog ), dialogOptions[widthIdx].val.i,
 							dialogOptions[heightIdx].val.i );
 	}
 
@@ -640,37 +642,37 @@ int gnoclDialogCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * co
 			  || dialogOptions[heightIdx].status == GNOCL_STATUS_CHANGED )
 	{
 		int width, height;
-		gtk_window_get_size ( para->dialog, &width, &height );
+		gtk_window_get_size ( GTK_WINDOW ( para->dialog ), &width, &height );
 
 		if ( dialogOptions[widthIdx].status == GNOCL_STATUS_CHANGED )
 			width = dialogOptions[widthIdx].val.i;
 		else
 			height = dialogOptions[heightIdx].val.i;
 
-		gtk_window_resize ( para->dialog, width, height );
+		gtk_window_resize ( GTK_WINDOW ( para->dialog ), width, height );
 	}
 
 
 
-	/* make only one move if x and y are set */
+	// make only one move if x and y are set
 	if ( dialogOptions[xIdx].status == GNOCL_STATUS_CHANGED
 			&& dialogOptions[xIdx].status == GNOCL_STATUS_CHANGED )
 	{
-		gtk_window_move ( para->dialog, dialogOptions[xIdx].val.i, dialogOptions[yIdx].val.i );
+		gtk_window_move ( GTK_WINDOW ( para->dialog ), dialogOptions[xIdx].val.i, dialogOptions[yIdx].val.i );
 	}
 
 	else if ( dialogOptions[xIdx].status == GNOCL_STATUS_CHANGED
 			  || dialogOptions[yIdx].status == GNOCL_STATUS_CHANGED )
 	{
 		int x, y;
-		gtk_window_get_position ( para->dialog, &x, &y );
+		gtk_window_get_position ( GTK_WINDOW ( para->dialog ), &x, &y );
 
 		if ( dialogOptions[xIdx].status == GNOCL_STATUS_CHANGED )
 			x = dialogOptions[xIdx].val.i;
 		else
 			y = dialogOptions[yIdx].val.i;
 
-		gtk_window_move ( para->dialog, x, y );
+		gtk_window_move ( GTK_WINDOW ( para->dialog ), x, y );
 	}
 
 
@@ -749,7 +751,7 @@ int gnoclDialogCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * co
 
 		do
 		{
-			ret = gtk_dialog_run ( para->dialog );
+			ret = gtk_dialog_run ( GTK_WINDOW ( para->dialog ) );
 			/* exit if no button exit, or onResponse returned break */
 		}
 
@@ -758,7 +760,7 @@ int gnoclDialogCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * co
 		Tcl_SetObjResult ( interp, getObjFromRet ( para, ret ) );
 
 		/* removed, because it causes warnings when the dialog is closed */
-		//gtk_widget_destroy ( GTK_WIDGET ( para->dialog ) );
+		//gtk_widget_destroy ( GTK_WIDGET ( GTK_WINDOW ( para->dialog ) ) );
 	}
 
 	else

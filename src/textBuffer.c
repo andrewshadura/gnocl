@@ -208,6 +208,12 @@ int gnoclTextBufferCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj 
 		return TCL_ERROR;
 	}
 
+	/* e) create ref to prevent accidental destruction */
+	//gpointer  g_object_ref  (gpointer object);
+
+	g_object_ref ( G_OBJECT ( widget ) );
+
+
 	/* 3) everything is ok, so realize the widget */
 	/* doesn't apply to the GtkTextBuffer */
 	//gtk_widget_show ( GTK_WIDGET ( widget ) );

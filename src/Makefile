@@ -21,7 +21,7 @@ ADDCFLAGS := -DVERSION=\"$(VERSION)\" \
 	-I/usr/include/libglade-2.0
 
 LIBS := $(shell pkg-config \
-	--libs gtk+-2.0 libglade-2.0 libnotify gtkimageview) \
+	--libs gtk+-2.0 libglade-2.0 libnotify) \
 	-ltclstub$(TCL_VERSION)
 
 GTK_OBJ := \
@@ -69,8 +69,6 @@ GTK_OBJ := \
 	iconView.o \
 	infoBar.o \
 	inputDialog.o \
-	./imageViewer/gtk-image-viewer-fixed.o \
-	imageViewer.o \
 	image.o \
 	itemGroup.o \
 	label.o \

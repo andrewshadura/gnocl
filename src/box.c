@@ -14,6 +14,7 @@
 
 /*
    History:
+   2012-04: added command, remove
    2010-05: added -labelWidget option
    2009-10: changed default padding from GNOCL_PAD (8 pixels) to GNOCL_PAD_TINY (2 pixels)
    2009-01: added -data
@@ -415,14 +416,14 @@ int boxFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const obj
 	static const char *cmds[] =
 	{
 		"cget", "delete", "configure", "add",
-		"addBegin", "addEnd", "class",
+		"addBegin", "addEnd", "class", "remove",
 		NULL
 	};
 
 	enum cmdIdx
 	{
 		CgetIdx, DeleteIdx, ConfigureIdx, AddIdx,
-		BeginIdx, EndIdx, ClassIdx
+		BeginIdx, EndIdx, ClassIdx, RemoveIdx
 	};
 
 	int idx;
@@ -456,7 +457,12 @@ int boxFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const obj
 
 	switch ( idx )
 	{
-
+			/* may require implementation of error checking */
+		case RemoveIdx:
+			{
+				gtk_container_remove ( widget, gnoclGetWidgetFromName ( Tcl_GetString ( objv[2] ), interp ) );
+			}
+			break;
 		case CgetIdx:
 			{
 				int     idx;
@@ -512,6 +518,8 @@ int boxFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const obj
 		case BeginIdx:
 		case EndIdx:
 			{
+				/* increas reference count of object to prevent loss on possible call by remove */
+				g_object_ref ( G_OBJECT ( gnoclGetWidgetFromName ( Tcl_GetString ( objv[2] ), interp ) ) );
 				return boxFuncAdd ( box, interp, objc, objv, idx != EndIdx );
 			} break;
 		default: {}

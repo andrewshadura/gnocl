@@ -448,7 +448,7 @@ int gnoclAcceleratorCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj
 
 int gnoclDialCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] );
 int gnoclSpinnerCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] );
-int gnoclImageViewerCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] );
+
 
 /*
  */

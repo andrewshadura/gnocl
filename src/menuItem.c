@@ -12,6 +12,8 @@
 
 /*
    History:
+   2012-04: added -data
+			cget (partial implementation)
    2009-06: added -showImage for Gtk+ 2.16
    2008-10: added command, class
         10: switched from GnoclWidgetOptions to GnoclOption
@@ -48,6 +50,7 @@ static const int iconIdx    	= 1;
 static const int accelIdx   	= 2;
 static const int submenuIdx 	= 3;
 static const int showImageIdx	= 4;
+static const int dataIdx		= 5;
 
 static GnoclOption labelOptions[] =
 {
@@ -56,11 +59,14 @@ static GnoclOption labelOptions[] =
 	{ "-accelerator", GNOCL_OBJ, NULL },
 	{ "-submenu", GNOCL_STRING, NULL },
 	{ "-showImage", GNOCL_INT, NULL },
+	{ "-data", GNOCL_OBJ, "", gnoclOptData },
+
 	{ "-onClicked", GNOCL_OBJ, "activate", gnoclOptCommand },
 	{ "-sensitive", GNOCL_BOOL, "sensitive" },
 	{ "-tooltip", GNOCL_OBJ, "", gnoclOptTooltip },
 	{ "-name", GNOCL_STRING, "name" },
 	{ "-visible", GNOCL_BOOL, "visible" },
+
 	{ NULL }
 };
 
@@ -189,6 +195,53 @@ int gnoclMenuItemHandleText ( Tcl_Interp *interp, GtkMenuItem *item,
 	return TCL_OK;
 }
 
+
+/**
+\brief
+**/
+static int cget ( Tcl_Interp *interp, GtkWidget *label, GnoclOption options[], int idx )
+{
+#ifdef DEBUG_ENTRY
+	printf ( "entry/staticFuncs/cget\n" );
+#endif
+
+	Tcl_Obj *obj = NULL;
+
+
+	if ( idx == dataIdx )
+	{
+		obj = Tcl_NewStringObj ( g_object_get_data ( label, "gnocl::data" ), -1 );
+	}
+
+	/*
+
+		else if ( idx == variableIdx )
+		{
+			obj = Tcl_NewStringObj ( para->variable, -1 );
+		}
+
+		else if ( idx == onChangedIdx )
+		{
+			obj = Tcl_NewStringObj ( para->onChanged ? para->onChanged : "", -1 );
+		}
+
+		else if ( idx == valueIdx )
+		{
+			obj = Tcl_NewStringObj ( gtk_entry_get_text ( para->entry ), -1 );
+		}
+
+	*/
+
+	if ( obj != NULL )
+	{
+		Tcl_SetObjResult ( interp, obj );
+		return TCL_OK;
+	}
+
+
+	return gnoclCgetNotImplemented ( interp, options + idx );
+}
+
 /**
 \brief
 **/
@@ -282,8 +335,8 @@ static int configure ( Tcl_Interp *interp, GtkMenuItem *label, GnoclOption optio
 **/
 int menuItemFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-	static const char *cmds[] = { "delete", "configure", "onClicked", "class", NULL };
-	enum cmdIdx { DeleteIdx, ConfigureIdx, OnClickedIdx, ClassIdx };
+	static const char *cmds[] = { "delete", "configure", "onClicked", "class", "cget", NULL };
+	enum cmdIdx { DeleteIdx, ConfigureIdx, OnClickedIdx, ClassIdx, CgetIdx};
 	GtkMenuItem *label = GTK_MENU_ITEM ( data );
 	int idx;
 
@@ -293,18 +346,34 @@ int menuItemFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * cons
 		return TCL_ERROR;
 	}
 
-	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "command",
-							   TCL_EXACT, &idx ) != TCL_OK )
+	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "command", TCL_EXACT, &idx ) != TCL_OK )
 		return TCL_ERROR;
 
 	switch ( idx )
 	{
+		case CgetIdx:
+			{
+				int     idx;
+
+				switch ( gnoclCget ( interp, objc, objv, G_OBJECT ( label ), labelOptions, &idx ) )
+				{
+					case GNOCL_CGET_ERROR:
+						return TCL_ERROR;
+					case GNOCL_CGET_HANDLED:
+						return TCL_OK;
+					case GNOCL_CGET_NOTHANDLED:
+						return cget ( interp, label, labelOptions, idx );
+				}
+			}
 		case ClassIdx:
-			Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "menuItem", -1 ) );
+			{
+				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "menuItem", -1 ) );
+			}
 			break;
 		case DeleteIdx:
-			return gnoclDelete ( interp, GTK_WIDGET ( label ), objc, objv );
-
+			{
+				return gnoclDelete ( interp, GTK_WIDGET ( label ), objc, objv );
+			}
 		case ConfigureIdx:
 			{
 				int ret = TCL_ERROR;

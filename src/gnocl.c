@@ -647,7 +647,6 @@ static GnoclCmd commands[] =
 	/* non-gtk widgets */
 	{ "spinner", gnoclSpinnerCmd },
 	{ "dial", gnoclDialCmd },
-	{ "imageViewer", gnoclImageViewerCmd },
 
 	/* recent manager */
 	{ "recentManager", gnoclRecentManagerCmd},

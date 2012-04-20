@@ -3386,17 +3386,25 @@ int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl
 				/*  code taken from gnoclTextCmd */
 				GtkTextView *spawn;
 				GtkScrolledWindow *scrolled;
-
+				GtkTextBuffer *spawnBuffer;
+				spawnBuffer = buffer;
+				g_print ( "spawn -1\n" );
 				/*  create a new text view with buffer GtkTextBuffer *buffer*/
-				spawn = GTK_TEXT_VIEW ( gtk_text_view_new_with_buffer ( buffer ) );
+				//g_object_ref (G_OBJECT(buffer));
+				spawn = GTK_TEXT_VIEW ( gtk_text_view_new_with_buffer ( GTK_TEXT_BUFFER ( spawnBuffer ) ) );
+				//spawn = GTK_TEXT_VIEW ( gtk_text_view_new_with_buffer ( NULL ) );
+				//gtk_text_view_set_buffer (spawn, buffer);
 
+
+				g_print ( "spawn -2\n" );
 				/*  add some extra signals to the default setting */
 				gtk_widget_add_events ( spawn, GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK );
-
-				scrolled =  GTK_SCROLLED_WINDOW ( gtk_scrolled_window_new ( NULL, NULL ) );
+				g_print ( "spawn -3\n" );
+				scrolled =  gtk_scrolled_window_new ( NULL, NULL );
 				gtk_scrolled_window_set_policy ( scrolled, GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC );
-				gtk_container_add ( GTK_CONTAINER ( scrolled ), GTK_WIDGET ( spawn ) );
+				gtk_container_add ( scrolled, GTK_WIDGET ( spawn ) );
 				gtk_widget_show_all ( GTK_WIDGET ( scrolled ) );
+				g_print ( "spawn -4\n" );
 
 				if ( 0 )
 				{
@@ -3412,7 +3420,6 @@ int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl
 								   NULL );
 
 					// Do something with intval, strval, objval
-
 					g_free ( strval );
 					g_object_unref ( objval );
 				}

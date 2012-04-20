@@ -1,7 +1,17 @@
 2012-04:
+	gnocl::box
+		o new command
+			remove
+			
 	gnocl::dialog
-		 o new options 
+		o new options 
 			-height, -width, -x, -y
+			
+   gnocl::menuItem
+		o new option
+			-data
+		o net command
+			cget (partial implementation) 
 
 2012-03:
 	new command

@@ -918,7 +918,7 @@ int entryFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const o
 						return cget ( interp, para, entryOptions, idx );
 				}
 			}
-
+			break;
 		case OnChangedIdx:
 			{
 				const char *txt = gtk_entry_get_text ( para->entry );
