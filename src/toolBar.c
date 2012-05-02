@@ -12,6 +12,7 @@
 
 /*
    History:
+   2012-05: toolbar cget -data now works
    2011-04: added -tooltips
    			nItems
    			re-wrote the code to use updated Toolbar API
@@ -80,9 +81,14 @@ static const int ButtonIdx     	= 7;
 static const int MenuIdx      	= 8;
 static const int RadioIdx      	= 9;
 
+/* */
+static const int dataIdx = 0;
+
 /* toolBar options */
 static GnoclOption toolBarOptions[] =
 {
+	{ "-data", GNOCL_OBJ, "", gnoclOptData }, /* 0 */
+
 	//{ "-orientation", GNOCL_OBJ, "orientation", optOrientation },
 	{ "-orientation", GNOCL_OBJ, "orientation", gnoclOptOrientation },
 
@@ -109,7 +115,6 @@ static GnoclOption toolBarOptions[] =
 		{ "-onDropData", GNOCL_OBJ, "", gnoclOptOnDropData },
 		{ "-onDragData", GNOCL_OBJ, "", gnoclOptOnDragData },
 	*/
-	{ "-data", GNOCL_OBJ, "", gnoclOptData },
 	{ NULL, 0, 0 }
 };
 
@@ -373,8 +378,9 @@ int getTextAndIcon ( Tcl_Interp *interp, GtkToolbar *toolbar,
 	/* stock item */
 	if ( type & GNOCL_STR_STOCK )
 	{
-
+#ifdef DEBUG_TOOLBAR
 		g_print ( "STOCK\n" );
+#endif
 		GtkStockItem stockItem;
 		GtkIconSize sz;
 
@@ -391,7 +397,9 @@ int getTextAndIcon ( Tcl_Interp *interp, GtkToolbar *toolbar,
 	/* file */
 	else if ( type & GNOCL_STR_FILE )
 	{
+#ifdef DEBUG_TOOLBAR
 		g_print ( "FILE\n" );
+#endif
 		GError *error = NULL;
 		GdkPixbuf *pixbuf = NULL;
 
@@ -403,7 +411,9 @@ int getTextAndIcon ( Tcl_Interp *interp, GtkToolbar *toolbar,
 	/* buffer */
 	else if ( type & GNOCL_STR_BUFFER )
 	{
+#ifdef DEBUG_TOOLBAR
 		g_print ( "BUFFER\n" );
+#endif
 		GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file ( icon, NULL );
 		GtkWidget *image = gtk_image_new_from_pixbuf ( pixbuf );
 
@@ -463,6 +473,41 @@ static void setUnderline ( GtkWidget *item )
 		gtk_label_set_use_underline ( GTK_LABEL ( label ), 1 );
 	}
 }
+
+
+/**
+\brief
+**/
+static int configure ( Tcl_Interp *interp, GtkWidget *widget, GnoclOption options[] )
+{
+	return TCL_OK;
+}
+
+
+/**
+\brief  Obtain current -option values.
+**/
+static int cget (   Tcl_Interp *interp, GtkWidget *widget,  GnoclOption options[],  int idx )
+{
+
+	Tcl_Obj *obj = NULL;
+
+	if ( idx == dataIdx )
+	{
+		obj = Tcl_NewStringObj ( g_object_get_data ( widget, "gnocl::data" ), -1 );
+	}
+
+
+	if ( obj != NULL )
+	{
+		Tcl_SetObjResult ( interp, obj );
+		return TCL_OK;
+	}
+
+	return gnoclCgetNotImplemented ( interp, options + idx );
+}
+
+
 
 /**
 \brief
@@ -1102,7 +1147,9 @@ static int menuButtonConfigure ( Tcl_Interp *interp, ToolButtonMenuParams *para,
 	/*
 		if ( options[menuButtonMenuIdx].status == GNOCL_STATUS_CHANGED )
 		{
+	#ifdef DEBUG_TOOLBAR
 			g_print ( "menu = %s\n", options[menuButtonMenuIdx].val.str );
+	#endif
 			para->menu = gnoclGetWidgetFromName ( options[menuButtonMenuIdx].val.str, interp );
 
 			gtk_menu_tool_button_set_menu ( para->item, para->menu );
@@ -1731,7 +1778,6 @@ static int addItem ( GtkToolbar *toolbar, Tcl_Interp *interp, int objc, Tcl_Obj 
 					gtk_toolbar_insert ( toolbar, item, 0 );
 				}
 
-
 				gtk_widget_show_all ( item );
 
 				Tcl_SetObjResult ( interp, objv[3] );
@@ -1777,7 +1823,7 @@ int toolBarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const
 	{
 		"add", "addBegin", "addEnd",
 		"class", "configure", "delete",
-		"insert", "nItems",
+		"insert", "nItems", "cget",
 		NULL
 	};
 
@@ -1785,7 +1831,7 @@ int toolBarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const
 	{
 		AddIdx, BeginIdx, EndIdx,
 		ClassIdx, ConfigureIdx, DeleteIdx,
-		InsertIdx, NitemsIdx
+		InsertIdx, NitemsIdx, CgetIdx
 	};
 
 	GtkToolbar *toolBar = GTK_TOOLBAR ( data );
@@ -1804,6 +1850,27 @@ int toolBarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const
 
 	switch ( idx )
 	{
+		case CgetIdx:
+			{
+				int idx;
+
+				switch ( gnoclCget ( interp, objc, objv, G_OBJECT ( toolBar ), toolBarOptions, &idx ) )
+				{
+					case GNOCL_CGET_ERROR:
+						{
+							return TCL_ERROR;
+						}
+					case GNOCL_CGET_HANDLED:
+						{
+							return TCL_OK;
+						}
+					case GNOCL_CGET_NOTHANDLED:
+						{
+							return cget ( interp, toolBar, toolBarOptions, idx );
+						}
+				}
+			}
+			break;
 		case NitemsIdx:
 			{
 

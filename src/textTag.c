@@ -201,15 +201,15 @@ int gnoclOptMarkupTags ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl
 
 	GtkTextBuffer *buffer = gtk_text_view_get_buffer ( GTK_TEXT_VIEW ( obj ) );
 
-	gtk_text_buffer_create_tag ( buffer, "b", "weight", PANGO_WEIGHT_BOLD, NULL ); //bold
+
 
 	//GtkTextTag *tag gtk_text_tag_new (b);
 
 	//g_object_set ( tag, "weight", PANGO_WEIGHT_BOLD, NULL );
-
-	gtk_text_buffer_create_tag ( buffer, "i", "style", PANGO_STYLE_ITALIC, NULL ); //italic
-	gtk_text_buffer_create_tag ( buffer, "s", "strikethrough", 1, NULL ); //strikethrough
-	gtk_text_buffer_create_tag ( buffer, "u", "underline", PANGO_UNDERLINE_SINGLE, NULL ); //underline
+	gtk_text_buffer_create_tag ( buffer, "<b>", "weight", PANGO_WEIGHT_BOLD, NULL ); //bold
+	gtk_text_buffer_create_tag ( buffer, "<i>", "style", PANGO_STYLE_ITALIC, NULL ); //italic
+	gtk_text_buffer_create_tag ( buffer, "<s>", "strikethrough", 1, NULL ); //strikethrough
+	gtk_text_buffer_create_tag ( buffer, "<u>", "underline", PANGO_UNDERLINE_SINGLE, NULL ); //underline
 
 	/*
 	gtk_text_buffer_create_tag (buffer, "sub","font", font, NULL);  //bold

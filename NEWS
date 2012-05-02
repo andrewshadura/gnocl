@@ -1,3 +1,7 @@
+2012-05:
+	gnocl::toolbar 
+		o cget -data now works
+		
 2012-04:
 	gnocl::box
 		o new command

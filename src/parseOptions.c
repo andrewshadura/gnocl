@@ -3006,8 +3006,7 @@ static void doOnToggleOverWrite ( GtkTextView *text_view, gpointer user_data )
 \date
 \note
 **/
-int gnoclOptOnToggleOverwrite ( Tcl_Interp *interp, GnoclOption *opt,
-								GObject *obj, Tcl_Obj **ret )
+int gnoclOptOnToggleOverwrite ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
 	/* check the name of the signal is correct for this function */
 	assert ( strcmp ( opt->optName, "-onToggleOverWrite" ) == 0 );
@@ -3356,11 +3355,13 @@ static void doOnClicked   ( GtkToolButton *toolbutton, gpointer user_data )
 	{
 		{ 'w', GNOCL_STRING },  /* widget */
 		{ 'g', GNOCL_STRING },  /* glade name */
+		{ 'p', GNOCL_STRING },  /* parent */
 		{ 0 }
 	};
 
 	ps[0].val.str = gnoclGetNameFromWidget ( toolbutton );
 	ps[1].val.str = gtk_widget_get_name ( GTK_WIDGET ( toolbutton ) );
+	ps[2].val.str = gtk_widget_get_parent ( GTK_WIDGET ( toolbutton ) );
 
 	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
 
@@ -4686,7 +4687,6 @@ static void doOnKey ( GtkWidget *widget, GdkEventKey *event, gpointer data )
 		{ 'e', GNOCL_STRING },  /* event/signal name */
 		{ 0 }
 	};
-
 
 	guint32 unicode = gdk_keyval_to_unicode ( event->keyval );
 

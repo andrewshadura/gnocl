@@ -60,31 +60,37 @@ static const int valueIdx     = 6;
 /**
 \brief
 **/
-static int configure ( Tcl_Interp *interp,
-					   GnoclRadioParams *para, GnoclOption options[] )
+static int configure ( Tcl_Interp *interp, GnoclRadioParams *para, GnoclOption options[] )
 {
 	if ( options[textIdx].status == GNOCL_STATUS_CHANGED )
 	{
-		if ( gnoclMenuItemHandleText ( interp, GTK_MENU_ITEM ( para->widget ),
-									   options[textIdx].val.obj ) != TCL_OK )
+		if ( gnoclMenuItemHandleText ( interp, GTK_MENU_ITEM ( para->widget ), options[textIdx].val.obj ) != TCL_OK )
+		{
 			return TCL_ERROR;
+		}
 	}
 
 	if ( options[accelIdx].status == GNOCL_STATUS_CHANGED )
-		gnoclMenuItemHandleAccel ( interp, GTK_MENU_ITEM ( para->widget ),
-								   options[accelIdx].val.obj );
+	{
+		gnoclMenuItemHandleAccel ( interp, GTK_MENU_ITEM ( para->widget ), options[accelIdx].val.obj );
+	}
 
 	if ( options[onToggledIdx].status == GNOCL_STATUS_CHANGED )
+	{
 		GNOCL_MOVE_STRING ( options[onToggledIdx].val.str, para->onToggled );
+	}
 
-	if ( gnoclRadioSetValueActive ( para, &options[onValueIdx],
-									&options[activeIdx] ) != TCL_OK )
+	if ( gnoclRadioSetValueActive ( para, &options[onValueIdx],	&options[activeIdx] ) != TCL_OK )
+	{
 		return TCL_ERROR;
+	}
 
 	if ( options[valueIdx].status == GNOCL_STATUS_CHANGED )
 	{
 		if ( gnoclRadioSetValue ( para, options[valueIdx].val.obj ) != TCL_OK )
+		{
 			return TCL_ERROR;
+		}
 	}
 
 	return TCL_OK;
@@ -93,19 +99,28 @@ static int configure ( Tcl_Interp *interp,
 /**
 \brief
 **/
-static int cget ( Tcl_Interp *interp, GnoclRadioParams  *para,
-				  GnoclOption options[], int idx )
+static int cget ( Tcl_Interp *interp, GnoclRadioParams  *para, GnoclOption options[], int idx )
 {
 	Tcl_Obj *obj = NULL;
 
 	if ( idx == textIdx )
+	{
 		obj = gnoclCgetMenuItemText ( interp, GTK_MENU_ITEM ( para->widget ) );
+	}
+
 	else if ( idx == onToggledIdx )
+	{
 		obj = Tcl_NewStringObj ( para->onToggled ? para->onToggled : "", -1 );
+	}
+
 	else if ( idx == variableIdx )
+	{
 		obj = Tcl_NewStringObj ( para->group->variable, -1 );
+	}
+
 	else if ( idx == onValueIdx )
 	{
+
 		GnoclRadioParams *p = gnoclRadioGetActivePara ( para->group );
 		obj = p->onValue;
 	}
@@ -118,9 +133,14 @@ static int cget ( Tcl_Interp *interp, GnoclRadioParams  *para,
 	}
 
 	else if ( idx == accelIdx )
+	{
 		obj = gnoclCgetMenuItemAccel ( interp, GTK_MENU_ITEM ( para->widget ) );
+	}
+
 	else if ( idx == valueIdx )
+	{
 		obj = gnoclRadioGetValue ( para );
+	}
 
 	if ( obj != NULL )
 	{
@@ -136,12 +156,17 @@ static int cget ( Tcl_Interp *interp, GnoclRadioParams  *para,
 **/
 static int radioItemFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-	static const char *cmds[] = { "delete", "configure", "cget", "onToggled", "class", NULL
-								};
+	static const char *cmds[] =
+	{
+		"delete", "configure", "cget",
+		"onToggled", "class",
+		NULL
+	};
+
 	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, OnToggledIdx, ClassIdx, };
 
 	GnoclRadioParams *para = ( GnoclRadioParams * ) data;
-	int             idx;
+	int idx;
 
 	if ( objc < 2 )
 	{
@@ -155,10 +180,14 @@ static int radioItemFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Ob
 	switch ( idx )
 	{
 		case ClassIdx:
-			Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "menuRadioItem", -1 ) );
+			{
+				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "menuRadioItem", -1 ) );
+			}
 			break;
 		case DeleteIdx:
-			return gnoclDelete ( interp, para->widget, objc, objv );
+			{
+				return gnoclDelete ( interp, para->widget, objc, objv );
+			}
 
 		case ConfigureIdx:
 			{
@@ -179,20 +208,27 @@ static int radioItemFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Ob
 			{
 				int     idx;
 
-				switch ( gnoclCget ( interp, objc, objv, G_OBJECT ( para->widget ),
-									 radioOptions, &idx ) )
+				switch ( gnoclCget ( interp, objc, objv, G_OBJECT ( para->widget ), radioOptions, &idx ) )
 				{
 					case GNOCL_CGET_ERROR:
-						return TCL_ERROR;
+						{
+							return TCL_ERROR;
+						}
 					case GNOCL_CGET_HANDLED:
-						return TCL_OK;
+						{
+							return TCL_OK;
+						}
 					case GNOCL_CGET_NOTHANDLED:
-						return cget ( interp, para, radioOptions, idx );
+						{
+							return cget ( interp, para, radioOptions, idx );
+						}
 				}
 			}
 
 		case OnToggledIdx:
-			return gnoclRadioOnToggled ( interp, objc, objv, para );
+			{
+				return gnoclRadioOnToggled ( interp, objc, objv, para );
+			}
 	}
 
 	return TCL_OK;
@@ -201,11 +237,10 @@ static int radioItemFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Ob
 /**
 \brief
 **/
-int gnoclMenuRadioItemCmd ( ClientData data, Tcl_Interp *interp,
-							int objc, Tcl_Obj * const objv[] )
+int gnoclMenuRadioItemCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
 	GnoclRadioParams *para;
-	int                ret;
+	int ret;
 
 	if ( gnoclParseOptions ( interp, objc, objv, radioOptions ) != TCL_OK )
 	{
@@ -213,12 +248,10 @@ int gnoclMenuRadioItemCmd ( ClientData data, Tcl_Interp *interp,
 		return TCL_ERROR;
 	}
 
-	if ( radioOptions[onValueIdx].status != GNOCL_STATUS_CHANGED
-			|| radioOptions[variableIdx].status != GNOCL_STATUS_CHANGED )
+	if ( radioOptions[onValueIdx].status != GNOCL_STATUS_CHANGED || radioOptions[variableIdx].status != GNOCL_STATUS_CHANGED )
 	{
 		gnoclClearOptions ( radioOptions );
-		Tcl_SetResult ( interp,
-						"Option \"-onValue\" and \"-variable\" are required.", TCL_STATIC );
+		Tcl_SetResult ( interp,	"Option \"-onValue\" and \"-variable\" are required.", TCL_STATIC );
 		return TCL_ERROR;
 	}
 
@@ -230,20 +263,17 @@ int gnoclMenuRadioItemCmd ( ClientData data, Tcl_Interp *interp,
 	para->onValue = NULL;
 	gtk_widget_show ( para->widget );
 
-	para->group = gnoclRadioGetGroupFromVariable (
-					  radioOptions[variableIdx].val.str );
+	para->group = gnoclRadioGetGroupFromVariable ( radioOptions[variableIdx].val.str );
 
 	if ( para->group == NULL )
 	{
-		para->group = gnoclRadioGroupNewGroup (
-						  radioOptions[variableIdx].val.str, interp );
+		para->group = gnoclRadioGroupNewGroup ( radioOptions[variableIdx].val.str, interp );
 	}
 
 	else
 	{
 		GnoclRadioParams *p = gnoclRadioGetParam ( para->group, 0 );
-		gtk_radio_menu_item_set_group ( GTK_RADIO_MENU_ITEM ( para->widget ),
-										gtk_radio_menu_item_get_group ( GTK_RADIO_MENU_ITEM ( p->widget ) ) );
+		gtk_radio_menu_item_set_group ( GTK_RADIO_MENU_ITEM ( para->widget ), gtk_radio_menu_item_get_group ( GTK_RADIO_MENU_ITEM ( p->widget ) ) );
 	}
 
 	gnoclRadioGroupAddWidgetToGroup ( para->group, para );
@@ -251,7 +281,9 @@ int gnoclMenuRadioItemCmd ( ClientData data, Tcl_Interp *interp,
 	ret = gnoclSetOptions ( interp, radioOptions, G_OBJECT ( para->widget ), -1 );
 
 	if ( ret == TCL_OK )
+	{
 		ret = configure ( interp, para, radioOptions );
+	}
 
 	gnoclClearOptions ( radioOptions );
 
@@ -264,12 +296,9 @@ int gnoclMenuRadioItemCmd ( ClientData data, Tcl_Interp *interp,
 		return TCL_ERROR;
 	}
 
-	g_signal_connect ( G_OBJECT ( para->widget ), "destroy",
+	g_signal_connect ( G_OBJECT ( para->widget ), "destroy", G_CALLBACK ( gnoclRadioDestroyFunc ), para );
 
-					   G_CALLBACK ( gnoclRadioDestroyFunc ), para );
-
-	g_signal_connect ( G_OBJECT ( para->widget ), "toggled",
-					   G_CALLBACK ( gnoclRadioToggledFunc ), para );
+	g_signal_connect ( G_OBJECT ( para->widget ), "toggled", G_CALLBACK ( gnoclRadioToggledFunc ), para );
 
 	gnoclMemNameAndWidget ( para->name, para->widget );
 

@@ -107,20 +107,24 @@ static int checkDoCommand ( GnoclCheckParams *para, Tcl_Obj *val, int bg )
 /**
 \brief
 **/
-static int checkIsOn ( Tcl_Interp *interp, Tcl_Obj *onValue,
-					   Tcl_Obj *offValue, Tcl_Obj *val )
+static int checkIsOn ( Tcl_Interp *interp, Tcl_Obj *onValue, Tcl_Obj *offValue, Tcl_Obj *val )
 {
 	const char *strVal = Tcl_GetString ( val );
 
 	if ( strcmp ( Tcl_GetString ( onValue ), strVal ) == 0 )
+	{
 		return 1;
+	}
 
 	if ( strcmp ( Tcl_GetString ( offValue ), strVal ) == 0 )
+	{
 		return 0;
+	}
 
 	if ( interp )
 	{
-		Tcl_AppendResult ( interp, "Invalid value \"", strVal,
+		Tcl_AppendResult ( interp,
+						   "Invalid value \"", strVal,
 						   "\", must be either \"", Tcl_GetString ( onValue ),
 						   "\" or \"", Tcl_GetString ( offValue ), "\".", NULL );
 	}

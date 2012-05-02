@@ -102,8 +102,7 @@ static int setExpanderSpacing (
 /**
 \brief
 **/
-static int configure ( Tcl_Interp *interp, GtkExpander *expander,
-					   GnoclOption options[] )
+static int configure ( Tcl_Interp *interp, GtkExpander *expander, GnoclOption options[] )
 {
 	return TCL_OK;
 }
@@ -114,7 +113,13 @@ static int configure ( Tcl_Interp *interp, GtkExpander *expander,
 int expanderFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
 
-	const char *cmds[] = { "delete", "configure", "cget", "class", NULL };
+	const char *cmds[] =
+	{
+		"delete", "configure", "cget",
+		"class",
+		NULL
+	};
+
 	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, ClassIdx };
 	int idx;
 	GtkExpander *expander = GTK_EXPANDER ( data );
@@ -125,23 +130,27 @@ int expanderFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * cons
 		return TCL_ERROR;
 	}
 
-	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "command",
-							   TCL_EXACT, &idx ) != TCL_OK )
+	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "command", TCL_EXACT, &idx ) != TCL_OK )
+	{
 		return TCL_ERROR;
+	}
 
 	switch ( idx )
 	{
 		case ClassIdx:
-			Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "expander", -1 ) );
+			{
+				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "expander", -1 ) );
+			}
 			break;
 		case DeleteIdx:
-			return gnoclDelete ( interp, GTK_WIDGET ( expander ), objc, objv );
+			{
+				return gnoclDelete ( interp, GTK_WIDGET ( expander ), objc, objv );
+			}
 		case ConfigureIdx:
 			{
 				int ret = TCL_ERROR;
 
-				if ( gnoclParseAndSetOptions ( interp, objc - 1, objv + 1,
-											   expanderOptions, G_OBJECT ( expander ) ) == TCL_OK )
+				if ( gnoclParseAndSetOptions ( interp, objc - 1, objv + 1, expanderOptions, G_OBJECT ( expander ) ) == TCL_OK )
 				{
 					ret = configure ( interp, expander, expanderOptions );
 				}
@@ -154,17 +163,22 @@ int expanderFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * cons
 			break;
 		case CgetIdx:
 			{
-				int     idx;
+				int idx;
 
-				switch ( gnoclCget ( interp, objc, objv, G_OBJECT ( expander ),
-									 expanderOptions, &idx ) )
+				switch ( gnoclCget ( interp, objc, objv, G_OBJECT ( expander ), expanderOptions, &idx ) )
 				{
 					case GNOCL_CGET_ERROR:
-						return TCL_ERROR;
+						{
+							return TCL_ERROR;
+						}
 					case GNOCL_CGET_HANDLED:
-						return TCL_OK;
+						{
+							return TCL_OK;
+						}
 					case GNOCL_CGET_NOTHANDLED:
-						assert ( 0 );
+						{
+							assert ( 0 );
+						}
 				}
 
 				assert ( 0 );
