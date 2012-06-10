@@ -2,6 +2,19 @@
 	gnocl::toolbar 
 		o cget -data now works
 		
+	gnocl::list
+		o deprecate the use of gnocl::list command name in favour of gnocl::listView. 
+		  Possible conflicts can occur with the Tcl list command if proceedures
+		  are created within the gnocl namespace. These can be resolved using 
+		  the alternative gnocl::listStore command name or calling Tcl in the global namepsace, i.e. ::list.
+	
+	gnocl::tree
+		o deprecate the use of the gnocl::tree command name in favour of gnocl::treeStore.
+		  To maintain consistency with the changes applied to the gnocl::list widget renaming.
+		  
+		  NB: Whilst gnocl::list and gnocl::tree deprecated in favour of gnocl::listStor and gnocl::treeStore, 
+		  these changes will not affect the functionality of legacy Tcl scripts.
+		
 2012-04:
 	gnocl::box
 		o new command

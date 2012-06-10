@@ -3995,32 +3995,33 @@ int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl
 
 			break;
 		case InsertIdx:
-
-			if ( textInsert ( buffer, interp, objc, objv, cmdNo + 1 ) != TCL_OK )
 			{
-				return -1;
-			}
 
+				if ( textInsert ( buffer, interp, objc, objv, cmdNo + 1 ) != TCL_OK )
+				{
+					return -1;
+				}
+			}
 			/*  this action needs to emit an insert text signal */
 
 			break;
 
 		case MarkIdx:
-
-			if ( markCmd ( buffer, interp, objc, objv, cmdNo + 1 ) != TCL_OK )
 			{
-				return -1;
+				if ( markCmd ( buffer, interp, objc, objv, cmdNo + 1 ) != TCL_OK )
+				{
+					return -1;
+				}
 			}
-
 			break;
 
 		case TagIdx:
-
-			if ( tagCmd ( buffer, interp, objc, objv, cmdNo + 1 ) != TCL_OK )
 			{
-				return -1;
+				if ( tagCmd ( buffer, interp, objc, objv, cmdNo + 1 ) != TCL_OK )
+				{
+					return -1;
+				}
 			}
-
 			break;
 
 			/*  the widget dump has the format;

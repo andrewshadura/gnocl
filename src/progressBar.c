@@ -53,8 +53,13 @@ static int optProgressBarOrientation ( Tcl_Interp *interp, GnoclOption *opt, GOb
 /**
 \brief
 **/
+static const int visibleIdx = 0;
 static GnoclOption progressBarOptions[] =
 {
+	/* gnocl specific options */
+	{ "-visible", GNOCL_INT, NULL },
+
+	/* gtkProgress specific properties */
 	{ "-activityMode", GNOCL_BOOL, "activity-mode" },
 	{ "-fraction", GNOCL_DOUBLE, "fraction" },
 	{ "-pulseStep", GNOCL_DOUBLE, "pulse-step" },
@@ -63,7 +68,6 @@ static GnoclOption progressBarOptions[] =
 	{ "-textAlign", GNOCL_OBJ, "text-?align", gnoclOptBothAlign },
 	{ "-showText", GNOCL_BOOL, "show-text" },
 	{ "-name", GNOCL_STRING, "name" },
-	{ "-visible", GNOCL_BOOL, "visible" },
 	{ "-widthGroup", GNOCL_OBJ, "w", gnoclOptSizeGroup },
 	{ "-heightGroup", GNOCL_OBJ, "h", gnoclOptSizeGroup },
 	{ "-sizeGroup", GNOCL_OBJ, "s", gnoclOptSizeGroup },
@@ -71,17 +75,32 @@ static GnoclOption progressBarOptions[] =
 	{ NULL }
 };
 
-/*
-static int configure( Tcl_Interp *interp, GtkProgressBar *progressBar,
-      GnoclOption options[] )
-{
-   if( options[textIdx].status == GNOCL_STATUS_CHANGED )
-   {
-   }
 
-   return TCL_OK;
+static int configure ( Tcl_Interp *interp, GtkProgressBar *progressBar, GnoclOption options[] )
+{
+	if ( options[visibleIdx].status == GNOCL_STATUS_CHANGED )
+	{
+		g_print ( "-visible %d\n",options[visibleIdx].val.i );
+
+		if ( options[visibleIdx].val.i == 1 )
+		{
+		g_print("show\n");	
+			gtk_widget_show ( GTK_WIDGET ( progressBar ) );
+		}
+
+		else
+		{
+		g_print("hide\n");	
+			gtk_widget_hide ( GTK_WIDGET ( progressBar ) );
+		}
+
+
+
+	}
+
+	return TCL_OK;
 }
-*/
+
 
 /**
 \brief
@@ -117,9 +136,25 @@ int progressBarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * c
 
 		case ConfigureIdx:
 			{
+				/*
 				int ret = gnoclParseAndSetOptions ( interp, objc - 1, objv + 1, progressBarOptions, G_OBJECT ( progressBar ) );
 				gnoclClearOptions ( progressBarOptions );
 				return ret;
+				*/
+				int ret = TCL_ERROR;
+
+				if ( gnoclParseAndSetOptions ( interp, objc - 1, objv + 1,
+											   progressBarOptions, G_OBJECT ( progressBar ) ) == TCL_OK )
+				{
+					ret = configure ( interp, progressBar, progressBarOptions );
+				}
+
+				gnoclClearOptions ( progressBarOptions );
+
+				return ret;
+
+
+
 			}
 
 			break;
@@ -150,13 +185,18 @@ int gnoclProgressBarCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj
 	progressBar = GTK_PROGRESS_BAR ( gtk_progress_bar_new( ) );
 
 	ret = gnoclSetOptions ( interp, progressBarOptions,	G_OBJECT ( progressBar ), -1 );
-	/*
-	if( ret == TCL_OK )
-	   ret = configure( interp, progressBar, progressBarOptions );
-	*/
-	gnoclClearOptions ( progressBarOptions );
 
 	gtk_widget_show ( GTK_WIDGET ( progressBar ) );
+
+
+	if ( ret == TCL_OK )
+	{
+		ret = configure ( interp, progressBar, progressBarOptions );
+	}
+
+	gnoclClearOptions ( progressBarOptions );
+
+
 
 	return gnoclRegisterWidget ( interp, GTK_WIDGET ( progressBar ), progressBarFunc );
 }
