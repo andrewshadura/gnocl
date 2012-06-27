@@ -662,6 +662,7 @@ static GnoclCmd commands[] =
 	{ "update", gnoclUpdateCmd },
 	{ "resourceFile", gnoclResourceFileCmd },
 	{ "getStyle", gnoclGetStyleCmd },
+	{ "setStyle", gnoclSetStyleCmd },
 	{ "winfo", gnoclWinfoCmd },
 	{ "print", gnoclPrintCmd },
 	{ "pixBuf", gnoclPixBufCmd },

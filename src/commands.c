@@ -134,6 +134,11 @@ int gnoclSetOpts ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * cons
 }
 
 
+
+
+
+
+
 /*
 \brief  Spawn a background process.
 */
@@ -1390,6 +1395,45 @@ int gnoclStockItemCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj 
 	createStockItem ( interp, type, gtkName->str, label, icon );
 
 	return TCL_OK;
+}
+
+
+/**
+\brief 	Set style for specified widget.
+**/
+int gnoclSetStyleCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
+{
+
+	char *id = Tcl_GetString ( objv[1] );
+	char *style = Tcl_GetString ( objv[2] );
+	char *val = Tcl_GetString ( objv[3] );
+
+
+	g_print ( "%s %s %s\n", id, style, val );
+
+	GtkWidget *widget = gnoclGetWidgetFromName ( id, interp ) ;
+
+	char str[512];
+
+	sprintf ( str, "style \"%s_style\"\n{\n%s = \"%s\"\n}\nwidget \"*.%s\" style \"%s_style\"" , id, style, val, id, id );
+
+	g_print ( "%s\n", str );
+
+	/*
+	    gtk_rc_parse_string (
+	         "style \"myStyle\"\n"
+	         "{\n"
+	         "  GtkWidget::focus-padding = 0\n"
+	         "  GtkWidget::focus-line-width = 0\n"
+	         "  xthickness = 0\n"
+	         "  ythickness = 0\n"
+	         "}\n"
+	         "widget \"*.my-close-button\" style \"my-button-style\"");
+	*/
+	gtk_rc_parse_string ( str );
+
+	return TCL_OK;
+
 }
 
 

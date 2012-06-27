@@ -54,10 +54,15 @@ static int optProgressBarOrientation ( Tcl_Interp *interp, GnoclOption *opt, GOb
 \brief
 **/
 static const int visibleIdx = 0;
+static const int hHeightIdx = 1;
 static GnoclOption progressBarOptions[] =
 {
 	/* gnocl specific options */
 	{ "-visible", GNOCL_INT, NULL },
+	{ "-hHeight", GNOCL_INT, NULL },
+	{ "-hWidth", GNOCL_INT, NULL },
+	{ "-vHeight", GNOCL_INT, NULL },
+	{ "-vWidth", GNOCL_INT, NULL },
 
 	/* gtkProgress specific properties */
 	{ "-activityMode", GNOCL_BOOL, "activity-mode" },
@@ -72,31 +77,68 @@ static GnoclOption progressBarOptions[] =
 	{ "-heightGroup", GNOCL_OBJ, "h", gnoclOptSizeGroup },
 	{ "-sizeGroup", GNOCL_OBJ, "s", gnoclOptSizeGroup },
 	{ "-tooltip", GNOCL_OBJ, "", gnoclOptTooltip },
+	{ "-data", GNOCL_OBJ, "", gnoclOptData },
+
+	{ "-heightRequest", GNOCL_INT, "height-request" },
+	{ "-widthRequest", GNOCL_INT, "width-request" },
+
 	{ NULL }
 };
+
+
+
+/**
+\brief      Modify the line pattern template used to render tree heirarchy lines.
+\note       Maybe use
+             void gtk_rc_parse_string (const gchar *rc_string);
+             http://gtk2-engines-cleanice.sourcearchive.com/documentation/2.4.1-0ubuntu2/cleanice-style_8c-source.html
+**/
+static int setHHeight ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
+{
+
+#ifdef DEBUG_PROGRESS_BAR
+	g_print ( "progressbar height -this option currently under development.\n" );
+#endif
+	static const gchar *rc_string =
+	{
+		"style \"progressBarHeight\"\n"
+		"{\n"
+		"   GtkProgressBar::min-horizontal-bar-height = 15\n"
+		"}\n"
+		"\n"
+		"class \"GtkProgressBar\" style \"progressBarHeight\"\n"
+	};
+
+	gtk_rc_parse_string ( rc_string );
+
+	return TCL_OK;
+}
 
 
 static int configure ( Tcl_Interp *interp, GtkProgressBar *progressBar, GnoclOption options[] )
 {
 	if ( options[visibleIdx].status == GNOCL_STATUS_CHANGED )
 	{
-		g_print ( "-visible %d\n",options[visibleIdx].val.i );
+		g_print ( "-visible %d\n", options[visibleIdx].val.i );
 
 		if ( options[visibleIdx].val.i == 1 )
 		{
-		g_print("show\n");	
+			g_print ( "show\n" );
 			gtk_widget_show ( GTK_WIDGET ( progressBar ) );
 		}
 
 		else
 		{
-		g_print("hide\n");	
+			g_print ( "hide\n" );
 			gtk_widget_hide ( GTK_WIDGET ( progressBar ) );
 		}
-
-
-
 	}
+
+	if ( options[hHeightIdx].status == GNOCL_STATUS_CHANGED )
+	{
+		//setHHeight ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
+	}
+
 
 	return TCL_OK;
 }
@@ -182,6 +224,20 @@ int gnoclProgressBarCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj
 		return TCL_ERROR;
 	}
 
+	static const gchar *rc_string =
+	{
+		"style \"progressBarHeight\"\n"
+		"{\n"
+		"   GtkProgressBar::min-horizontal-bar-height = 15\n"
+		"}\n"
+		"\n"
+		"class \"GtkProgressBar\" style \"progressBarHeight\"\n"
+	};
+
+	gtk_rc_parse_string ( rc_string );
+
+
+
 	progressBar = GTK_PROGRESS_BAR ( gtk_progress_bar_new( ) );
 
 	ret = gnoclSetOptions ( interp, progressBarOptions,	G_OBJECT ( progressBar ), -1 );
@@ -195,7 +251,6 @@ int gnoclProgressBarCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj
 	}
 
 	gnoclClearOptions ( progressBarOptions );
-
 
 
 	return gnoclRegisterWidget ( interp, GTK_WIDGET ( progressBar ), progressBarFunc );

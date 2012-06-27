@@ -435,11 +435,6 @@ int gnoclOptDefaultWidget (	Tcl_Interp *interp,	GnoclOption *opt, GObject *obj,	
 	return TCL_OK;
 }
 
-
-
-
-
-
 /**
 \brief      This is simply returning, so the arrows are being set elsewhere!
 **/

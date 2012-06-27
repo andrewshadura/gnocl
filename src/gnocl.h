@@ -621,6 +621,7 @@ Tcl_ObjCmdProc gnoclMainLoop;
 Tcl_ObjCmdProc gnoclUpdateCmd;
 Tcl_ObjCmdProc gnoclResourceFileCmd;
 Tcl_ObjCmdProc gnoclGetStyleCmd;
+Tcl_ObjCmdProc gnoclSetStyleCmd;
 Tcl_ObjCmdProc gnoclWinfoCmd;
 Tcl_ObjCmdProc gnoclScreenCmd;
 Tcl_ObjCmdProc gnoclPrintCmd;

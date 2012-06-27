@@ -1,3 +1,17 @@
+2012-06:
+	gnocl::text
+		o new widget sub-command
+			getSelectionBounds
+			Returns list containing the limits of the active selection in the form
+			startRow startCol endRow endCol. If there is no selection, then an empty
+			string is returned.
+			
+2012-06:
+	gnocl::progressBar
+		o option -visible now working correctly.
+		o new options 
+			-heightRequet, -widthRequest
+		
 2012-05:
 	gnocl::toolbar 
 		o cget -data now works

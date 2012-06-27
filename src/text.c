@@ -13,6 +13,7 @@
 
 /*
    History:
+   2012-06  added selectionBounds to get widget command.
    2011-07  added tag sub-commands
 				names, raise, lower
     		insert command now detects pango markup text
@@ -3151,7 +3152,7 @@ int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl
 		"dump", "signalEmit", "mark", "gotoWordStart",
 		"gotoWordEnd", "search", "class", "spawn", "replace",
 		"serialize", "deSerialize", "save", "load", "print", "lorem",
-		"clear", "popup",
+		"clear", "popup", "getSelectionBounds",
 
 		NULL
 	};
@@ -3167,7 +3168,7 @@ int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl
 		DumpIdx, SignalEmitIdx, MarkIdx, GotoWordStartIdx,
 		GotoWordEndIdx, SearchIdx, ClassIdx, SpawnIdx, ReplaceIdx,
 		SerializeIdx, DeSerializeIdx, SaveIdx, LoadIdx, PrintIdx, LoremIdx,
-		ClearIdx, PopupIdx,
+		ClearIdx, PopupIdx, GetSelectionBounds
 	};
 
 
@@ -3994,6 +3995,45 @@ int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl
 			}
 
 			break;
+
+		case GetSelectionBounds:
+			{
+				GtkTextIter startIter, endIter;
+
+				int           row, col;
+				Tcl_Obj       *resList;
+
+				if ( gtk_text_buffer_get_selection_bounds ( buffer, &startIter, &endIter ) )
+				{
+
+					resList = Tcl_NewListObj ( 0, NULL );
+
+					row = gtk_text_iter_get_line ( &startIter );
+					col = gtk_text_iter_get_line_offset ( &startIter );
+
+					Tcl_ListObjAppendElement ( interp, resList, Tcl_NewIntObj ( row ) );
+					Tcl_ListObjAppendElement ( interp, resList, Tcl_NewIntObj ( col ) );
+
+					row = gtk_text_iter_get_line ( &endIter );
+					col = gtk_text_iter_get_line_offset ( &endIter );
+
+					Tcl_ListObjAppendElement ( interp, resList, Tcl_NewIntObj ( row ) );
+					Tcl_ListObjAppendElement ( interp, resList, Tcl_NewIntObj ( col ) );
+
+					Tcl_SetObjResult ( interp, resList );
+					return TCL_OK;
+
+				}
+
+				/* return null string if there is no selection */
+				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "", -1  ) );
+				return TCL_OK;
+
+
+			}
+			break;
+
+
 		case InsertIdx:
 			{
 
