@@ -2,6 +2,8 @@
 \brief
 \todo	add getColumn and getRow widget commands
 \history
+   2012-07: columnConfigure
+            added option: -widget (embed widget within column header)
    2011-12: insertRow
    2011-06: getFullList
    2011-05: added options: -onInteractiveSearch
@@ -201,13 +203,15 @@ static GnoclOption treeListOptions[] =
 */
 
 static const int widthIdx              = 0;
-
+static const int widgetIdx              = 1;
 /**
 \brief	Column Options
 **/
 static GnoclOption colOptions[] =
 {
 	{ "-width", GNOCL_INT, NULL },               /* 0 */
+	{ "-widget", GNOCL_STRING, NULL},
+	
 	{ "-clickable", GNOCL_BOOL, "clickable" },
 	{ "-maxWidth", GNOCL_INT, "max-width" },
 	{ "-minWidth", GNOCL_INT, "min-width" },
@@ -2787,6 +2791,7 @@ static int columnConfigure ( TreeListParams * para, Tcl_Interp * interp, int obj
 		appendOptions ( options, toggleRenderOptions );
 	}
 
+
 	else
 	{
 		options = g_new ( GnoclOption, noColOptions + noCellRenderOptions + 1 );
@@ -2815,6 +2820,21 @@ static int columnConfigure ( TreeListParams * para, Tcl_Interp * interp, int obj
 		gtk_tree_view_column_set_sizing ( column, GTK_TREE_VIEW_COLUMN_FIXED );
 		gtk_tree_view_column_set_fixed_width ( column, options[widthIdx].val.i );
 	}
+
+	if ( options[widgetIdx].status == GNOCL_STATUS_CHANGED )
+	{
+		
+		GtkWidget *widget = NULL;
+		
+		widget = gnoclGetWidgetFromName ( Tcl_GetString ( objv[4] ) , interp);
+		
+		if (widget == NULL) {
+			return TCL_ERROR;			
+		} else {
+			gtk_tree_view_column_set_widget  (column, widget );
+		}
+	}
+
 
 	if ( options[startRenderOptions].status == GNOCL_STATUS_CHANGED )
 	{

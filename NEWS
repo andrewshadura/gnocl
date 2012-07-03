@@ -1,3 +1,9 @@
+2012-07: 
+	gnocl::tree
+	gnocl::list
+		o columnConfigure
+            added option: -widget (embed widget within column header)
+            
 2012-06:
 	gnocl::text
 		o new widget sub-command
