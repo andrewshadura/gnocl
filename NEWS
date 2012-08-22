@@ -1,6 +1,14 @@
+2012-08:
+	gnocl::text
+		o new option
+			-variable
+			
+	gnocl::label
+		o new option
+			-resizable
+			
 2012-07: 
-	gnocl::tree
-	gnocl::list
+	gnocl::tree & gnocl::list
 		o columnConfigure
             added option: -widget (embed widget within column header)
             

@@ -59,6 +59,28 @@ typedef struct
 	gboolean	check;
 } EntryParams;
 
+
+typedef struct
+{
+	GtkButton   *button;
+	Tcl_Interp  *interp;
+	char        *name;
+	char        *iconName;
+} ButtonParams;
+
+
+typedef struct
+{
+	GtkTextView       *textView;
+	GtkScrolledWindow *scrolled;
+	Tcl_Interp        *interp;
+	char              *name;
+	char              *textVariable;
+	char              *onChanged;
+	int               inSetVar;
+} TextParams;
+
+
 typedef struct
 {
 	GtkLabel    *label;
@@ -305,6 +327,13 @@ typedef struct
 {
 	GdkPixbuf *pixbuf;
 	cairo_t *cr;
-	Tcl_Interp  *interp;
-	char        *fname;
+	Tcl_Interp *interp;
+	char *fname;
 } PixbufParams;
+
+typedef struct
+{
+	GtkAccelGroup *group;
+	GtkWindow *window;
+	Tcl_Interp *interp;
+} AccGrpParams;

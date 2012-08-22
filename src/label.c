@@ -12,6 +12,7 @@
 
 /*
    History:
+   2012-08: added -resizable
    2011-06: added -cursorPos, -singleLine, -trackVisitedLinks, -useUnderline
             resolved problems with use of pango markup with the -text option
    2010-01: added -ellipsize
@@ -56,14 +57,22 @@ static const int onChangedIdx = 1;
 static const int valueIdx = 2;
 static const int textIdx = 3;
 static const int cursorIdx = 4;
+static const int widgetIdx = 5;
+static const int mnemonicIdx = 6;
+static const int resizableIdx = 7;
 
 static GnoclOption labelOptions[] =
 {
 	/* gnocl specific options */
 	{ "-textVariable", GNOCL_STRING, NULL },            /* 0 */
 	{ "-onChanged", GNOCL_STRING, NULL },               /* 1 */
+	{ "-value", GNOCL_STRING, NULL},
 	{ "-text", GNOCL_STRING, NULL},                     /* 3 */
 	{ "-showCursor", GNOCL_BOOL, NULL},					/* 4 */
+	{ "-mnemonicWidget", GNOCL_STRING, NULL },
+	{ "-mnemonicText", GNOCL_STRING, NULL },
+	{ "-resizable", GNOCL_BOOL, NULL },
+
 
 	/* gtklabel specific properties */
 	{ "-angle", GNOCL_DOUBLE, "angle" },
@@ -74,7 +83,6 @@ static GnoclOption labelOptions[] =
 	//{ "-label", GNOCL_STRING, "label" },
 	{ "-maxWidthChars", GNOCL_INT, "max-width-chars" },
 	//{ "-mneumonicKeyval", GNOCL_INT, "mnemonic-keyval" },
-	{ "-mnemonicWidget", GNOCL_STRING, NULL },
 	//{ "-pattern", GNOCL_STRING, "pattern" },
 	{ "-selectable", GNOCL_BOOL, "selectable" },
 	//{ "-selectionBound", GNOCL_INT,"selection-bound" },
@@ -125,6 +133,16 @@ typedef struct
 
 static int setVal ( GtkLabel *label, const char *txt );
 static void changedFunc ( GtkWidget *widget, gpointer data );
+
+
+/**
+\brief
+**/
+static void doAllocate ( GtkWidget *label, GtkAllocation *allocation, gpointer data )
+{
+	gtk_widget_set_size_request ( label, allocation->width - 2, -1 );
+}
+
 
 /**
 \brief
@@ -215,9 +233,7 @@ static int setTextVariable (	LabelParams *para,	const char *val )
 /**
 \brief
 **/
-static void changedFunc (
-	GtkWidget *widget,
-	gpointer data )
+static void changedFunc ( GtkWidget *widget, gpointer data )
 {
 #ifdef DEBUG_LABEL
 	printf ( "label/staticFuncs/changedFunc\n" );
@@ -233,9 +249,7 @@ static void changedFunc (
 /**
 \brief
 **/
-static void destroyFunc (
-	GtkWidget *widget,
-	gpointer data )
+static void destroyFunc ( GtkWidget *widget, gpointer data )
 {
 #ifdef DEBUG_LABEL
 	printf ( "label/staticFuncs/destroyFunc\n" );
@@ -300,8 +314,41 @@ static int configure ( Tcl_Interp *interp, LabelParams *para, GnoclOption option
 
 	if ( options[textIdx].status == GNOCL_STATUS_CHANGED )
 	{
-		char *str = options[valueIdx].val.str;
+		char *str = options[textIdx].val.str;
 		gtk_label_set_markup ( para->label, str );
+
+	}
+
+
+	if ( options[widgetIdx].status == GNOCL_STATUS_CHANGED )
+	{
+
+		GtkWidget *widget = gnoclGetWidgetFromName ( options[widgetIdx].val.str, interp );
+		gtk_label_set_mnemonic_widget ( para->label, widget );
+
+	}
+
+	if ( options[mnemonicIdx].status == GNOCL_STATUS_CHANGED )
+	{
+
+		gtk_label_set_markup_with_mnemonic ( para->label, options[mnemonicIdx].val.str );
+
+	}
+
+	if ( options[resizableIdx].status == GNOCL_STATUS_CHANGED )
+	{
+		if ( options[resizableIdx].val.b )
+		{
+			g_signal_connect ( G_OBJECT ( para->label ), "size-allocate", G_CALLBACK ( doAllocate ), NULL );
+		}
+
+		else
+		{
+			g_signal_connect ( G_OBJECT ( para->label ), "size-allocate", NULL, NULL );
+		}
+
+
+
 	}
 
 	return TCL_OK;
@@ -330,7 +377,7 @@ static int cget ( Tcl_Interp *interp, LabelParams *para, GnoclOption options[], 
 		obj = Tcl_NewStringObj ( para->onChanged ? para->onChanged : "", -1 );
 	}
 
-	else if ( idx == valueIdx )
+	else if ( idx == textIdx )
 	{
 		obj = Tcl_NewStringObj ( gtk_label_get_text ( para->label ), -1 );
 	}
@@ -347,11 +394,7 @@ static int cget ( Tcl_Interp *interp, LabelParams *para, GnoclOption options[], 
 /**
 \brief
 **/
-int labelFunc (
-	ClientData data,
-	Tcl_Interp *interp,
-	int objc,
-	Tcl_Obj * const objv[] )
+int labelFunc (	ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
 	static const char *cmds[] = { "delete", "configure", "cget", "onChanged", "class", NULL };
 	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, OnChangedIdx, ClassIdx};
@@ -366,24 +409,28 @@ int labelFunc (
 		return TCL_ERROR;
 	}
 
-	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "command",
-							   TCL_EXACT, &idx ) != TCL_OK )
+	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "command", TCL_EXACT, &idx ) != TCL_OK )
+	{
 		return TCL_ERROR;
+	}
 
 	switch ( idx )
 	{
 		case ClassIdx:
-			Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "label", -1 ) );
+			{
+				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "label", -1 ) );
+			}
 			break;
 		case DeleteIdx:
-			return gnoclDelete ( interp, widget, objc, objv );
+			{
+				return gnoclDelete ( interp, widget, objc, objv );
+			}
 
 		case ConfigureIdx:
 			{
 				int ret = TCL_ERROR;
 
-				if ( gnoclParseAndSetOptions ( interp, objc - 1, objv + 1,
-											   labelOptions, G_OBJECT ( widget ) ) == TCL_OK )
+				if ( gnoclParseAndSetOptions ( interp, objc - 1, objv + 1, labelOptions, G_OBJECT ( widget ) ) == TCL_OK )
 				{
 					ret = configure ( interp, para, labelOptions );
 				}
@@ -436,11 +483,7 @@ int labelFunc (
 /**
 \brief
 **/
-int gnoclLabelCmd (
-	ClientData data,
-	Tcl_Interp *interp,
-	int objc,
-	Tcl_Obj * const objv[] )
+int gnoclLabelCmd (	ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
 #ifdef DEBUG_LABEL
 	printf ( "label/staticFuncs/gnoclLabelCmd\n" );
@@ -457,7 +500,20 @@ int gnoclLabelCmd (
 
 	para = g_new ( LabelParams, 1 );
 
-	para->label = GTK_LABEL ( gtk_label_new ( NULL ) );
+
+	if ( labelOptions[mnemonicIdx].status == GNOCL_STATUS_CHANGED )
+	{
+
+		para->label = GTK_LABEL ( gtk_label_new_with_mnemonic ( NULL ) );
+
+	}
+
+	else
+	{
+
+		para->label = GTK_LABEL ( gtk_label_new ( NULL ) );
+	}
+
 	para->interp = interp;
 	para->textVariable = NULL;
 	para->onChanged = NULL;

@@ -91,7 +91,7 @@ canpixbufs be created and modified using standard properties?
 */
 static GnoclOption pixBufOptions[] =
 {
-	{ "-width", GNOCL_BOOL, "width"}, /* 0 */
+	{ "-width", GNOCL_OBJ, "width"}, /* 0 */
 	{ "-height", GNOCL_OBJ, "height"}, /* 1 */
 	{ "-bitsPerSample", GNOCL_OBJ, "bits-per-sample"}, /* 2 */
 	{ "-alpha", GNOCL_OBJ, "has-alpha"}, /* 3 */

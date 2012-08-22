@@ -1117,8 +1117,6 @@ static int menuButtonConfigure ( Tcl_Interp *interp, ToolButtonMenuParams *para,
 
 		icon_widget = gnoclGetWidgetFromName ( options[menuButtonIconWidgetIdx].val.str, interp );
 
-		para->item = gtk_menu_tool_button_new ( icon_widget, label );
-
 	}
 
 	else
@@ -1127,6 +1125,9 @@ static int menuButtonConfigure ( Tcl_Interp *interp, ToolButtonMenuParams *para,
 		para->item = gtk_menu_tool_button_new_from_stock  ( GTK_STOCK_ABOUT );
 
 	}
+
+	para->item = gtk_menu_tool_button_new ( icon_widget, label );
+
 
 	/* method 2) create a custom widget */
 

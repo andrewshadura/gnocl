@@ -63,13 +63,12 @@ static GnoclOption boxOptions[] =
 	{ "-width", GNOCL_INT, "width-request" },     /* these must be */
 	{ "-height", GNOCL_INT, "height-request" },   /* before -visible! */
 
-
+	{ "-onClicked", GNOCL_OBJ, "", gnoclOptOnLinkButton },
 	{ "-onButtonPress", GNOCL_OBJ, "P", gnoclOptOnButton },
 	{ "-onButtonRelease", GNOCL_OBJ, "R", gnoclOptOnButton },
 	{ "-onMotion", GNOCL_OBJ, "", gnoclOptOnMotion },
 	{ "-onEnter", GNOCL_OBJ, "E", gnoclOptOnEnterLeave },
 	{ "-onLeave", GNOCL_OBJ, "L", gnoclOptOnEnterLeave },
-
 	{ "-onScroll", GNOCL_OBJ, "", gnoclOptOnScroll},
 
 	{ NULL }

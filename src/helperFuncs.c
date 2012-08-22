@@ -931,6 +931,26 @@ int gnoclGetOrientationType ( Tcl_Interp *interp, Tcl_Obj *obj, GtkOrientation *
 }
 
 
+/**
+ */
+int gnoclGetWindowType ( Tcl_Interp *interp, Tcl_Obj *obj, GtkWindowType *type )
+{
+	const char *txt[] = { "popup", "toplevel", NULL };
+
+	GtkWindowType types[] = { GTK_WINDOW_POPUP, GTK_WINDOW_TOPLEVEL };
+
+	int idx;
+
+	if ( Tcl_GetIndexFromObj ( interp, obj, txt, "types", TCL_EXACT, &idx ) != TCL_OK )
+	{
+		return TCL_ERROR;
+	}
+
+	*type = types[idx];
+
+	return TCL_OK;
+}
+
 
 /**
 \brief	This function simply loads a single file from disk into memory.

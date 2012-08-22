@@ -19,6 +19,7 @@
 
 #include "tcl.h"
 #include <gtk/gtk.h>
+#include <gdk/gdkkeysyms.h>
 
 #include <string.h>
 #include <assert.h>
@@ -444,7 +445,7 @@ Tcl_Obj *gnoclCgetLinkButtonText ( Tcl_Interp *interp, GtkWidget *widget );
 int gnoclConfigLinkButtonText ( Tcl_Interp *interp, GtkWidget *widget, Tcl_Obj *txtObj );
 int gnoclLinkButtonCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] );
 int gnoclArrowButtonCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] );
-int gnoclAcceleratorCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] );
+//int gnoclAcceleratorCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] );
 
 int gnoclDialCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] );
 int gnoclSpinnerCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] );
@@ -651,6 +652,9 @@ Tcl_ObjCmdProc gnoclExpanderCmd;
 Tcl_ObjCmdProc gnoclFileSelectionCmd;
 Tcl_ObjCmdProc gnoclFileChooserCmd;
 
+Tcl_ObjCmdProc gnoclAcceleratorCmd;
+
+
 /* move megawidgets into a separate package? */
 Tcl_ObjCmdProc gnoclLabelEntryCmd;
 
@@ -722,6 +726,9 @@ Tcl_ObjCmdProc gnoclExecCmd;
 Tcl_ObjCmdProc gnoclSetOpts;
 Tcl_ObjCmdProc gnoclShowUriCmd;
 Tcl_ObjCmdProc gnoclCairoCmd;
+
+
+Tcl_ObjCmdProc gnoclGrabCmd;
 
 #ifdef GNOCL_USE_GNOME
 Tcl_ObjCmdProc gnoclAboutCmd;

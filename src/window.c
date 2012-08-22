@@ -118,6 +118,35 @@
   http://library.gnome.org/devel/libglade/unstable/index.html
 */
 
+
+static gboolean popup_grab_on_window ( GdkWindow *window, gboolean grab_keyboard )
+{
+
+	g_print ( "%s\n", __FUNCTION__ );
+
+	/*
+		if ( ( gdk_pointer_grab ( window, TRUE,
+								  GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK |
+								  GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK |
+								  GDK_POINTER_MOTION_MASK,
+								  NULL, NULL, GDK_CURRENT_TIME ) == 0 ) )
+		{
+			if ( !grab_keyboard || gdk_keyboard_grab ( window, TRUE, GDK_CURRENT_TIME ) == 0 )
+			{
+				return TRUE;
+			}
+
+			else
+			{
+				gdk_display_pointer_ungrab ( gdk_window_get_display ( window ), GDK_CURRENT_TIME );
+				return FALSE;
+			}
+		}
+	*/
+	return FALSE;
+}
+
+
 /**
 \brief      Load buffer, obtain alpha channel and return pointer.
 \author     William J Giddings
@@ -310,7 +339,7 @@ static const int widthIdx       = 6;
 static const int heightIdx      = 7;
 static const int setSizeIdx		= 8;
 static const int defaultIdx		= 9;
-
+static const int typeIdx	= 10;
 
 static GnoclOption windowOptions[] =
 {
@@ -326,6 +355,9 @@ static GnoclOption windowOptions[] =
 
 	/* set default widget */
 	{ "-default", GNOCL_OBJ, "", gnoclOptDefaultWidget },	 /* 9 */
+//	{ "-typeHint", GNOCL_OBJ, "", gnoclOptWindowTypeHint }, /* 10 */
+	{ "-type", GNOCL_OBJ, NULL }, /* 10 */
+
 
 	{ "-allowGrow", GNOCL_BOOL, "allow-grow" },
 	{ "-allowShrink", GNOCL_BOOL, "allow-shrink" },
@@ -352,7 +384,11 @@ static GnoclOption windowOptions[] =
 	{ "-sensitive", GNOCL_BOOL, "sensitive" },
 	{ "-title", GNOCL_STRING, "title" },
 	{ "-widthRequest", GNOCL_INT, "width-request" },
-	{ "-typeHint", GNOCL_OBJ, "", gnoclOptWindowTypeHint },
+
+	{ "-onEnter", GNOCL_OBJ, "E", gnoclOptOnEnterLeave },
+	{ "-onLeave", GNOCL_OBJ, "L", gnoclOptOnEnterLeave },
+
+
 	{ "-tooltip", GNOCL_OBJ, "", gnoclOptTooltip },
 
 	{ "-transient", GNOCL_OBJ, "", gnoclOptTransientWindow },
@@ -762,28 +798,19 @@ int gnoclOptBackgroundImage (   Tcl_Interp  *interp, GnoclOption *opt,  GObject 
 
 
 /**
-\brief    Description yet to be added.
+\brief   Normal or Popup Window
 */
 int gnoclOptWindowTypeHint ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
 	const char *txt[] =
 	{
-		"normal", "dialog", "menu",
-		"toolbar", "splashscreen",
-		"utility", "dock", "desktop",
+		"normal", "popup",
 		NULL
 	};
 
-	GdkWindowTypeHint types[] =
+	GtkWindowType types[] =
 	{
-		GDK_WINDOW_TYPE_HINT_NORMAL,
-		GDK_WINDOW_TYPE_HINT_DIALOG,
-		GDK_WINDOW_TYPE_HINT_MENU,
-		GDK_WINDOW_TYPE_HINT_TOOLBAR,
-		GDK_WINDOW_TYPE_HINT_SPLASHSCREEN,
-		GDK_WINDOW_TYPE_HINT_UTILITY,
-		GDK_WINDOW_TYPE_HINT_DOCK,
-		GDK_WINDOW_TYPE_HINT_DESKTOP
+		GTK_WINDOW_TOPLEVEL, GTK_WINDOW_POPUP
 	};
 
 	if ( ret == NULL ) /* set value */
@@ -791,7 +818,11 @@ int gnoclOptWindowTypeHint ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj,
 		int idx;
 
 		if ( Tcl_GetIndexFromObj ( interp, opt->val.obj, txt, "type hint", TCL_EXACT, &idx ) != TCL_OK )
+		{
 			return TCL_ERROR;
+		}
+
+		g_print ( "type = %s %d %d\n", opt->val.str, idx, types[idx] );
 
 		gtk_window_set_type_hint ( GTK_WINDOW ( obj ), types[idx] );
 	}
@@ -988,7 +1019,6 @@ int windowFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const 
 	switch ( idx )
 	{
 
-
 		case PresentIdx:
 			{
 				gtk_window_present ( window );
@@ -1030,7 +1060,6 @@ int windowFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const 
 
 				gtk_widget_grab_focus ( widget );
 
-
 			}
 			break;
 
@@ -1063,9 +1092,6 @@ int windowFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const 
 				/* restore original window position */
 				gtk_window_move ( window, x, y );
 
-
-
-
 			}
 			break;
 		case HideIdx:
@@ -1087,13 +1113,57 @@ int windowFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const 
 			/* WJG added 16/01/09 */
 		case GrabIdx:
 			{
-				gtk_grab_add ( window );
-			}
+				g_print ( "GRAB %s\n", Tcl_GetString ( objv[2] ) );
 
+				//popup_grab_on_window ( window->window, 1 );
+
+				static const char *opts[] =
+				{
+					"pointer", "keyboard", "both",
+					NULL
+				};
+
+				enum optsIdx
+				{
+					pIdx, kIdx, bIdx,
+				};
+
+				if ( Tcl_GetIndexFromObj ( interp, objv[2], opts, "options", TCL_EXACT, &idx ) != TCL_OK )
+				{
+					return TCL_ERROR;
+				}
+
+				switch ( idx )
+				{
+					case pIdx:
+						{
+							gdk_pointer_grab ( GTK_WIDGET ( window )->window , TRUE,
+											   GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_POINTER_MOTION_MASK,
+											   NULL, NULL, GDK_CURRENT_TIME );
+						}
+						break;
+					case kIdx:
+						{
+							gdk_keyboard_grab ( GTK_WIDGET ( window )->window, TRUE, GDK_CURRENT_TIME );
+						}
+						break;
+					case bIdx:
+					default:
+						{
+							gdk_pointer_grab ( GTK_WIDGET ( window )->window , TRUE,
+											   GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_POINTER_MOTION_MASK,
+											   NULL, NULL, GDK_CURRENT_TIME );
+							gdk_keyboard_grab ( GTK_WIDGET ( window )->window, TRUE, GDK_CURRENT_TIME );
+						}
+
+						//gtk_grab_add ( window );
+				}
+			}
 			break;
 		case UngrabIdx:
 			{
-				gtk_grab_remove ( window );
+				/* problems here */
+				//gdk_display_pointer_ungrab ( gdk_window_get_display ( GTK_WIDGET ( window )->window) , GDK_CURRENT_TIME );
 			}
 
 			break;
@@ -1219,14 +1289,12 @@ int windowFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const 
 
 /**
 **/
-int gnoclWindowCmd (
-	ClientData data,
-	Tcl_Interp *interp,
-	int objc,
-	Tcl_Obj * const objv[] )
+int gnoclWindowCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * const objv[] )
 {
 	int        ret;
 	GtkWindow  *window;
+
+	GtkWindowType type = GTK_WINDOW_TOPLEVEL;
 
 	assert ( strcmp ( windowOptions[visibleIdx].optName, "-visible" ) == 0 );
 
@@ -1236,7 +1304,26 @@ int gnoclWindowCmd (
 		return TCL_ERROR;
 	}
 
-	window = GTK_WINDOW ( gtk_window_new ( GTK_WINDOW_TOPLEVEL ) );
+	if ( windowOptions[typeIdx].status == GNOCL_STATUS_CHANGED )
+	{
+		if ( gnoclGetWindowType ( interp, windowOptions[typeIdx].val.obj, &type ) != TCL_OK )
+		{
+			gnoclClearOptions ( windowOptions );
+			return TCL_ERROR;
+		}
+	}
+
+	if ( type == GTK_WINDOW_POPUP )
+	{
+		window = GTK_WINDOW ( gtk_window_new ( GTK_WINDOW_POPUP ) );
+		//gtk_set_modal(window,1);
+	}
+
+	else
+	{
+		window = GTK_WINDOW ( gtk_window_new ( GTK_WINDOW_TOPLEVEL ) );
+	}
+
 
 	/* change window type prior to display */
 	if ( windowOptions[setSizeIdx].status == GNOCL_STATUS_CHANGED )
@@ -1267,7 +1354,6 @@ int gnoclWindowCmd (
 		gtk_window_set_default_size ( window, width, height );
 
 	}
-
 
 	/* WJG (28/03/08) New windows are always centred on screen */
 	gtk_window_set_position ( window , GTK_WIN_POS_CENTER );

@@ -150,7 +150,9 @@ static int configure ( Tcl_Interp *interp, GtkImage *image, GnoclOption options[
 					}
 
 					else if ( gtk_image_get_storage_type ( image ) == GTK_IMAGE_STOCK )
+					{
 						gtk_image_get_stock ( image, NULL, &size );
+					}
 
 					gtk_image_set_from_stock ( image, item.stock_id, size );
 				}

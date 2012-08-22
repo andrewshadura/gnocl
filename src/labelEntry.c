@@ -12,6 +12,8 @@ date	20012
 /**
 \par Modification History
 \verbatim
+	2012-08:	new option
+				-hasFocus
 	2012-01:	began development
 \endverbatim
 **/
@@ -57,6 +59,7 @@ static const int valueIdx = 9;
 static const int variableIdx = 10;
 static const int onChangedIdx = 11;
 static const int onActivateIdx = 12;
+static const int hasFocusIdx = 12;
 
 //static enum  optsIdx { CollapsedIdx, EllipsizeIdx, ReliefIdx, LabelIdx, LabelWidgetIdx };
 
@@ -81,6 +84,8 @@ static GnoclOption labelEntryOptions[] =
 	{ "-variable", GNOCL_STRING, NULL },      /* 10 */
 	{ "-onChanged", GNOCL_STRING, NULL },     /* 11 */
 	{ "-onActivate", GNOCL_STRING, NULL},     /* 12 */
+	
+	{ "-hasFocus", GNOCL_BOOL, NULL },        /* 12 */
 
 	//{ "-widthChars", GNOCL_INT, "width-chars" },
 	{ "-data", GNOCL_OBJ, "", gnoclOptData },
@@ -233,6 +238,11 @@ static int configure ( Tcl_Interp *interp, LabelEntryParams *para, GnoclOption o
 		setVariable ( para, str );
 	}
 
+	if ( options[hasFocusIdx].status == GNOCL_STATUS_CHANGED )
+	{
+		char *str = options[valueIdx].val.str;
+		gtk_widget_grab_focus (para->entry);
+	}
 
 	/*--------------------_*/
 

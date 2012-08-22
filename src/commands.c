@@ -578,13 +578,14 @@ int gnoclGrabCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * con
 
 				widget = gnoclGetWidgetFromName (  Tcl_GetString ( objv[2] ), interp );
 
-				gdk_pointer_grab ( widget->window ,
+				g_print ( "grab on %s\n", Tcl_GetString ( objv[2] ) );
+
+				gdk_pointer_grab ( GTK_WIDGET ( widget )->window ,
 								   TRUE,
 								   GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_POINTER_MOTION_MASK,
 								   NULL, NULL, GDK_CURRENT_TIME );
-				break;
 			}
-
+			break;
 			/* deny any keyboard events, ie. grab all keyboard inputs */
 		case KeyboardIdx:
 			{
@@ -592,10 +593,10 @@ int gnoclGrabCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * con
 				guint32 activate_time;
 
 				widget = gnoclGetWidgetFromName (  Tcl_GetString ( objv[2] ), interp );
-				gdk_keyboard_grab ( widget->window , TRUE, GDK_CURRENT_TIME );
-				break;
-			}
+				gdk_keyboard_grab ( GTK_WIDGET ( widget )->window , TRUE, GDK_CURRENT_TIME );
 
+			}
+			break;
 			/* relase all grabs applied to the current display */
 		case ReleaseIdx:
 			{
@@ -1678,9 +1679,14 @@ int gnoclConfigureCmd (	ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj 
 	if ( options[tooltipIdx].status == GNOCL_STATUS_CHANGED )
 	{
 		if ( options[tooltipIdx].val.b )
+		{
 			gtk_tooltips_enable ( gnoclGetTooltips() );
+		}
+
 		else
+		{
 			gtk_tooltips_disable ( gnoclGetTooltips() );
+		}
 	}
 
 	ret = TCL_OK;

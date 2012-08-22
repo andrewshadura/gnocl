@@ -13,6 +13,9 @@
 
 /*
    History:
+   2012-08  migrated to the use of TextParams to hold widget details
+			implemented -variable option
+   2012-07	added grabFocus, same effect as setting the -hasFocus option
    2012-06  added selectionBounds to get widget command.
    2011-07  added tag sub-commands
 				names, raise, lower
@@ -85,6 +88,7 @@
 **/
 
 #include "gnocl.h"
+#include "gnoclparams.h"
 #include <string.h>
 #include <assert.h>
 
@@ -95,8 +99,169 @@ static void gnoclGetTagRanges ( Tcl_Interp * interp, GtkTextBuffer * buffer, gch
 static void getTagName ( GtkTextTag *tag, gpointer data );
 static void gnoclGetTagProperties ( GtkTextTag * tag, Tcl_Obj *resList );
 
+static int setTextVariable ( TextParams *para, const char *val );
+static void changedFunc ( GtkWidget *widget, gpointer data );
+static void destroyFunc ( GtkWidget *widget, gpointer data );
+static int setVal ( GtkTextBuffer *buffer, const char *txt );
+static char *traceFunc ( ClientData data, Tcl_Interp *interp, const char *name1, const char *name2,	int flags );
+static int doCommand ( TextParams *para, const char *val, int background );
 
 static gint usemarkup = 0;
+
+
+/***********************************************************************
+ * trace funcs
+***********************************************************************/
+
+/**
+\brief
+**/
+static void destroyFunc ( GtkWidget *widget, gpointer data )
+{
+#ifdef DEBUG_TEXT
+	printf ( "%s\n",__FUNCTION__ );
+#endif
+
+
+	TextParams *para = ( TextParams * ) data;
+
+	gnoclForgetWidgetFromName ( para->name );
+	Tcl_DeleteCommand ( para->interp, para->name );
+
+	gnoclAttachOptCmdAndVar (
+		NULL, &para->onChanged,
+		NULL, &para->textVariable,
+		"changed", G_OBJECT ( para->textView ),
+		G_CALLBACK ( changedFunc ), para->interp, traceFunc, para );
+
+	g_free ( para->textVariable );
+	g_free ( para->name );
+	g_free ( para );
+}
+
+/**
+\brief
+**/
+static void changedFunc ( GtkWidget *widget, gpointer data )
+{
+#ifdef DEBUG_TEXT
+	printf ( "%s\n",__FUNCTION__ );
+#endif
+
+	TextParams *para = ( TextParams * ) data;
+
+	GtkScrolledWindow *scrolled = para->scrolled;
+	GtkTextView *text = GTK_TEXT_VIEW ( gtk_bin_get_child ( GTK_BIN ( scrolled ) ) );
+	GtkTextBuffer *buffer = gtk_text_view_get_buffer ( text );
+
+	GtkTextIter start,end;
+	gtk_text_buffer_get_bounds ( buffer, &start, &end);
+	const char *val = gtk_text_buffer_get_text (buffer, &start, &end, FALSE );
+	
+	g_print ("....%s\n",val);
+	
+	
+	//const char *val = gtk_label_get_text ( para->label );
+	setTextVariable ( para, val );
+	//doCommand ( para, val, 1 );
+}
+
+/**
+\brief
+**/
+static int setTextVariable ( TextParams *para,	const char *val )
+{
+#ifdef DEBUG_TEXT
+	printf ( "%s\n",__FUNCTION__ );;
+#endif
+
+
+	if ( para->textVariable && para->inSetVar == 0 )
+	{
+		const char *ret;
+		para->inSetVar = 1;
+		ret = Tcl_SetVar ( para->interp, para->textVariable, val, TCL_GLOBAL_ONLY );
+		para->inSetVar = 0;
+		return ret == NULL ? TCL_ERROR : TCL_OK;
+	}
+
+	return TCL_OK;
+}
+
+/**
+\brief
+**/
+static int setVal ( GtkTextBuffer *buffer, const char *txt )
+{
+	int blocked;
+	blocked = g_signal_handlers_block_matched ( G_OBJECT ( buffer ), G_SIGNAL_MATCH_FUNC, 0, 0, NULL, ( gpointer * ) changedFunc, NULL );
+	//gtk_label_set_text ( label, txt );
+	
+	gtk_text_buffer_set_text (buffer, txt,-1);
+	
+	//gtk_label_set_markup ( label, txt );
+
+	//OptLabelFull ( label, txt );
+
+	if ( blocked )
+	{
+		g_signal_handlers_unblock_matched ( G_OBJECT ( buffer ), G_SIGNAL_MATCH_FUNC, 0, 0, NULL, ( gpointer * ) changedFunc, NULL );
+	}
+
+	return TCL_OK;
+}
+
+/**
+\brief
+**/
+static char *traceFunc ( ClientData data, Tcl_Interp *interp, const char *name1, const char *name2,	int flags )
+{
+	TextParams *para = ( TextParams * ) data;
+
+	GtkScrolledWindow *scrolled = para->scrolled;
+	GtkTextView *text = GTK_TEXT_VIEW ( gtk_bin_get_child ( GTK_BIN ( scrolled ) ) );
+	GtkTextBuffer *buffer = gtk_text_view_get_buffer ( text );
+
+
+	if ( para->inSetVar == 0 && name1 )
+	{
+		const char *txt = name1 ? Tcl_GetVar2 ( interp, name1, name2, 0 ) : NULL;
+
+		if ( txt )
+		{
+			setVal ( buffer, txt );
+			doCommand ( para, txt, 1 );
+		}
+	}
+
+	return NULL;
+}
+
+/**
+\brief
+**/
+static int doCommand ( TextParams *para, const char *val, int background )
+{
+	if ( para->onChanged )
+	{
+		GnoclPercSubst ps[] =
+		{
+			{ 'w', GNOCL_STRING },  /* widget */
+			{ 'v', GNOCL_STRING },  /* value */
+			{ 0 }
+		};
+
+		ps[0].val.str = para->name;
+		ps[1].val.str = val;
+
+		return gnoclPercentSubstAndEval ( para->interp, ps, para->onChanged, background );
+	}
+
+	return TCL_OK;
+}
+
+
+/***********************************************************************/
 
 /**
 \brief	Return text with Pango markup
@@ -996,6 +1161,10 @@ static const int textIdx = 1;
 static const int bufferIdx = 2;
 static const int useUndoIdx = 3;
 static const int dataIdx = 4;
+static const int baseColorIdx = 5;
+
+static const int variableIdx = 6;
+static const int onChangedIdx = 7;
 
 static GnoclOption textOptions[] =
 {
@@ -1007,6 +1176,11 @@ static GnoclOption textOptions[] =
 	{ "-buffer", GNOCL_STRING, NULL},
 	{ "-useUndo", GNOCL_STRING, NULL},
 	{ "-data", GNOCL_OBJ, "", gnoclOptData },
+	{ "-baseColor", GNOCL_OBJ, "normal", gnoclOptGdkColorBase },
+	
+	{ "-variable", GNOCL_STRING, NULL }, 
+	{ "-onChanged", GNOCL_STRING, NULL }, 
+
 
 	/* GtkTextView properties
 	"accepts-tab"              gboolean              : Read / Write
@@ -1026,7 +1200,6 @@ static GnoclOption textOptions[] =
 	*/
 
 	{ "-markupTags", GNOCL_OBJ, "", gnoclOptMarkupTags },
-
 	{ "-accepttTab", GNOCL_BOOL, "accepts-tab" },
 	{ "-cursorVisible", GNOCL_BOOL, "cursor_visible" },
 	{ "-editable", GNOCL_BOOL, "editable" },
@@ -2578,22 +2751,124 @@ clearExit:
 }
 
 /**
+\brief	** USING ** TEXTPARAMS
+**/
+static int configure ( Tcl_Interp *interp, TextParams *para, GnoclOption options[] ) {
+
+	GtkScrolledWindow *scrolled = para->scrolled;
+	GtkTextView *text = GTK_TEXT_VIEW ( gtk_bin_get_child ( GTK_BIN ( scrolled ) ) );
+	GtkTextBuffer *buffer = gtk_text_view_get_buffer ( text );
+
+
+/****************************/
+
+	gnoclAttachOptCmdAndVar (
+		&options[onChangedIdx], &para->onChanged,
+		&options[variableIdx], &para->textVariable,
+		"changed", G_OBJECT ( buffer ),
+		G_CALLBACK ( changedFunc ), interp, traceFunc, para );
+
+	if ( options[variableIdx].status == GNOCL_STATUS_CHANGED && para->textVariable != NULL )
+	{
+		// if variable does not exist -> set it, else set widget state
+		const char *val = Tcl_GetVar ( interp, para->textVariable, TCL_GLOBAL_ONLY );
+
+		if ( val == NULL )
+		{
+			
+			 GtkTextIter *start,*end;
+			
+			gtk_text_buffer_get_bounds ( buffer, start,end);
+			
+			val = gtk_text_buffer_get_text (buffer, start,end,0 );
+			
+			setTextVariable ( para, val );
+		}
+
+		else {
+			//setVal ( para->label, val );
+		}
+	}
+
+/*****************************/
+
+
+	if ( options[textIdx].status == GNOCL_STATUS_CHANGED )
+	{
+		//printf ( "INSERT SOME TEXT-b\n" );
+
+		char *str = options[textIdx].val.str;
+		gtk_text_buffer_set_text ( buffer, str, -1 );
+	}
+
+	if ( options[scrollBarIdx].status == GNOCL_STATUS_CHANGED )
+	{
+		GtkPolicyType hor, vert;
+
+		if ( gnoclGetScrollbarPolicy ( interp, options[scrollBarIdx].val.obj, &hor, &vert ) != TCL_OK )
+		{
+			return TCL_ERROR;
+		}
+
+		gtk_scrolled_window_set_policy ( scrolled, hor, vert );
+	}
+
+	if ( options[bufferIdx].status == GNOCL_STATUS_CHANGED )
+	{
+		printf ( "APPLY NEW BUFFER-%s\n", options[bufferIdx].val.str );
+
+		GtkTextBuffer *buffer;
+
+		buffer = gnoclGetWidgetFromName ( options[bufferIdx].val.str, interp );
+
+		gtk_text_view_set_buffer ( text, buffer );
+
+	}
+
+
+	return TCL_OK;
+}
+
+
+
+/**
 \brief
 \note        04/12/09 WJG modified to allow for variable assignment
 **/
-static int configure ( Tcl_Interp * interp, GtkScrolledWindow * scrolled, GtkTextView * text, GnoclOption options[] )
+static int _configure ( Tcl_Interp * interp, GtkScrolledWindow * scrolled, GtkTextView * text, GnoclOption options[] )
 {
 
 	GtkTextBuffer *buffer;
 	buffer = gtk_text_view_get_buffer ( text );
 
-	/*
-	    gnoclAttachOptCmdAndVar (
-	        &options[onChangedIdx], &para->onChanged,
-	        &options[variableIdx], &para->variable,
-	        "changed", G_OBJECT ( para->text ),
-	        G_CALLBACK ( changedFunc ), interp, traceFunc, para );
-	*/
+
+/****************************/
+
+/*
+	gnoclAttachOptCmdAndVar (
+		&options[onChangedIdx], &para->onChanged,
+		&options[variableIdx], &para->textVariable,
+		"changed", G_OBJECT ( para->label ),
+		G_CALLBACK ( changedFunc ), interp, traceFunc, para );
+
+	if ( options[variableIdx].status == GNOCL_STATUS_CHANGED && para->textVariable != NULL )
+	{
+		// if variable does not exist -> set it, else set widget state
+		const char *val = Tcl_GetVar ( interp, para->textVariable, TCL_GLOBAL_ONLY );
+
+		if ( val == NULL )
+		{
+			//val = gtk_label_get_text ( para->label );
+			//setTextVariable ( para, val );
+		}
+
+		else {
+			//setVal ( para->label, val );
+		}
+	}
+*/
+/*****************************/
+
 
 	if ( options[textIdx].status == GNOCL_STATUS_CHANGED )
 	{
@@ -2642,6 +2917,28 @@ static int cget ( Tcl_Interp * interp, GtkTextView * text, GnoclOption options[]
 	if ( idx == dataIdx )
 	{
 		obj = Tcl_NewStringObj ( g_object_get_data ( text, "gnocl::data" ), -1 );
+	}
+
+	if ( idx == baseColorIdx )
+	{
+		g_print ( "basecolor\n" );
+
+		Tcl_Obj *ret = Tcl_NewListObj ( 0, interp );
+		GdkColor color;
+
+		//modifyWidgetGdkColor ( interp, opts, G_OBJECT(text), gtk_widget_modify_base, G_STRUCT_OFFSET ( GtkStyle, base ), resList );
+
+		GtkStyle *style = gtk_rc_get_style ( GTK_WIDGET ( text ) );
+		GdkColor *cp = ( GdkColor * ) G_STRUCT_MEMBER_P ( style, G_STRUCT_OFFSET ( GtkStyle, base ) );
+		//GdkColor color = cp[type];
+
+		Tcl_ListObjAppendElement ( interp, ret, Tcl_NewIntObj ( color.red ) );
+		Tcl_ListObjAppendElement ( interp, ret, Tcl_NewIntObj ( color.green ) );
+		Tcl_ListObjAppendElement ( interp, ret, Tcl_NewIntObj ( color.blue ) );
+
+		Tcl_SetObjResult ( interp, obj );
+
+		return TCL_OK;
 	}
 
 
@@ -3144,7 +3441,9 @@ int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl
 	const char *cmds[] =
 	{
 		"delete", "configure", "scrollToPosition", "scrollToMark",
-		"parent", "getIndex", "getCoords", "getRect", "undo", "redo",
+		"parent",
+		"getIndex", "getCoords", "getRect",
+		"undo", "redo", "grabFocus",
 
 		"set", "erase", "select", "get", "cut", "copy", "paste",
 		"cget", "getLineCount", "getWordLength", "getLength",
@@ -3160,7 +3459,9 @@ int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl
 	enum cmdIdx
 	{
 		DeleteIdx, ConfigureIdx, ScrollToPosIdx, ScrollToMarkIdx,
-		ParentIdx, GetIndexIdx, GetCoordsIdx, GetRectIdx, UndoIdx, RedoIdx,
+		ParentIdx,
+		GetIndexIdx, GetCoordsIdx, GetRectIdx,
+		UndoIdx, RedoIdx, GrabFocusIdx,
 
 		SetIdx, EraseIdx, SelectIdx, GetIdx, CutIdx, CopyIdx, PasteIdx,
 		CgetIdx, GetLineCountIdx, GetWordLengthIdx, GetLengthIdx,
@@ -3209,6 +3510,7 @@ int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl
 		case GetRectIdx:        return 8;
 		case UndoIdx:  			return 9;
 		case RedoIdx:  			return 10;
+		case GrabFocusIdx:  	return 11;
 
 			/* these are GtkTextBuffer operations */
 
@@ -3807,6 +4109,7 @@ int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl
 				g_print ( "%s CgetIdx\n", __FUNCTION__ );
 #endif
 
+
 				int     idx;
 
 				switch ( gnoclCget ( interp, objc, objv, G_OBJECT ( textView ), textOptions, &idx ) )
@@ -4227,14 +4530,20 @@ int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl
 	return 0;
 }
 
+
+
 /**
-\brief      Handler for gnocl created instances that take into account the scrolled window
-\note        Unlike gnocl, Builder/Glade  not provide text objects within scrolled windows.
-             Two handle functions are necessary, one for gnocl built widgets, and one for builder/glade widgets.
+\brief      ** USING ** TEXTPARAMS
+			Handler for gnocl created instances that take into account the scrolled window
+\note       Unlike gnocl, Builder/Glade  not provide text objects within scrolled windows.
+            Two handle functions are necessary, one for gnocl built widgets, and one for builder/glade widgets.
 **/
 static int textFunc ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj *  const objv[] )
 {
-	GtkScrolledWindow   *scrolled = GTK_SCROLLED_WINDOW ( data );
+	TextParams *para = ( TextParams * ) data;
+
+
+	GtkScrolledWindow   *scrolled = para->scrolled;
 	GtkTextView     *text = GTK_TEXT_VIEW ( gtk_bin_get_child ( GTK_BIN ( scrolled ) ) );
 	GtkTextBuffer  *buffer = gtk_text_view_get_buffer ( text );
 
@@ -4287,7 +4596,7 @@ static int textFunc ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * 
 				if ( gnoclParseAndSetOptions ( interp, objc - 1, objv + 1, textOptions, G_OBJECT ( text ) ) == TCL_OK )
 				{
 					//ret = configure ( interp, scrolled, text, para, textOptions );
-					ret = configure ( interp, scrolled, text, textOptions );
+					ret = configure ( interp, para, textOptions );
 				}
 
 				gnoclClearOptions ( textOptions );
@@ -4395,6 +4704,11 @@ static int textFunc ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * 
 			{
 				gtk_undo_view_redo  ( text );
 			}
+		case 11: /* grab keyboard input */
+			{
+				gtk_widget_grab_focus ( text );
+				return TCL_OK;
+			}
 		default:
 			{
 				return TCL_ERROR;
@@ -4403,6 +4717,7 @@ static int textFunc ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * 
 
 	return TCL_OK;
 }
+
 
 /**
 \brief      Handler for glade created instances that have no scrolled window.
@@ -4460,22 +4775,41 @@ int textViewFunc ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj *  co
 			}
 
 			break;
+		case 6: /* grab keyboard input */
+			{
+				gtk_widget_grab_focus ( text );
+				return TCL_OK;
+			}
+			break;
 		default:
-			return TCL_ERROR;
+			{
+				return TCL_ERROR;
+			}
 	}
 
 	return TCL_OK;
 }
 
+
 /**
-\brief
+\brief	** USING ** TEXTPARAMS
 **/
 int gnoclTextCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj *  const objv[] )
 {
+	
+	TextParams *para;
+	
 	int               ret, k;
 	GtkTextView       *textView;
 	GtkTextView       *textBuffer;
 	GtkScrolledWindow *scrolled;
+
+	para = g_new ( TextParams, 1 );
+
+	para->interp = interp;
+	para->textVariable = NULL;
+	para->onChanged = NULL;
+	para->inSetVar = 0;
 
 	if ( gnoclParseOptions ( interp, objc, objv, textOptions ) != TCL_OK )
 	{
@@ -4483,41 +4817,48 @@ int gnoclTextCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj *  co
 		return TCL_ERROR;
 	}
 
-	textView = GTK_TEXT_VIEW ( gtk_text_view_new( ) );
+	//textView = GTK_TEXT_VIEW ( gtk_text_view_new( ) );
 
-	//GtkTextBuffer *     gtk_text_buffer_new  (NULL);
-
-	//textBuffer = gtk_text_view_get_buffer (textView);
-
-	/* implement new undo/redo buffer */
+	// implement new undo/redo buffer
 	textView = gtk_undo_view_new ( gtk_text_buffer_new  ( NULL ) );
 
-	/*  add some extra signals to the default setting */
+	//add some extra signals to the default setting
 	gtk_widget_add_events ( textView, GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK );
 
-	scrolled =  GTK_SCROLLED_WINDOW ( gtk_scrolled_window_new ( NULL, NULL ) );
+	para->scrolled =  GTK_SCROLLED_WINDOW ( gtk_scrolled_window_new ( NULL, NULL ) );
 
-	gtk_scrolled_window_set_policy ( scrolled, GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC );
+	gtk_scrolled_window_set_policy ( para->scrolled, GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC );
 
-	gtk_container_add ( GTK_CONTAINER ( scrolled ), GTK_WIDGET ( textView ) );
+	gtk_container_add ( GTK_CONTAINER ( para->scrolled ), GTK_WIDGET ( textView ) );
 
-	gtk_widget_show_all ( GTK_WIDGET ( scrolled ) );
+	gtk_widget_show_all ( GTK_WIDGET ( para->scrolled ) );
 
 	ret = gnoclSetOptions ( interp, textOptions, G_OBJECT ( textView ), -1 );
 
+
 	if ( ret == TCL_OK )
 	{
-		//ret = configure ( interp, scrolled, textView, para, textOptions );
-		ret = configure ( interp, scrolled, textView, textOptions );
+		ret = configure ( interp, para, textOptions );
 	}
 
 	gnoclClearOptions ( textOptions );
 
 	if ( ret != TCL_OK )
 	{
-		gtk_widget_destroy ( GTK_WIDGET ( scrolled ) );
+		gtk_widget_destroy ( GTK_WIDGET ( para->scrolled ) );
 		return TCL_ERROR;
 	}
+	
+	para->name = gnoclGetAutoWidgetId();
 
-	return gnoclRegisterWidget ( interp, GTK_WIDGET ( scrolled ), textFunc );
+	g_signal_connect ( G_OBJECT ( para->scrolled ), "destroy", G_CALLBACK ( destroyFunc ), para );
+
+	gnoclMemNameAndWidget ( para->name, GTK_WIDGET ( para->scrolled ) );
+
+	Tcl_CreateObjCommand ( interp, para->name, textFunc, para, NULL );
+
+	Tcl_SetObjResult ( interp, Tcl_NewStringObj ( para->name, -1 ) );
+
+	return TCL_OK;
+	
 }

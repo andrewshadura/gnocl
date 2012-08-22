@@ -575,8 +575,7 @@ int gnoclGetImage ( Tcl_Interp *interp, Tcl_Obj *obj, GtkIconSize size, GtkWidge
 		char    *txt = gnoclGetStringFromObj ( obj, &len );
 		Tcl_Obj *obj2 = Tcl_NewStringObj ( txt, len );
 		int     idx;
-		int     ret = Tcl_GetIndexFromObj ( interp, obj2, opts, "option",
-											TCL_EXACT, &idx );
+		int     ret = Tcl_GetIndexFromObj ( interp, obj2, opts, "option", TCL_EXACT, &idx );
 		Tcl_DecrRefCount ( obj2 );
 
 		if ( ret != TCL_OK )
@@ -598,8 +597,7 @@ int gnoclGetImage ( Tcl_Interp *interp, Tcl_Obj *obj, GtkIconSize size, GtkWidge
 
 		if ( *widget == NULL )
 		{
-			Tcl_AppendResult ( interp, "Unknown stock pixmap \"",
-							   sp.stock_id, "\".", ( char * ) NULL );
+			Tcl_AppendResult ( interp, "Unknown stock pixmap \"", sp.stock_id, "\".", ( char * ) NULL );
 			return TCL_ERROR;
 		}
 	}
@@ -620,10 +618,21 @@ int gnoclGetImage ( Tcl_Interp *interp, Tcl_Obj *obj, GtkIconSize size, GtkWidge
 		*widget = gtk_image_new_from_file ( txt );
 	}
 
+	else if ( type == GNOCL_STR_BUFFER )
+	{
+		GdkPixbuf *pixbuf = NULL;
+
+		char   *txt = gnoclGetStringFromObj ( obj, NULL );
+#ifdef GNOCL_USE_GNOME
+		g_print ( "got a buffer = %s\n", txt );
+#endif
+		pixbuf = gnoclGetPixBufFromName ( txt, interp );
+		*widget = gtk_image_new_from_file ( pixbuf );
+	}
+
 	else
 	{
-		Tcl_AppendResult ( interp, "invalid pixmap type for \"",
-						   Tcl_GetString ( obj ), "\"", ( char * ) NULL );
+		Tcl_AppendResult ( interp, "invalid pixmap type for \"", Tcl_GetString ( obj ), "\"", ( char * ) NULL );
 		return TCL_ERROR;
 	}
 
@@ -783,6 +792,8 @@ static GnoclCmd commands[] =
 	{ "fontButton", gnoclFontButtonCmd },
 	{ "aboutDialog", gnoclAboutDialogCmd },
 	{ "keyFile", gnoclKeyFileCmd},
+
+	{ "grab", gnoclGrabCmd},
 
 #ifdef GNOCL_USE_GNOME
 	{ "app", gnoclAppCmd },
@@ -1121,8 +1132,7 @@ char **gnoclGetArgv (
 
 	typedef char *Pchar;
 
-	Tcl_Obj *obj = Tcl_ObjGetVar2 ( interp, Tcl_NewStringObj ( "::argv", -1 ),
-									NULL, 0 );
+	Tcl_Obj *obj = Tcl_ObjGetVar2 ( interp, Tcl_NewStringObj ( "::argv", -1 ), NULL, 0 );
 
 	if ( obj == NULL || Tcl_ListObjLength ( NULL, obj, &narg ) != TCL_OK )
 	{

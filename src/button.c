@@ -52,12 +52,9 @@ date 	2001-03:
  */
 
 #include "gnocl.h"
+#include "gnoclparams.h"
 #include <string.h>
 #include <assert.h>
-
-static void stubOnActivate ()
-{
-}
 
 
 static const int textIdx = 0;
@@ -109,6 +106,129 @@ static GnoclOption buttonOptions[] =
 	{ NULL },
 };
 
+/**
+\brief
+**/
+static void destroyFunc ( GtkWidget *widget, gpointer data )
+{
+#ifdef DEBUG_BUTTON
+	printf ( "%s\n", __FUNCTION__ );
+#endif
+
+
+	ButtonParams *para = ( ButtonParams * ) data;
+
+	gnoclForgetWidgetFromName ( para->name );
+	Tcl_DeleteCommand ( para->interp, para->name );
+
+	g_free ( para->name );
+	g_free ( para );
+}
+
+
+
+/**
+\brief  Configure the named widget using -option parameter passed either
+        during the creation of the widget or following a configure command.
+**/
+static int configure_ (  Tcl_Interp *interp, ButtonParams *para,  GnoclOption options[] )
+{
+	if ( options[textIdx].status == GNOCL_STATUS_CHANGED && gnoclConfigButtonText ( interp, para->button, options[textIdx].val.obj ) != TCL_OK )
+	{
+		return TCL_ERROR;
+	}
+
+	if ( options[iconIdx].status == GNOCL_STATUS_CHANGED )
+	{
+		GnoclStringType type = gnoclGetStringType ( options[iconIdx].val.obj );
+		GtkWidget *label = gnoclFindChild ( GTK_WIDGET ( para->button ), GTK_TYPE_LABEL );
+
+		if ( type == GNOCL_STR_EMPTY )
+		{
+			/* remove all children apart from label */
+			GtkWidget *child = gtk_bin_get_child ( GTK_BIN ( para->button ) );
+
+			if ( child && ( child != label ) )
+			{
+				gtk_widget_ref ( label );
+				gtk_container_remove ( GTK_CONTAINER ( para->button ), child );
+				gtk_container_add ( GTK_CONTAINER ( para->button ), label );
+				gtk_widget_unref ( label );
+				gtk_widget_show ( label );
+			}
+		}
+
+		else
+		{
+			GtkWidget *image = gnoclFindChild ( GTK_WIDGET ( para->button ), GTK_TYPE_IMAGE );
+
+			if ( label == NULL )
+			{
+				gtk_button_set_label ( para->button, "" );
+				label = gnoclFindChild ( GTK_WIDGET ( para->button ), GTK_TYPE_LABEL );
+			}
+
+			else if ( ( type & ( GNOCL_STR_STOCK | GNOCL_STR_FILE ) ) == 0 )
+			{
+				Tcl_AppendResult ( interp, "Unknown type for \"",
+								   Tcl_GetString ( options[iconIdx].val.obj ),
+								   "\" must be of type FILE (%/) or STOCK (%#)", NULL );
+				return TCL_ERROR;
+
+			}
+
+			para->iconName = Tcl_GetString ( options[iconIdx].val.obj );
+
+
+			if ( image == NULL )
+			{
+				/* this should match gtkbutton.c */
+				GtkWidget *hbox = gtk_hbox_new ( 0, 2 );
+				GtkWidget *align = gtk_alignment_new ( 0.5, 0.5, 0.0, 0.0 );
+				image = gtk_image_new();
+
+				gtk_box_pack_start ( GTK_BOX ( hbox ), image, 0, 0, 0 );
+
+				gtk_widget_ref ( label );
+				gtk_container_remove ( GTK_CONTAINER ( para->button ), label );
+				gtk_box_pack_end ( GTK_BOX ( hbox ), label, 0, 0, 0 );
+				gtk_widget_unref ( label );
+
+				gtk_container_add ( GTK_CONTAINER ( para->button ), align );
+				gtk_container_add ( GTK_CONTAINER ( align ), hbox );
+				gtk_widget_show_all ( align );
+			}
+
+			if ( type & GNOCL_STR_STOCK )
+			{
+				GtkStockItem item;
+
+				if ( gnoclGetStockItem ( options[iconIdx].val.obj, interp, &item ) != TCL_OK )
+				{
+					return TCL_ERROR;
+				}
+
+				gtk_image_set_from_stock ( GTK_IMAGE ( image ), item.stock_id, GTK_ICON_SIZE_BUTTON );
+			}
+
+			else if ( type & GNOCL_STR_FILE )
+			{
+				GdkPixbuf *pix = gnoclPixbufFromObj ( interp, options + iconIdx );
+
+				if ( pix == NULL )
+				{
+					return TCL_ERROR;
+				}
+
+				gtk_image_set_from_pixbuf ( GTK_IMAGE ( image ), pix );
+			}
+		}
+
+
+	}
+
+	return TCL_OK;
+}
 
 
 /**
@@ -166,7 +286,7 @@ static int configure (  Tcl_Interp *interp, GtkButton *button,  GnoclOption opti
 				/* this should match gtkbutton.c */
 				GtkWidget *hbox = gtk_hbox_new ( 0, 2 );
 				GtkWidget *align = gtk_alignment_new ( 0.5, 0.5, 0.0, 0.0 );
-				image = gtk_image_new( );
+				image = gtk_image_new();
 
 				gtk_box_pack_start ( GTK_BOX ( hbox ), image, 0, 0, 0 );
 
@@ -354,6 +474,7 @@ static int cget (   Tcl_Interp *interp, GtkButton *button,  GnoclOption options[
 
 /**
 \brief  Function associated with the widget.
+\note	The add widget command is largely pointless, all input to it is first passed to the parent button.
 **/
 int buttonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
@@ -362,6 +483,7 @@ int buttonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const 
 		"delete", "configure", "cget",
 		"onClicked", "class", "parent",
 		"geometry", "toplevel", "options",
+		"add",
 		NULL
 	};
 
@@ -369,7 +491,8 @@ int buttonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const 
 	{
 		DeleteIdx, ConfigureIdx, CgetIdx,
 		OnClickedIdx, ClassIdx, ParentIdx,
-		GeometryIdx, ToplevelIdx, OptionsIdx
+		GeometryIdx, ToplevelIdx, OptionsIdx,
+		AddIdx
 	};
 
 	GtkButton *button = GTK_BUTTON ( data );
@@ -388,6 +511,15 @@ int buttonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const 
 
 	switch ( idx )
 	{
+			/* button is a container, a pointless functionality */
+		case AddIdx:
+			{
+				GtkWidget *child1 = gtk_bin_get_child ( GTK_BIN ( button ) );
+				GtkWidget *child2 = gtk_bin_get_child ( GTK_CONTAINER ( child1 ) );
+				GtkWidget *widget = gnoclGetWidgetFromName (  Tcl_GetString ( objv[2] ), interp );
+				gtk_container_add ( GTK_CONTAINER ( child2 ), widget );
+			}
+			break;
 		case OptionsIdx:
 			{
 				gnoclGetWidgetOptions ( interp, buttonOptions );
@@ -395,7 +527,7 @@ int buttonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const 
 			break;
 		case ToplevelIdx:
 			{
-				g_print ( "button ToplevelIdx\n" );
+				//g_print ( "button ToplevelIdx\n" );
 				GtkWidget *toplevel;
 				Tcl_Obj *obj = NULL;
 				toplevel = gtk_widget_get_toplevel ( button ) ;
@@ -407,7 +539,7 @@ int buttonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const 
 			break;
 		case GeometryIdx:
 			{
-				g_print ( "button GeometryIdx\n" );
+				//g_print ( "button GeometryIdx\n" );
 				char *txt = gnoclGetWidgetGeometry ( button ) ;
 				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( txt , -1 ) );
 				return TCL_OK;
@@ -505,6 +637,10 @@ int buttonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const 
 **/
 int gnoclButtonCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+
+	ButtonParams *para;
+	para = g_new ( ButtonParams, 1 );
+
 	int  ret;
 	GtkButton *button;
 
@@ -519,8 +655,11 @@ int gnoclButtonCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * co
 	/* step 2) create an instance of the widget and 'show' it*/
 	button = GTK_BUTTON ( gtk_button_new( ) );
 
-	gtk_widget_show ( GTK_WIDGET ( button ) );
 
+	para->button = button;
+	para->interp = interp;
+
+	gtk_widget_show ( GTK_WIDGET ( button ) );
 
 	/* step 3) check the options passed for the creation of the widget */
 	ret = gnoclSetOptions ( interp, buttonOptions, G_OBJECT ( button ), -1 );
@@ -541,7 +680,31 @@ int gnoclButtonCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * co
 		return TCL_ERROR;
 	}
 
+	if ( ret != TCL_OK )
+	{
+		gtk_widget_destroy ( GTK_WIDGET ( para->button ) );
+		g_free ( para );
+		return TCL_ERROR;
+	}
+
+
+	para->name = gnoclGetAutoWidgetId();
+
+	g_signal_connect ( G_OBJECT ( para->button ), "destroy", G_CALLBACK ( destroyFunc ), para );
+
+	gnoclMemNameAndWidget ( para->name, GTK_WIDGET ( para->button ) );
+
+	Tcl_CreateObjCommand ( interp, para->name, labelFunc, para, NULL );
+
+	Tcl_SetObjResult ( interp, Tcl_NewStringObj ( para->name, -1 ) );
+
+
+	return TCL_OK;
+
 	/* step 7) the process has been successful, so 'register' the widget with the interpreter */
 	return gnoclRegisterWidget ( interp, GTK_WIDGET ( button ), buttonFunc );
 }
+
+
+
 

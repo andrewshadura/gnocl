@@ -211,7 +211,7 @@ static GnoclOption colOptions[] =
 {
 	{ "-width", GNOCL_INT, NULL },               /* 0 */
 	{ "-widget", GNOCL_STRING, NULL},
-	
+
 	{ "-clickable", GNOCL_BOOL, "clickable" },
 	{ "-maxWidth", GNOCL_INT, "max-width" },
 	{ "-minWidth", GNOCL_INT, "min-width" },
@@ -2823,15 +2823,19 @@ static int columnConfigure ( TreeListParams * para, Tcl_Interp * interp, int obj
 
 	if ( options[widgetIdx].status == GNOCL_STATUS_CHANGED )
 	{
-		
+
 		GtkWidget *widget = NULL;
-		
-		widget = gnoclGetWidgetFromName ( Tcl_GetString ( objv[4] ) , interp);
-		
-		if (widget == NULL) {
-			return TCL_ERROR;			
-		} else {
-			gtk_tree_view_column_set_widget  (column, widget );
+
+		widget = gnoclGetWidgetFromName ( Tcl_GetString ( objv[4] ) , interp );
+
+		if ( widget == NULL )
+		{
+			return TCL_ERROR;
+		}
+
+		else
+		{
+			gtk_tree_view_column_set_widget  ( column, widget );
 		}
 	}
 
