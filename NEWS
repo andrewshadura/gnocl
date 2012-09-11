@@ -1,4 +1,22 @@
+2012-09:
+	gnocl::tree
+	gnocl::list
+		o new option
+			-data
+
+	gnocl:;assistant
+		o new command
+			delete
+	gnocl::menu
+		o new option
+			-data
+			
 2012-08:
+	gnocl::menuCheckItem
+	gnocl::entry
+		o new substitution parameter
+			%d widget data
+		
 	gnocl::text
 		o new option
 			-variable

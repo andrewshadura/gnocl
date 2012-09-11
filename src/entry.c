@@ -12,6 +12,7 @@
 
 /*
    History:
+   2012-08-23: adde substitution parameter %d
    2012-01-03: added options
 					-focusIn -focusOut
    2011-07-03: cget -data now works properly
@@ -153,7 +154,6 @@ static GnoclOption entryOptions[] =
 	/* GtkEditable Signals */
 	{ "-onKeyPress", GNOCL_OBJ, "", gnoclOptOnKeyPress },
 	{ "-onKeyRelease", GNOCL_OBJ, "", gnoclOptOnKeyRelease },
-
 	{ "-onFocusIn", GNOCL_OBJ, "I", gnoclOptOnFocus },
 	{ "-onFocusOut", GNOCL_OBJ, "O", gnoclOptOnFocus },
 
@@ -210,11 +210,13 @@ static void doOnActivate (   GtkEntry *entry, gpointer user_data )
 	{
 		{ 'w', GNOCL_STRING },  /* widget name */
 		{ 't', GNOCL_STRING },  /* text content */
+		{ 'd', GNOCL_STRING },  /* widget data */
 		{ 0 }
 	};
 
 	ps[0].val.str = gnoclGetNameFromWidget ( entry );;
 	ps[1].val.str = gtk_entry_get_text ( entry );
+	ps[2].val.str = g_object_get_data ( G_OBJECT ( entry ), "gnocl::data" );
 
 	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
 }

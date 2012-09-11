@@ -425,7 +425,7 @@ int gnoclOptAngle (	Tcl_Interp *interp,	GnoclOption *opt,	GObject *obj,	Tcl_Obj 
 /**
 \brief  Set the default widget for a toplevel window.
 **/
-int gnoclOptDefaultWidget (	Tcl_Interp *interp,	GnoclOption *opt, GObject *obj,	Tcl_Obj **ret )
+int gnoclOptDefaultWidget ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
 
 	GtkWidget *widget = gnoclGetWidgetFromName ( Tcl_GetString ( opt->val.obj ), interp );
@@ -790,8 +790,7 @@ int gnoclOptUnderline ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_
 \date
 \since
 **/
-int gnoclOptWrapmode ( Tcl_Interp *interp, GnoclOption *opt,
-					   GObject *obj, Tcl_Obj **ret )
+int gnoclOptWrapmode ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
 	const char *txt[] = { "none", "char", "word", NULL };
 	const int types[] = { GTK_WRAP_NONE, GTK_WRAP_CHAR, GTK_WRAP_WORD };
@@ -1162,11 +1161,7 @@ int gnoclOptGdkColor ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_O
 
 /**
  */
-int gnoclOptRGBAColor (
-	Tcl_Interp *interp,
-	GnoclOption *opt,
-	GObject *obj,
-	Tcl_Obj **ret )
+int gnoclOptRGBAColor ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
 	int r, g, b, a;
 
@@ -1284,8 +1279,7 @@ int gnoclOptTooltip ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Ob
 
 /**
 **/
-static int modifyWidgetGdkColor (   Tcl_Interp *interp, GnoclOption *opt,   GObject *obj,
-									void ( *func ) ( GtkWidget *, GtkStateType, const GdkColor * ),   glong offset,   Tcl_Obj **ret )
+static int modifyWidgetGdkColor ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, void ( *func ) ( GtkWidget *, GtkStateType, const GdkColor * ), glong offset, Tcl_Obj **ret )
 {
 
 #ifdef DEBUG_PARSEOPTIONS
@@ -1507,7 +1501,7 @@ static int removeSizeGroup ( GtkWidget *widget, GtkSizeGroupMode mode )
 \date
 \note
 **/
-int gnoclOptSizeGroup ( Tcl_Interp *interp, GnoclOption *opt,   GObject *obj, Tcl_Obj **ret )
+int gnoclOptSizeGroup ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
 	GtkSizeGroupMode mode = GTK_SIZE_GROUP_BOTH;
 
@@ -1529,9 +1523,14 @@ int gnoclOptSizeGroup ( Tcl_Interp *interp, GnoclOption *opt,   GObject *obj, Tc
 		const char *group = Tcl_GetString ( opt->val.obj );
 
 		if ( *group )
+		{
 			addSizeGroup ( GTK_WIDGET ( obj ), mode, group  );
+		}
+
 		else
+		{
 			removeSizeGroup ( GTK_WIDGET ( obj ), mode );
+		}
 	}
 
 	else              /* get value */
@@ -1539,9 +1538,64 @@ int gnoclOptSizeGroup ( Tcl_Interp *interp, GnoclOption *opt,   GObject *obj, Tc
 		const char *group = getSizeGroup ( GTK_WIDGET ( obj ), mode );
 
 		if ( group )
+		{
 			*ret = Tcl_NewStringObj ( group, -1 );
+		}
+
 		else
+		{
 			*ret = Tcl_NewStringObj ( "", 0 );
+		}
+	}
+
+	return TCL_OK;
+}
+
+/**
+\brief
+\author
+\date
+\note
+	used in megawigets such as labelEntry
+**/
+int gnoclOptWidthGroup ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
+{
+	GtkSizeGroupMode mode = GTK_SIZE_GROUP_HORIZONTAL;
+
+	if ( sizeGroupTables[groupToIdx ( mode ) ] == NULL )
+	{
+		sizeGroupTables[groupToIdx ( mode ) ] =
+			g_hash_table_new_full ( g_str_hash, g_str_equal, g_free, NULL );
+	}
+
+	if ( ret == NULL ) /* set value */
+	{
+		const char *group = Tcl_GetString ( opt->val.obj );
+
+		if ( *group )
+		{
+			addSizeGroup ( GTK_WIDGET ( obj ), mode, group  );
+		}
+
+		else
+		{
+			removeSizeGroup ( GTK_WIDGET ( obj ), mode );
+		}
+	}
+
+	else              /* get value */
+	{
+		const char *group = getSizeGroup ( GTK_WIDGET ( obj ), mode );
+
+		if ( group )
+		{
+			*ret = Tcl_NewStringObj ( group, -1 );
+		}
+
+		else
+		{
+			*ret = Tcl_NewStringObj ( "", 0 );
+		}
 	}
 
 	return TCL_OK;
@@ -1617,30 +1671,40 @@ int gnoclGetBothAlign ( Tcl_Interp *interp, Tcl_Obj *obj,   gfloat *xAlign, gflo
 		Tcl_Obj *tp;
 
 		if ( Tcl_ListObjIndex ( NULL, obj, 0, &tp ) != TCL_OK )
+		{
 			goto cleanExit;
+		}
 
 		if ( optAlign ( interp, tp, 0, xAlign ) != TCL_OK )
+		{
 			goto cleanExit;
+		}
 
 		if ( Tcl_ListObjIndex ( NULL, obj, 1, &tp ) != TCL_OK )
+		{
 			goto cleanExit;
+		}
 
 		if ( optAlign ( NULL, tp, 1, yAlign ) != TCL_OK )
+		{
 			goto cleanExit;
+		}
 	}
 
 	else if ( len == 1 )
 	{
 		const char *txt[] = { "topLeft", "top", "topRight",
 							  "left", "center", "right",
-							  "bottomLeft", "bottom", "bottomRight", NULL
+							  "bottomLeft", "bottom", "bottomRight",
+							  NULL
 							};
 
 		int idx;
 
-		if ( Tcl_GetIndexFromObj ( NULL, obj, txt, NULL, TCL_EXACT,
-								   &idx ) != TCL_OK )
+		if ( Tcl_GetIndexFromObj ( NULL, obj, txt, NULL, TCL_EXACT, &idx ) != TCL_OK )
+		{
 			goto cleanExit;
+		}
 
 		*xAlign = ( idx % 3 ) * 0.5;
 
@@ -2038,7 +2102,7 @@ int gnoclDisconnect ( GObject *obj, const char *signal, GCallback handler )
 int gnoclConnectOptCmd ( Tcl_Interp *interp, GObject *obj, const char *signal, GCallback handler, GnoclOption *opt, void *data, Tcl_Obj **ret )
 {
 #ifdef DEBUG_PARSEOPTIONS
-	g_print ( "gnoclConnectOptCmd %s %s\n", gnoclGetNameFromWidget ( GTK_WIDGET ( obj ) ), signal );
+	g_print ( "%s %s %s\n", __FUNCTION__, gnoclGetNameFromWidget ( GTK_WIDGET ( obj ) ), signal );
 #endif
 
 	if ( ret == NULL ) /* set value */
@@ -2133,10 +2197,7 @@ int gnoclOptMoveHandle ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl
 	assert ( strcmp ( opt->optName, "-onHandleMoved" ) == 0 );
 	return gnoclConnectOptCmd ( interp, obj, "move-handle", G_CALLBACK ( doOnMoveHandle ), opt, NULL, ret );
 
-
 }
-
-
 
 /**
 \brief
@@ -2167,9 +2228,14 @@ int gnoclOptData ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj *
 		const char *data = g_object_get_data ( obj, dataID );
 
 		if ( data )
+		{
 			*ret = Tcl_NewStringObj ( data, -1 );
+		}
+
 		else
+		{
 			*ret = Tcl_NewStringObj ( "", 0 );
+		}
 	}
 
 	return TCL_OK;
@@ -5709,12 +5775,12 @@ int gnoclClearOptions ( GnoclOption *opts )
 \date
 \note
 **/
-int gnoclCgetNotImplemented (
-	Tcl_Interp *interp,
-	GnoclOption *opt )
+int gnoclCgetNotImplemented ( Tcl_Interp *interp, GnoclOption *opt )
 {
-	Tcl_AppendResult ( interp, "Command \"cget\" for option \"",
-					   opt->optName, "\" is not yet implemented."
+	Tcl_AppendResult ( interp,
+					   "Command \"cget\" for option \"",
+					   opt->optName,
+					   "\" is not yet implemented."
 					   "\nPlease mail the author, if you need it.", NULL );
 	return TCL_ERROR;
 }

@@ -2,6 +2,9 @@
 \brief
 \todo	add getColumn and getRow widget commands
 \history
+   2012-09: new option
+				-data
+			began work on cget
    2012-07: columnConfigure
             added option: -widget (embed widget within column header)
    2011-12: insertRow
@@ -116,6 +119,7 @@ static const int onSelectionChangedIdx = 7;
 static const int onRowExpandedIdx      = 8;
 static const int onRowCollapsedIdx     = 9;
 static const int treeLinePatternIdx    = 10;
+static const int dataIdx			   = 11;
 //static const int reorderableIdx        = 11;
 
 static GnoclOption treeListOptions[] =
@@ -134,6 +138,9 @@ static GnoclOption treeListOptions[] =
 	/* This is a problematic one. The parameter set via styles,
 	   rather than properties.
 	*/
+
+	{ "-data", GNOCL_STRING, NULL }, /* 11 */
+
 
 	{"-onInteractiveSearch", GNOCL_OBJ, "", gnoclOptOnInteractiveSearch},
 	{"-onMoveCursor", GNOCL_OBJ, "", gnoclOptOnMoveCursor},
@@ -177,6 +184,8 @@ static GnoclOption treeListOptions[] =
 	{ "-searchEntry",  GNOCL_OBJ, "", gnoclOptSearchEntryWidget },
 	{ "-tooltipColumn",  GNOCL_INT, "tooltip-column"},
 
+
+
 	{ NULL }
 };
 
@@ -202,8 +211,8 @@ static GnoclOption treeListOptions[] =
    "vadjustment"              GtkAdjustment*        : Read / Write
 */
 
-static const int widthIdx              = 0;
-static const int widgetIdx              = 1;
+static const int widthIdx = 0;
+static const int widgetIdx = 1;
 /**
 \brief	Column Options
 **/
@@ -1636,6 +1645,37 @@ errorExit:
 }
 
 /**
+\brief
+\author     Peter G Baum, William J Giddings
+\date
+**/
+static int cget ( Tcl_Interp *interp, TreeListParams *para, GnoclOption options[], int idx )
+{
+#ifdef DEBUG_LABEL
+	printf ( "label/staticFuncs/cget\n" );
+#endif
+
+	Tcl_Obj *obj = NULL;
+
+	if ( idx == dataIdx )
+	{
+		
+		obj = Tcl_NewStringObj ( para->data, -1 );
+		//gnoclOptParaData ( interp, para->data, &obj);
+	}
+
+
+	if ( obj != NULL )
+	{
+		Tcl_SetObjResult ( interp, obj );
+		return TCL_OK;
+	}
+
+	return gnoclCgetNotImplemented ( interp, options + idx );
+}
+
+
+/**
 \brief      Configure the GtkTreeView widget.
 **/
 static int configure ( Tcl_Interp *interp,	TreeListParams *para,	GnoclOption options[] )
@@ -1648,6 +1688,12 @@ static int configure ( Tcl_Interp *interp,	TreeListParams *para,	GnoclOption opt
 	if ( gnoclSetOptions ( interp, options, G_OBJECT ( para->view ), -1 ) != TCL_OK )
 	{
 		return TCL_ERROR;
+	}
+
+	if ( options[dataIdx].status == GNOCL_STATUS_CHANGED )
+	{
+		g_print ("set data =%s\n",options[dataIdx].val.str);
+		para->data = strdup(options[dataIdx].val.str);
 	}
 
 	if ( options[selectionModeIdx].status == GNOCL_STATUS_CHANGED )
@@ -3315,7 +3361,7 @@ int treeListFunc ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * con
 
 	const char *cmds[] =
 	{
-		"delete", "configure",
+		"cget", "delete", "configure",
 		"add", "addBegin", "addEnd",
 		"getSelection", "setSelection", "onSelectionChanged",
 		"columnConfigure", "columnCget", "get",
@@ -3331,7 +3377,7 @@ int treeListFunc ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * con
 
 	enum cmdIdx
 	{
-		DeleteIdx, ConfigureIdx,
+		CgetIdx, DeleteIdx, ConfigureIdx,
 		AddIdx, AddBeginIdx, AddEndIdx,
 		GetSelectionIdx, SetSelectionIdx, OnSelectionChangedIdx,
 		ColumnConfigureIdx, ColumnCgetIdx, GetIdx,
@@ -3365,6 +3411,28 @@ int treeListFunc ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * con
 			0   1      2
 			$id resize colId
 			*/
+		case CgetIdx:
+			{
+				int idx;
+
+				switch ( gnoclCget ( interp, objc, objv, G_OBJECT ( para ), treeListOptions, &idx ) )
+				{
+					case GNOCL_CGET_ERROR:
+						{
+							return TCL_ERROR;
+						}
+					case GNOCL_CGET_HANDLED:
+						{
+							return TCL_OK;
+						}
+					case GNOCL_CGET_NOTHANDLED:
+						{
+							return cget ( interp, G_OBJECT ( para ), treeListOptions, idx );
+						}
+				}
+
+			}
+			break;
 		case OptionsIdx:
 			{
 				gnoclGetWidgetOptions ( interp, treeListOptions );
@@ -3823,7 +3891,6 @@ static int gnoclTreeListCmd ( ClientData data, Tcl_Interp * interp, int objc, Tc
 
 	/* create a new parameters list for the GtkTreeView widget */
 	para = g_new ( TreeListParams, 1 );
-
 	para->noColumns = noColumns;
 	types = g_new ( GType, 2 * noColumns );
 	isMarkup = g_new ( int, noColumns );

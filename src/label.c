@@ -60,6 +60,7 @@ static const int cursorIdx = 4;
 static const int widgetIdx = 5;
 static const int mnemonicIdx = 6;
 static const int resizableIdx = 7;
+static const int dataIdx = 9;
 
 static GnoclOption labelOptions[] =
 {
@@ -69,10 +70,10 @@ static GnoclOption labelOptions[] =
 	{ "-value", GNOCL_STRING, NULL},
 	{ "-text", GNOCL_STRING, NULL},                     /* 3 */
 	{ "-showCursor", GNOCL_BOOL, NULL},					/* 4 */
-	{ "-mnemonicWidget", GNOCL_STRING, NULL },
-	{ "-mnemonicText", GNOCL_STRING, NULL },
-	{ "-resizable", GNOCL_BOOL, NULL },
-
+	{ "-mnemonicWidget", GNOCL_STRING, NULL }, //6
+	{ "-mnemonicText", GNOCL_STRING, NULL }, //7
+	{ "-resizable", GNOCL_BOOL, NULL }, //8
+	{ "-data", GNOCL_OBJ, "", gnoclOptData }, //9
 
 	/* gtklabel specific properties */
 	{ "-angle", GNOCL_DOUBLE, "angle" },
@@ -96,7 +97,7 @@ static GnoclOption labelOptions[] =
 
 	/* inherited properties */
 	{ "-align", GNOCL_OBJ, "?align", gnoclOptBothAlign },
-	{ "-data", GNOCL_OBJ, "", gnoclOptData },
+
 	{ "-heightGroup", GNOCL_OBJ, "h", gnoclOptSizeGroup },
 	{ "-name", GNOCL_STRING, "name" },
 
@@ -305,6 +306,13 @@ static int configure ( Tcl_Interp *interp, LabelParams *para, GnoclOption option
 			setVal ( para->label, val );
 	}
 
+	if ( options[dataIdx].status == GNOCL_STATUS_CHANGED )
+	{
+		gnoclOptData ( interp, &options[dataIdx], para->label, NULL );
+		return TCL_OK;
+	}
+
+
 	if ( options[valueIdx].status == GNOCL_STATUS_CHANGED )
 	{
 		char *str = options[valueIdx].val.str;
@@ -366,6 +374,14 @@ static int cget ( Tcl_Interp *interp, LabelParams *para, GnoclOption options[], 
 #endif
 
 	Tcl_Obj *obj = NULL;
+
+	if ( idx == dataIdx )
+	{
+		g_print ( "dataIdx\n" );
+		obj = Tcl_NewStringObj ( g_object_get_data ( G_OBJECT ( para->label ), "gnocl::data" ), -1 );
+	}
+
+
 
 	if ( idx == textVariableIdx )
 	{
@@ -458,7 +474,7 @@ int labelFunc (	ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const o
 						}
 					case GNOCL_CGET_NOTHANDLED:
 						{
-							return cget ( interp, para, labelOptions, idx );
+							return cget ( interp, para->label, labelOptions, idx );
 						}
 				}
 			}

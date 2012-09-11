@@ -1,5 +1,6 @@
 /*
  History:
+    2012-09: added delete command
  	2010-01: added cget
  	2009-05: added configure
  	2009-04: Began developement
@@ -688,6 +689,7 @@ int assistantFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * con
 #ifdef DEBUG_ASSISTANT
 				g_print ( "assistantFunc\AddIdx %s %s \n",  Tcl_GetString ( objv[2] ),  Tcl_GetString ( objv[3] ) );
 #endif
+				return gnoclDelete ( interp, GTK_WIDGET ( assistant ), objc, objv );
 				break;
 			}
 

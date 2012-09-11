@@ -60,6 +60,7 @@ static gboolean doOnResponse ( GtkInfoBar *infobar, gint response_id, gpointer u
 	{
 		{ 'w', GNOCL_STRING },
 		{ 'd', GNOCL_INT },
+
 		{ 0 }
 	};
 

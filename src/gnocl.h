@@ -159,22 +159,6 @@ typedef struct GnoclOption_
 int gnoclOptWindowCenter ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret );
 int gnoclOptGdkBaseFont ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret );
 
-/*
-static void doOnEvent (
-    GtkTextTag *texttag,
-    GObject *arg1,
-    GdkEvent *event,
-    GtkTextIter *arg2,
-    gpointer data );
-
-static void _doOnEvent (
-    GtkTextTag *texttag,
-    GObject *arg1,
-    GdkEvent *event,
-    GtkTextIter *arg2,
-    gpointer data );
-*/
-
 gnoclOptFunc gnoclOptOnEvent;
 gnoclOptFunc gnoclOptOnScroll;
 
@@ -276,6 +260,7 @@ gnoclOptFunc gnoclOptRGBAColor;
 gnoclOptFunc gnoclOptScale;
 gnoclOptFunc gnoclOptShadow;
 gnoclOptFunc gnoclOptSizeGroup;
+gnoclOptFunc gnoclOptHWGroup;
 gnoclOptFunc gnoclOptTooltip;
 gnoclOptFunc gnoclOptUnderline;
 gnoclOptFunc gnoclOptWidget;

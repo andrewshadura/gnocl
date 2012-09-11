@@ -12,6 +12,7 @@
 
 /*
    History:
+   2012-08: added %d (data) to -onToggled substitutions.
    2008-10: added command, class
    2004-02: added -data
         09: added cget
@@ -92,11 +93,13 @@ static int checkDoCommand ( GnoclCheckParams *para, Tcl_Obj *val, int bg )
 		{
 			{ 'w', GNOCL_STRING },  /* widget */
 			{ 'v', GNOCL_OBJ },     /* value */
+			{ 'd', GNOCL_STRING },	/* data */
 			{ 0 }
 		};
 
 		ps[0].val.str = para->name;
 		ps[1].val.obj = val;
+		ps[2].val.str = g_object_get_data ( G_OBJECT ( para->widget ), "gnocl::data" );
 
 		return gnoclPercentSubstAndEval ( para->interp, ps, para->onToggled, bg );
 	}
@@ -484,11 +487,7 @@ int checkButtonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * c
 /**
 \brief
 **/
-int gnoclCheckButtonCmd (
-	ClientData data,
-	Tcl_Interp *interp,
-	int objc,
-	Tcl_Obj * const objv[] )
+int gnoclCheckButtonCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
 	GnoclCheckParams *para;
 	int ret;

@@ -893,16 +893,20 @@ static int configure ( Tcl_Interp *interp, GtkWindow *window, GnoclOption option
 		gtk_window_move ( window, options[xIdx].val.i, options[yIdx].val.i );
 	}
 
-	else if ( options[xIdx].status == GNOCL_STATUS_CHANGED
-			  || options[yIdx].status == GNOCL_STATUS_CHANGED )
+	else if ( options[xIdx].status == GNOCL_STATUS_CHANGED || options[yIdx].status == GNOCL_STATUS_CHANGED )
 	{
 		int x, y;
 		gtk_window_get_position ( window, &x, &y );
 
 		if ( options[xIdx].status == GNOCL_STATUS_CHANGED )
+		{
 			x = options[xIdx].val.i;
+		}
+
 		else
+		{
 			y = options[yIdx].val.i;
+		}
 
 		gtk_window_move ( window, x, y );
 	}
@@ -913,20 +917,23 @@ static int configure ( Tcl_Interp *interp, GtkWindow *window, GnoclOption option
 	if ( options[widthIdx].status == GNOCL_STATUS_CHANGED
 			&& options[heightIdx].status == GNOCL_STATUS_CHANGED )
 	{
-		gtk_window_resize ( window, options[widthIdx].val.i,
-							options[heightIdx].val.i );
+		gtk_window_resize ( window, options[widthIdx].val.i, options[heightIdx].val.i );
 	}
 
-	else if ( options[widthIdx].status == GNOCL_STATUS_CHANGED
-			  || options[heightIdx].status == GNOCL_STATUS_CHANGED )
+	else if ( options[widthIdx].status == GNOCL_STATUS_CHANGED || options[heightIdx].status == GNOCL_STATUS_CHANGED )
 	{
 		int width, height;
 		gtk_window_get_size ( window, &width, &height );
 
 		if ( options[widthIdx].status == GNOCL_STATUS_CHANGED )
+		{
 			width = options[widthIdx].val.i;
+		}
+
 		else
+		{
 			height = options[heightIdx].val.i;
+		}
 
 		gtk_window_resize ( window, width, height );
 	}

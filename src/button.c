@@ -694,7 +694,7 @@ int gnoclButtonCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * co
 
 	gnoclMemNameAndWidget ( para->name, GTK_WIDGET ( para->button ) );
 
-	Tcl_CreateObjCommand ( interp, para->name, labelFunc, para, NULL );
+	Tcl_CreateObjCommand ( interp, para->name, buttonFunc, para, NULL );
 
 	Tcl_SetObjResult ( interp, Tcl_NewStringObj ( para->name, -1 ) );
 

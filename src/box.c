@@ -250,8 +250,7 @@ static int addChildren ( GtkBox *box, Tcl_Interp *interp, Tcl_Obj *children, Gno
 
 		if ( needAlign )
 		{
-			GtkWidget *alignment = gtk_alignment_new ( xAlign, yAlign,
-								   xFill, yFill );
+			GtkWidget *alignment = gtk_alignment_new ( xAlign, yAlign, xFill, yFill );
 			/* alignment is deleted on deletion of childWidget
 			   only necessary, if not whole box is destroyed */
 			g_signal_connect ( G_OBJECT ( childWidget ), "destroy", G_CALLBACK ( alignDestroyFunc ), alignment );
@@ -278,14 +277,17 @@ static int addChildren ( GtkBox *box, Tcl_Interp *interp, Tcl_Obj *children, Gno
 \brief
 \note
 **/
-static int optLayout ( Tcl_Interp *interp, GnoclOption *opt,
-					   GObject *obj, Tcl_Obj **ret )
+static int optLayout ( Tcl_Interp *interp, GnoclOption *opt,  GObject *obj, Tcl_Obj **ret )
 {
-	static const char *txt[] = { "default", "spread", "edge", "start", "end", \
-								 NULL
-							   };
-	int types[] = { GTK_BUTTONBOX_DEFAULT_STYLE,
-					GTK_BUTTONBOX_SPREAD, GTK_BUTTONBOX_EDGE, GTK_BUTTONBOX_START,
+	static const char *txt[] =
+	{
+		"default", "spread",
+		"edge", "start",
+		"end", NULL
+	};
+
+	int types[] = { GTK_BUTTONBOX_DEFAULT_STYLE, GTK_BUTTONBOX_SPREAD,
+					GTK_BUTTONBOX_EDGE, GTK_BUTTONBOX_START,
 					GTK_BUTTONBOX_END
 				  };
 
@@ -302,8 +304,12 @@ static int needFrame ( const GnoclOption options[] )
 	int k;
 
 	for ( k = startFrameOpts; k < startCommonOpts; ++k )
+	{
 		if ( options[k].status == GNOCL_STATUS_CHANGED )
+		{
 			return 1;
+		}
+	}
 
 	return 0;
 }

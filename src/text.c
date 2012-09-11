@@ -41,19 +41,13 @@
    2009-01	added -text option to allow plain text creation at startup
    2008-04	renamed function gnoclOptOnInsertText to  gnoclOptOnTextInsert
    2009-04	added commands save, load, (aka serialize, deserialize)
-
    2009-02	added -onScroll and -widthRequest
    			added commands search and replace
    2009-01	added -heightRequest
-
-
    2008-06	added new options -onEntry and -onLeave
    				(required modification of the text widget signal mask)
-
    2008-06  added   <id> getSelectionBounds, returns range currently selected
                     <id> -onInsertText script
-
-
    [not finnished] 2008-03: XYgetCursor -retrive row/col position under window coordinates, XY
    [not finnished] 2008-03: cget retrieve current setting for specified option, based upon entry.c
 
@@ -61,17 +55,17 @@
    2008-03: added command 'class', return class of widget, ie. text
    2007-11: extened tag command to include apply / remove
    2007-11: added extended list of tag options to include
-      -onEvent
+           -onEvent
    2007-10: added new options to the text widget
-      -baseFont
-          -baseColor
-          -onButtonPress
-          -onButtonRelease
-          -onKeyPress
-          -onKeyRelease
-          -onMotion
-          -dropTargets -test this option
-          -dragTargets -test this option
+           -baseFont
+           -baseColor
+           -onButtonPress
+           -onButtonRelease
+           -onKeyPress
+           -onKeyRelease
+           -onMotion
+           -dropTargets -test this option
+           -dragTargets -test this option
    2003-03: added scrollToPosition
         11: switched from GnoclWidgetOptions to GnoclOption
    2002-05: transition to gtk 2.0: move from gtkText to gtkTextView
@@ -119,7 +113,7 @@ static gint usemarkup = 0;
 static void destroyFunc ( GtkWidget *widget, gpointer data )
 {
 #ifdef DEBUG_TEXT
-	printf ( "%s\n",__FUNCTION__ );
+	printf ( "%s\n", __FUNCTION__ );
 #endif
 
 
@@ -145,7 +139,7 @@ static void destroyFunc ( GtkWidget *widget, gpointer data )
 static void changedFunc ( GtkWidget *widget, gpointer data )
 {
 #ifdef DEBUG_TEXT
-	printf ( "%s\n",__FUNCTION__ );
+	printf ( "%s\n", __FUNCTION__ );
 #endif
 
 	TextParams *para = ( TextParams * ) data;
@@ -154,13 +148,13 @@ static void changedFunc ( GtkWidget *widget, gpointer data )
 	GtkTextView *text = GTK_TEXT_VIEW ( gtk_bin_get_child ( GTK_BIN ( scrolled ) ) );
 	GtkTextBuffer *buffer = gtk_text_view_get_buffer ( text );
 
-	GtkTextIter start,end;
-	gtk_text_buffer_get_bounds ( buffer, &start, &end);
-	const char *val = gtk_text_buffer_get_text (buffer, &start, &end, FALSE );
-	
-	g_print ("....%s\n",val);
-	
-	
+	GtkTextIter start, end;
+	gtk_text_buffer_get_bounds ( buffer, &start, &end );
+	const char *val = gtk_text_buffer_get_text ( buffer, &start, &end, FALSE );
+
+	g_print ( "....%s\n", val );
+
+
 	//const char *val = gtk_label_get_text ( para->label );
 	setTextVariable ( para, val );
 	//doCommand ( para, val, 1 );
@@ -172,7 +166,7 @@ static void changedFunc ( GtkWidget *widget, gpointer data )
 static int setTextVariable ( TextParams *para,	const char *val )
 {
 #ifdef DEBUG_TEXT
-	printf ( "%s\n",__FUNCTION__ );;
+	printf ( "%s\n", __FUNCTION__ );;
 #endif
 
 
@@ -196,9 +190,9 @@ static int setVal ( GtkTextBuffer *buffer, const char *txt )
 	int blocked;
 	blocked = g_signal_handlers_block_matched ( G_OBJECT ( buffer ), G_SIGNAL_MATCH_FUNC, 0, 0, NULL, ( gpointer * ) changedFunc, NULL );
 	//gtk_label_set_text ( label, txt );
-	
-	gtk_text_buffer_set_text (buffer, txt,-1);
-	
+
+	gtk_text_buffer_set_text ( buffer, txt, -1 );
+
 	//gtk_label_set_markup ( label, txt );
 
 	//OptLabelFull ( label, txt );
@@ -1177,9 +1171,9 @@ static GnoclOption textOptions[] =
 	{ "-useUndo", GNOCL_STRING, NULL},
 	{ "-data", GNOCL_OBJ, "", gnoclOptData },
 	{ "-baseColor", GNOCL_OBJ, "normal", gnoclOptGdkColorBase },
-	
-	{ "-variable", GNOCL_STRING, NULL }, 
-	{ "-onChanged", GNOCL_STRING, NULL }, 
+
+	{ "-variable", GNOCL_STRING, NULL },
+	{ "-onChanged", GNOCL_STRING, NULL },
 
 
 	/* GtkTextView properties
@@ -1318,6 +1312,8 @@ static GnoclOption textOptions[] =
 
 	/*  inherited GtkWidget features */
 	{ "-onScroll", GNOCL_OBJ, "", gnoclOptOnScroll },
+
+	{ "-borderWidth", GNOCL_OBJ, "border-width", gnoclOptPadding },
 
 	/* drag and drop functionality taken from box.c */
 	{ "-dropTargets", GNOCL_LIST, "t", gnoclOptDnDTargets },
@@ -2753,14 +2749,15 @@ clearExit:
 /**
 \brief	** USING ** TEXTPARAMS
 **/
-static int configure ( Tcl_Interp *interp, TextParams *para, GnoclOption options[] ) {
+static int configure ( Tcl_Interp *interp, TextParams *para, GnoclOption options[] )
+{
 
 	GtkScrolledWindow *scrolled = para->scrolled;
 	GtkTextView *text = GTK_TEXT_VIEW ( gtk_bin_get_child ( GTK_BIN ( scrolled ) ) );
 	GtkTextBuffer *buffer = gtk_text_view_get_buffer ( text );
 
 
-/****************************/
+	/****************************/
 
 	gnoclAttachOptCmdAndVar (
 		&options[onChangedIdx], &para->onChanged,
@@ -2775,99 +2772,23 @@ static int configure ( Tcl_Interp *interp, TextParams *para, GnoclOption options
 
 		if ( val == NULL )
 		{
-			
-			 GtkTextIter *start,*end;
-			
-			gtk_text_buffer_get_bounds ( buffer, start,end);
-			
-			val = gtk_text_buffer_get_text (buffer, start,end,0 );
-			
+
+			GtkTextIter *start, *end;
+
+			gtk_text_buffer_get_bounds ( buffer, start, end );
+
+			val = gtk_text_buffer_get_text ( buffer, start, end, 0 );
+
 			setTextVariable ( para, val );
 		}
 
-		else {
+		else
+		{
 			//setVal ( para->label, val );
 		}
 	}
 
-/*****************************/
-
-
-	if ( options[textIdx].status == GNOCL_STATUS_CHANGED )
-	{
-		//printf ( "INSERT SOME TEXT-b\n" );
-
-		char *str = options[textIdx].val.str;
-		gtk_text_buffer_set_text ( buffer, str, -1 );
-	}
-
-	if ( options[scrollBarIdx].status == GNOCL_STATUS_CHANGED )
-	{
-		GtkPolicyType hor, vert;
-
-		if ( gnoclGetScrollbarPolicy ( interp, options[scrollBarIdx].val.obj, &hor, &vert ) != TCL_OK )
-		{
-			return TCL_ERROR;
-		}
-
-		gtk_scrolled_window_set_policy ( scrolled, hor, vert );
-	}
-
-	if ( options[bufferIdx].status == GNOCL_STATUS_CHANGED )
-	{
-		printf ( "APPLY NEW BUFFER-%s\n", options[bufferIdx].val.str );
-
-		GtkTextBuffer *buffer;
-
-		buffer = gnoclGetWidgetFromName ( options[bufferIdx].val.str, interp );
-
-		gtk_text_view_set_buffer ( text, buffer );
-
-	}
-
-
-	return TCL_OK;
-}
-
-
-
-/**
-\brief
-\note        04/12/09 WJG modified to allow for variable assignment
-**/
-static int _configure ( Tcl_Interp * interp, GtkScrolledWindow * scrolled, GtkTextView * text, GnoclOption options[] )
-{
-
-	GtkTextBuffer *buffer;
-	buffer = gtk_text_view_get_buffer ( text );
-
-
-/****************************/
-
-/*
-	gnoclAttachOptCmdAndVar (
-		&options[onChangedIdx], &para->onChanged,
-		&options[variableIdx], &para->textVariable,
-		"changed", G_OBJECT ( para->label ),
-		G_CALLBACK ( changedFunc ), interp, traceFunc, para );
-
-	if ( options[variableIdx].status == GNOCL_STATUS_CHANGED && para->textVariable != NULL )
-	{
-		// if variable does not exist -> set it, else set widget state
-		const char *val = Tcl_GetVar ( interp, para->textVariable, TCL_GLOBAL_ONLY );
-
-		if ( val == NULL )
-		{
-			//val = gtk_label_get_text ( para->label );
-			//setTextVariable ( para, val );
-		}
-
-		else {
-			//setVal ( para->label, val );
-		}
-	}
-*/
-/*****************************/
+	/*****************************/
 
 
 	if ( options[textIdx].status == GNOCL_STATUS_CHANGED )
@@ -2960,7 +2881,6 @@ static void gnoclGetTagRanges ( Tcl_Interp * interp, GtkTextBuffer * buffer, gch
 #ifdef DEBUG_TEXT
 	g_print ( "%s %s\n", __FUNCTION__, tagName );
 #endif
-
 
 	GtkTextIter iter;
 	GtkTextTag *tag;
@@ -4796,9 +4716,9 @@ int textViewFunc ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj *  co
 **/
 int gnoclTextCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj *  const objv[] )
 {
-	
+
 	TextParams *para;
-	
+
 	int               ret, k;
 	GtkTextView       *textView;
 	GtkTextView       *textBuffer;
@@ -4848,7 +4768,7 @@ int gnoclTextCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj *  co
 		gtk_widget_destroy ( GTK_WIDGET ( para->scrolled ) );
 		return TCL_ERROR;
 	}
-	
+
 	para->name = gnoclGetAutoWidgetId();
 
 	g_signal_connect ( G_OBJECT ( para->scrolled ), "destroy", G_CALLBACK ( destroyFunc ), para );
@@ -4860,5 +4780,5 @@ int gnoclTextCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj *  co
 	Tcl_SetObjResult ( interp, Tcl_NewStringObj ( para->name, -1 ) );
 
 	return TCL_OK;
-	
+
 }

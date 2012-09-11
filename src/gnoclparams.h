@@ -155,6 +155,7 @@ typedef struct
 	int               isTree;
 	GtkEntry 		  *searchEntry;
 	GHashTable        *idToIter;
+	char			  *data;
 } TreeListParams;
 
 typedef struct

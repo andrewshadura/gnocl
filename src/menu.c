@@ -12,6 +12,7 @@
 
 /*
    History:
+   2012-09: added -data option
    2008-10: added command, class
         10: switched from GnoclWidgetOptions to GnoclOption
    2002-04: updates for gtk 2.0
@@ -40,6 +41,9 @@ static GnoclOption menuOptions[] =
 	{ "-name", GNOCL_STRING, "name" },
 	{ "-visible", GNOCL_BOOL, "visible" },
 	{ "-sensitive", GNOCL_BOOL, "sensitive" },
+
+	/* GtkObject Properties */
+	{ "-data", GNOCL_OBJ, "", gnoclOptData },
 	{ NULL }
 };
 
