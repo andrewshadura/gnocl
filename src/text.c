@@ -13,6 +13,9 @@
 
 /*
    History:
+   2012-10	added -onDestroy
+   2012-09	cget -baseFont implemented
+			resetUndo
    2012-08  migrated to the use of TextParams to hold widget details
 			implemented -variable option
    2012-07	added grabFocus, same effect as setting the -hasFocus option
@@ -83,6 +86,7 @@
 
 #include "gnocl.h"
 #include "gnoclparams.h"
+#include "./textUndo/undo_manager.h"
 #include <string.h>
 #include <assert.h>
 
@@ -950,70 +954,70 @@ static int gnoclOptMarkupTags ( Tcl_Interp * interp, GnoclOption * opt, GObject 
 
 	/* foreground colours */
 	// 'red', 'green', 'blue', 'cyan', 'magenta', 'yellow', 'black', 'gray', 'white'
-	gtk_text_buffer_create_tag ( buffer, "<span foreground=\"red\">",   "foreground", "red", NULL );
-	gtk_text_buffer_create_tag ( buffer, "<span foreground=\"green\">", "foreground", "green", NULL );
-	gtk_text_buffer_create_tag ( buffer, "<span foreground=\"blue\">",  "foreground", "blue", NULL );
+	gtk_text_buffer_create_tag ( buffer, "<span foreground='red'>",   "foreground", "red", NULL );
+	gtk_text_buffer_create_tag ( buffer, "<span foreground='green'>", "foreground", "green", NULL );
+	gtk_text_buffer_create_tag ( buffer, "<span foreground='blue'>",  "foreground", "blue", NULL );
 
-	gtk_text_buffer_create_tag ( buffer, "<span foreground=\"black\">", "foreground", "black", NULL );
-	gtk_text_buffer_create_tag ( buffer, "<span foreground=\"gray\">",  "foreground", "gray", NULL );
-	gtk_text_buffer_create_tag ( buffer, "<span foreground=\"white\">", "foreground", "white", NULL );
+	gtk_text_buffer_create_tag ( buffer, "<span foreground='black'>", "foreground", "black", NULL );
+	gtk_text_buffer_create_tag ( buffer, "<span foreground='gray'>",  "foreground", "gray", NULL );
+	gtk_text_buffer_create_tag ( buffer, "<span foreground='white'>", "foreground", "white", NULL );
 
 	/* background colours */
 	// 'red', 'green', 'blue', 'cyan', 'magenta', 'yellow', 'black', 'gray', 'white'
-	gtk_text_buffer_create_tag ( buffer, "<span background=\"cyan\">",    "background", "cyan", NULL );
-	gtk_text_buffer_create_tag ( buffer, "<span background=\"magenta\">", "background", "magenta", NULL );
-	gtk_text_buffer_create_tag ( buffer, "<span background=\"yellow\">",  "background", "yellow", NULL );
+	gtk_text_buffer_create_tag ( buffer, "<span background='cyan'>",    "background", "cyan", NULL );
+	gtk_text_buffer_create_tag ( buffer, "<span background='magenta'>", "background", "magenta", NULL );
+	gtk_text_buffer_create_tag ( buffer, "<span background='yellow'>",  "background", "yellow", NULL );
 
-	gtk_text_buffer_create_tag ( buffer, "<span background=\"black\">", "background", "black", NULL );
-	gtk_text_buffer_create_tag ( buffer, "<span background=\"gray\">",  "background", "gray", NULL );
-	gtk_text_buffer_create_tag ( buffer, "<span background=\"white\">", "background", "white", NULL );
+	gtk_text_buffer_create_tag ( buffer, "<span background='black'>", "background", "black", NULL );
+	gtk_text_buffer_create_tag ( buffer, "<span background='gray'>",  "background", "gray", NULL );
+	gtk_text_buffer_create_tag ( buffer, "<span background='white'>", "background", "white", NULL );
 
 	/* default typefaces */
 	// 'serif' or 'sans'
-	gtk_text_buffer_create_tag ( buffer, "<span face=\"sans\">", "font", "serif", NULL );
-	gtk_text_buffer_create_tag ( buffer, "<span face=\"serif\">", "font", "sans", NULL );
+	gtk_text_buffer_create_tag ( buffer, "<span face='sans'>", "font", "serif", NULL );
+	gtk_text_buffer_create_tag ( buffer, "<span face='serif'>", "font", "sans", NULL );
 
 	/* font scaling */
 	// 'xx-small', 'x-small', 'small', 'medium', 'large', 'x-large', 'xx-large'
-	gtk_text_buffer_create_tag ( buffer, "<span size=\"xx-small\">", "scale", PANGO_SCALE_XX_SMALL, NULL );
-	gtk_text_buffer_create_tag ( buffer, "<span size=\"x-small\">" , "scale", PANGO_SCALE_X_SMALL, NULL );
-	gtk_text_buffer_create_tag ( buffer, "<span size=\"small\">"   , "scale", PANGO_SCALE_SMALL, NULL );
-	gtk_text_buffer_create_tag ( buffer, "<span size=\"medium\">"  , "scale", PANGO_SCALE_MEDIUM, NULL );
-	gtk_text_buffer_create_tag ( buffer, "<span size=\"large\">"   , "scale", PANGO_SCALE_LARGE, NULL );
-	gtk_text_buffer_create_tag ( buffer, "<span size=\"x-large\">" , "scale", PANGO_SCALE_X_LARGE, NULL );
-	gtk_text_buffer_create_tag ( buffer, "<span size=\"xx-large\">", "scale", PANGO_SCALE_XX_LARGE, NULL );
+	gtk_text_buffer_create_tag ( buffer, "<span size='xx-small'>", "scale", PANGO_SCALE_XX_SMALL, NULL );
+	gtk_text_buffer_create_tag ( buffer, "<span size='x-small'>" , "scale", PANGO_SCALE_X_SMALL, NULL );
+	gtk_text_buffer_create_tag ( buffer, "<span size='small'>"   , "scale", PANGO_SCALE_SMALL, NULL );
+	gtk_text_buffer_create_tag ( buffer, "<span size='medium'>"  , "scale", PANGO_SCALE_MEDIUM, NULL );
+	gtk_text_buffer_create_tag ( buffer, "<span size='large'>"   , "scale", PANGO_SCALE_LARGE, NULL );
+	gtk_text_buffer_create_tag ( buffer, "<span size='x-large'>" , "scale", PANGO_SCALE_X_LARGE, NULL );
+	gtk_text_buffer_create_tag ( buffer, "<span size='xx-large'>", "scale", PANGO_SCALE_XX_LARGE, NULL );
 
 	/* font weight */
 	//'ultralight', 'light', 'normal', 'bold', 'ultrabold', 'heavy'
-	gtk_text_buffer_create_tag ( buffer, "<span weight=\"light\">"    , "weight", PANGO_WEIGHT_LIGHT, NULL );
-	gtk_text_buffer_create_tag ( buffer, "<span weight=\"normal\">"   , "weight", PANGO_WEIGHT_NORMAL, NULL );
-	gtk_text_buffer_create_tag ( buffer, "<span weight=\"bold\">"     , "weight", PANGO_WEIGHT_BOLD, NULL );
-	gtk_text_buffer_create_tag ( buffer, "<span weight=\"ultrabold\">", "weight", PANGO_WEIGHT_ULTRABOLD, NULL );
-	gtk_text_buffer_create_tag ( buffer, "<span weight=\"heavy\">"    , "weight", PANGO_WEIGHT_HEAVY, NULL );
+	gtk_text_buffer_create_tag ( buffer, "<span weight='light'>"    , "weight", PANGO_WEIGHT_LIGHT, NULL );
+	gtk_text_buffer_create_tag ( buffer, "<span weight='normal'>"   , "weight", PANGO_WEIGHT_NORMAL, NULL );
+	gtk_text_buffer_create_tag ( buffer, "<span weight='bold'>"     , "weight", PANGO_WEIGHT_BOLD, NULL );
+	gtk_text_buffer_create_tag ( buffer, "<span weight='ultrabold'>", "weight", PANGO_WEIGHT_ULTRABOLD, NULL );
+	gtk_text_buffer_create_tag ( buffer, "<span weight='heavy'>"    , "weight", PANGO_WEIGHT_HEAVY, NULL );
 
 	/* variant */
 	// 'normal' or 'smallcaps'
-	gtk_text_buffer_create_tag ( buffer, "<span variant=\"normal\">"    , "variant", PANGO_VARIANT_NORMAL, NULL );
-	gtk_text_buffer_create_tag ( buffer, "<span variant=\"smallcaps\">" , "variant", PANGO_VARIANT_SMALL_CAPS, NULL );
+	gtk_text_buffer_create_tag ( buffer, "<span variant='normal'>"    , "variant", PANGO_VARIANT_NORMAL, NULL );
+	gtk_text_buffer_create_tag ( buffer, "<span variant='smallcaps'>" , "variant", PANGO_VARIANT_SMALL_CAPS, NULL );
 
 	/* stretch */
 	// 'ultracondensed', 'extracondensed', 'condensed', 'semicondensed', 'normal', 'semiexpanded', 'expanded', 'extraexpanded', 'ultraexpanded'
-	gtk_text_buffer_create_tag ( buffer, "<span stretch=\"ultracondensed\">" , "stretch", PANGO_STRETCH_ULTRA_CONDENSED, NULL );
-	gtk_text_buffer_create_tag ( buffer, "<span stretch=\"extracondensed\">" , "stretch", PANGO_STRETCH_EXTRA_CONDENSED, NULL );
-	gtk_text_buffer_create_tag ( buffer, "<span stretch=\"condensed\">"      , "stretch", PANGO_STRETCH_CONDENSED, NULL );
-	gtk_text_buffer_create_tag ( buffer, "<span stretch=\"normal\">"         , "stretch", PANGO_STRETCH_NORMAL, NULL );
-	gtk_text_buffer_create_tag ( buffer, "<span stretch=\"semicondensed\">"  , "stretch", PANGO_STRETCH_SEMI_CONDENSED, NULL );
-	gtk_text_buffer_create_tag ( buffer, "<span stretch=\"expanded\">"       , "stretch", PANGO_STRETCH_EXPANDED, NULL );
-	gtk_text_buffer_create_tag ( buffer, "<span stretch=\"extraexpanded\">"  , "stretch", PANGO_STRETCH_EXTRA_EXPANDED, NULL );
-	gtk_text_buffer_create_tag ( buffer, "<span stretch=\"ultraexpanded\">"  , "stretch", PANGO_STRETCH_ULTRA_EXPANDED, NULL );
+	gtk_text_buffer_create_tag ( buffer, "<span stretch='ultracondensed'>" , "stretch", PANGO_STRETCH_ULTRA_CONDENSED, NULL );
+	gtk_text_buffer_create_tag ( buffer, "<span stretch='extracondensed'>" , "stretch", PANGO_STRETCH_EXTRA_CONDENSED, NULL );
+	gtk_text_buffer_create_tag ( buffer, "<span stretch='condensed'>"      , "stretch", PANGO_STRETCH_CONDENSED, NULL );
+	gtk_text_buffer_create_tag ( buffer, "<span stretch='normal'>"         , "stretch", PANGO_STRETCH_NORMAL, NULL );
+	gtk_text_buffer_create_tag ( buffer, "<span stretch='semicondensed'>"  , "stretch", PANGO_STRETCH_SEMI_CONDENSED, NULL );
+	gtk_text_buffer_create_tag ( buffer, "<span stretch='expanded'>"       , "stretch", PANGO_STRETCH_EXPANDED, NULL );
+	gtk_text_buffer_create_tag ( buffer, "<span stretch='extraexpanded'>"  , "stretch", PANGO_STRETCH_EXTRA_EXPANDED, NULL );
+	gtk_text_buffer_create_tag ( buffer, "<span stretch='ultraexpanded'>"  , "stretch", PANGO_STRETCH_ULTRA_EXPANDED, NULL );
 
 	/* underline */
 	// 'none', 'single', 'double', 'low', 'error'
-	gtk_text_buffer_create_tag ( buffer, "<span underline=\"none\">"   , "underline", PANGO_UNDERLINE_NONE, NULL );
-	gtk_text_buffer_create_tag ( buffer, "<span underline=\"single\">" , "underline", PANGO_UNDERLINE_SINGLE, NULL );
-	gtk_text_buffer_create_tag ( buffer, "<span underline=\"double\">" , "underline", PANGO_UNDERLINE_DOUBLE, NULL );
-	gtk_text_buffer_create_tag ( buffer, "<span underline=\"low\">"    , "underline", PANGO_UNDERLINE_LOW, NULL );
-	gtk_text_buffer_create_tag ( buffer, "<span underline=\"error\">"  , "underline", PANGO_UNDERLINE_ERROR, NULL );
+	gtk_text_buffer_create_tag ( buffer, "<span underline='none'>"   , "underline", PANGO_UNDERLINE_NONE, NULL );
+	gtk_text_buffer_create_tag ( buffer, "<span underline='single'>" , "underline", PANGO_UNDERLINE_SINGLE, NULL );
+	gtk_text_buffer_create_tag ( buffer, "<span underline='double'>" , "underline", PANGO_UNDERLINE_DOUBLE, NULL );
+	gtk_text_buffer_create_tag ( buffer, "<span underline='low'>"    , "underline", PANGO_UNDERLINE_LOW, NULL );
+	gtk_text_buffer_create_tag ( buffer, "<span underline='error'>"  , "underline", PANGO_UNDERLINE_ERROR, NULL );
 
 	return TCL_OK;
 }
@@ -1156,9 +1160,9 @@ static const int bufferIdx = 2;
 static const int useUndoIdx = 3;
 static const int dataIdx = 4;
 static const int baseColorIdx = 5;
-
 static const int variableIdx = 6;
 static const int onChangedIdx = 7;
+static const int baseFontIdx = 8;
 
 static GnoclOption textOptions[] =
 {
@@ -1171,10 +1175,9 @@ static GnoclOption textOptions[] =
 	{ "-useUndo", GNOCL_STRING, NULL},
 	{ "-data", GNOCL_OBJ, "", gnoclOptData },
 	{ "-baseColor", GNOCL_OBJ, "normal", gnoclOptGdkColorBase },
-
 	{ "-variable", GNOCL_STRING, NULL },
 	{ "-onChanged", GNOCL_STRING, NULL },
-
+	{ "-baseFont", GNOCL_OBJ, "Sans 14", gnoclOptGdkBaseFont },
 
 	/* GtkTextView properties
 	"accepts-tab"              gboolean              : Read / Write
@@ -1229,7 +1232,7 @@ static GnoclOption textOptions[] =
 	{ "-visible", GNOCL_BOOL, "visible" },
 	{ "-sensitive", GNOCL_BOOL, "sensitive" },
 	{ "-baseFont", GNOCL_OBJ, "Sans 14", gnoclOptGdkBaseFont },
-	{ "-baseColor", GNOCL_OBJ, "normal", gnoclOptGdkColorBase },
+	//{ "-baseColor", GNOCL_OBJ, "normal", gnoclOptGdkColorBase },
 
 	/* -------- GtkTextView signals --------*/
 
@@ -1324,6 +1327,8 @@ static GnoclOption textOptions[] =
 
 	{ "-hasTooltip", GNOCL_BOOL, "has-tooltip" },
 	{ "-onQueryTooltip", GNOCL_OBJ, "", gnoclOptOnQueryToolTip },
+
+	{ "-onDestroy", GNOCL_OBJ, "destroy", gnoclOptCommand },
 
 	{ NULL }
 };
@@ -2835,6 +2840,18 @@ static int cget ( Tcl_Interp * interp, GtkTextView * text, GnoclOption options[]
 	/* get the option from the array? */
 	Tcl_Obj *obj = NULL;
 
+	if ( idx == baseFontIdx )
+	{
+		g_print ( "basefont\n" );
+		PangoContext *context = gtk_widget_get_pango_context ( GTK_WIDGET ( text ) );
+		PangoFontDescription *desc = pango_context_get_font_description ( context );
+		char *font = pango_font_description_to_string  ( desc );
+
+		obj = Tcl_NewStringObj ( font, -1 );
+
+
+	}
+
 	if ( idx == dataIdx )
 	{
 		obj = Tcl_NewStringObj ( g_object_get_data ( text, "gnocl::data" ), -1 );
@@ -2885,8 +2902,8 @@ static void gnoclGetTagRanges ( Tcl_Interp * interp, GtkTextBuffer * buffer, gch
 	GtkTextIter iter;
 	GtkTextTag *tag;
 	GtkTextTagTable *table;
-	gint line;
-	gint offset;
+	gint row;
+	gint col;
 
 	Tcl_Obj *res;
 	res = Tcl_NewStringObj ( "", 0 );
@@ -2898,19 +2915,31 @@ static void gnoclGetTagRanges ( Tcl_Interp * interp, GtkTextBuffer * buffer, gch
 	table = gtk_text_buffer_get_tag_table ( buffer );
 	tag = gtk_text_tag_table_lookup ( table, tagName );
 
+	gtk_text_iter_forward_to_tag_toggle ( &iter, tag );
 
-	while ( ( gtk_text_iter_forward_to_tag_toggle ( &iter, tag ) ) == TRUE )
-	{
-		line = gtk_text_iter_get_line ( &iter );
-		offset = gtk_text_iter_get_offset ( &iter );
+		row = gtk_text_iter_get_line ( &iter );
+		col = gtk_text_iter_get_line_offset ( &iter );
 
-		sprintf ( s2, "%d %d ", line, offset  );
+		sprintf ( s2, "%d %d ", row, col );
 		strcat ( s1, s2 );
-	}
+
+
+	do 
+	{
+		row = gtk_text_iter_get_line ( &iter );
+		col = gtk_text_iter_get_line_offset ( &iter );
+
+		sprintf ( s2, "%d %d ", row, col );
+		strcat ( s1, s2 );
+	} while ( ( gtk_text_iter_forward_to_tag_toggle ( &iter, tag ) ) == TRUE );
 
 
 	Tcl_AppendStringsToObj ( res, trim ( s1 ), ( char * ) NULL );
 	Tcl_SetObjResult ( interp, res );
+	
+	sprintf ( s1, "");
+	sprintf ( s2, "");
+	
 	return TCL_OK;
 }
 
@@ -3363,7 +3392,9 @@ int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl
 		"delete", "configure", "scrollToPosition", "scrollToMark",
 		"parent",
 		"getIndex", "getCoords", "getRect",
-		"undo", "redo", "grabFocus",
+		"undo", "redo", "grabFocus", "resetUndo",
+
+
 
 		"set", "erase", "select", "get", "cut", "copy", "paste",
 		"cget", "getLineCount", "getWordLength", "getLength",
@@ -3381,7 +3412,7 @@ int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl
 		DeleteIdx, ConfigureIdx, ScrollToPosIdx, ScrollToMarkIdx,
 		ParentIdx,
 		GetIndexIdx, GetCoordsIdx, GetRectIdx,
-		UndoIdx, RedoIdx, GrabFocusIdx,
+		UndoIdx, RedoIdx, GrabFocusIdx, ResetUndoIdx,
 
 		SetIdx, EraseIdx, SelectIdx, GetIdx, CutIdx, CopyIdx, PasteIdx,
 		CgetIdx, GetLineCountIdx, GetWordLengthIdx, GetLengthIdx,
@@ -3431,6 +3462,7 @@ int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl
 		case UndoIdx:  			return 9;
 		case RedoIdx:  			return 10;
 		case GrabFocusIdx:  	return 11;
+		case ResetUndoIdx:  	return 12;
 
 			/* these are GtkTextBuffer operations */
 
@@ -4462,7 +4494,6 @@ static int textFunc ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * 
 {
 	TextParams *para = ( TextParams * ) data;
 
-
 	GtkScrolledWindow   *scrolled = para->scrolled;
 	GtkTextView     *text = GTK_TEXT_VIEW ( gtk_bin_get_child ( GTK_BIN ( scrolled ) ) );
 	GtkTextBuffer  *buffer = gtk_text_view_get_buffer ( text );
@@ -4629,6 +4660,14 @@ static int textFunc ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * 
 				gtk_widget_grab_focus ( text );
 				return TCL_OK;
 			}
+		case 12: /* reset Undo/Redo buffer */
+			{
+
+				gtk_undo_view_reset ( text );
+
+				return TCL_OK;
+			}
+
 		default:
 			{
 				return TCL_ERROR;

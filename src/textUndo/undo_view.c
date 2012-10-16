@@ -13,8 +13,7 @@ G_DEFINE_TYPE ( GtkUndoView, gtk_undo_view, GTK_TYPE_TEXT_VIEW )
 /**
 \brief
 **/
-static void
-gtk_undo_view_dispose ( GObject *object )
+static void gtk_undo_view_dispose ( GObject *object )
 {
 	GtkUndoView *uview = GTK_UNDO_VIEW ( object );
 
@@ -30,18 +29,18 @@ gtk_undo_view_dispose ( GObject *object )
 /**
 \brief
 **/
-void
-gtk_undo_view_undo ( GtkUndoView *uview )
+void gtk_undo_view_undo ( GtkUndoView *uview )
 {
 	if ( gtk_source_undo_manager_can_undo ( uview->undo_manager_ ) )
+	{
 		gtk_source_undo_manager_undo ( uview->undo_manager_ );
+	}
 }
 
 /**
 \brief
 **/
-void
-gtk_undo_view_redo ( GtkUndoView *uview )
+void gtk_undo_view_redo ( GtkUndoView *uview )
 {
 	if ( gtk_source_undo_manager_can_redo ( uview->undo_manager_ ) )
 		gtk_source_undo_manager_redo ( uview->undo_manager_ );
@@ -50,8 +49,7 @@ gtk_undo_view_redo ( GtkUndoView *uview )
 /**
 \brief
 **/
-static void
-gtk_undo_view_class_init ( GtkUndoViewClass *klass )
+static void gtk_undo_view_class_init ( GtkUndoViewClass *klass )
 {
 	GObjectClass *object_class = G_OBJECT_CLASS ( klass );
 	GtkBindingSet *binding_set;
@@ -90,20 +88,27 @@ gtk_undo_view_class_init ( GtkUndoViewClass *klass )
 /**
 \brief
 **/
-static void
-gtk_undo_view_init ( GtkUndoView *self )
+static void gtk_undo_view_init ( GtkUndoView *self )
 {
 }
 
 /**
 \brief
 **/
-GtkWidget*
-gtk_undo_view_new ( GtkTextBuffer *buffer )
+GtkWidget *gtk_undo_view_new ( GtkTextBuffer *buffer )
 {
 	GtkWidget *ret = g_object_new ( GTK_TYPE_UNDO_VIEW, "buffer", buffer, NULL );
 	GTK_UNDO_VIEW ( ret )->undo_manager_ = gtk_source_undo_manager_new ( GTK_TEXT_BUFFER ( buffer ) );
 
 	return ret;
+}
+
+/**
+\brief
+**/
+void gtk_undo_view_reset ( GtkTextBuffer *buffer )
+{
+	gtk_source_undo_manager_end_not_undoable_action ( GTK_UNDO_VIEW ( buffer )->undo_manager_ );
+
 }
 

@@ -381,7 +381,7 @@ static int configure ( Tcl_Interp *interp, LabelEntryParams *para, GnoclOption o
 
 	if ( options[dataIdx].status == GNOCL_STATUS_CHANGED )
 	{
-		para->data = strdup(options[dataIdx].val.str);
+		para->data = strdup ( options[dataIdx].val.str );
 	}
 
 	if ( options[onActivateIdx].status == GNOCL_STATUS_CHANGED )
@@ -648,10 +648,10 @@ int labelEntryFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * co
 		case CgetIdx:
 			{
 				gint idx2;
-				
-				g_print ("CgetIdx 1, %s\n",Tcl_GetString(objv[2]));
+
+				g_print ( "CgetIdx 1, %s\n", Tcl_GetString ( objv[2] ) );
 				//getIdx ( labelEntryOptions, Tcl_GetString(objv[2]), &idx2 );
-				g_print ("CgetIdx 2\n");
+				g_print ( "CgetIdx 2\n" );
 				cget ( interp, para, labelEntryOptions, 22 );
 			}
 	}
@@ -673,6 +673,7 @@ static void destroyFunc ( GtkWidget *widget, gpointer data )
 	gnoclForgetWidgetFromName ( para->name );
 	Tcl_DeleteCommand ( para->interp, para->name );
 	g_free ( para->name );
+	g_free ( para->data );
 	g_free ( para );
 }
 

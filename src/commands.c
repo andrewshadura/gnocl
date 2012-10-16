@@ -1095,8 +1095,9 @@ int gnoclInfoCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * con
 				Tcl_SetObjResult ( interp, res );
 			}
 			break;
-		case VersionIdx:
+		case VersionIdx:{
 			Tcl_SetObjResult ( interp, Tcl_NewStringObj ( VERSION, -1 ) );
+		}
 			break;
 		case GtkVersionIdx:
 			{

@@ -23,6 +23,7 @@
 */
 
 #include "gnocl.h"
+#include "gnoclparams.h"
 #include "string.h"
 #include "math.h"
 
@@ -1370,6 +1371,20 @@ int gnoclOptGdkBaseFont ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tc
 	pango_font_description_free ( font_desc );
 
 	return TCL_OK;
+}
+
+/**
+ */
+char *gnoclGetGdkBaseFont ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
+{
+
+	char *fnt = Tcl_GetStringFromObj ( opt->val.obj, NULL );
+	PangoFontDescription *font_desc = pango_font_description_from_string ( fnt );
+
+	gtk_widget_modify_font ( GTK_WIDGET ( obj ), font_desc );
+	pango_font_description_free ( font_desc );
+
+	return fnt;
 }
 
 
@@ -3422,17 +3437,55 @@ static void doOnClicked   ( GtkToolButton *toolbutton, gpointer user_data )
 		{ 'w', GNOCL_STRING },  /* widget */
 		{ 'g', GNOCL_STRING },  /* glade name */
 		{ 'p', GNOCL_STRING },  /* parent */
+		//{ 'd', GNOCL_STRING },  /* data */
 		{ 0 }
 	};
+
+	//const char *dataID = "gnocl::data";
+	//ButtonParams *para = g_object_get_data ( G_OBJECT (toolbutton), dataID );
 
 	ps[0].val.str = gnoclGetNameFromWidget ( toolbutton );
 	ps[1].val.str = gtk_widget_get_name ( GTK_WIDGET ( toolbutton ) );
 	ps[2].val.str = gtk_widget_get_parent ( GTK_WIDGET ( toolbutton ) );
 
+	//ps[3].val.str = para->data;
+
 	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
 
 }
 
+/**
+\brief
+	widget button, not mouse button
+**/
+static void doOnButtonClicked   ( GtkToolButton *toolbutton, gpointer user_data )
+{
+#ifdef DEBUG_PARSEOPTIONS
+	g_print ( "%s\n", __FUNCTION__ );
+#endif
+	GnoclCommandData *cs = ( GnoclCommandData * ) user_data;
+
+	GnoclPercSubst ps[] =
+	{
+		{ 'w', GNOCL_STRING },  /* widget */
+		{ 'g', GNOCL_STRING },  /* glade name */
+		{ 'p', GNOCL_STRING },  /* parent */
+		{ 'd', GNOCL_STRING },  /* data */
+		{ 0 }
+	};
+
+	const char *dataID = "gnocl::para";
+	ButtonParams *para = g_object_get_data ( G_OBJECT ( toolbutton ), dataID );
+
+	ps[0].val.str = gnoclGetNameFromWidget ( toolbutton );
+	ps[1].val.str = gtk_widget_get_name ( GTK_WIDGET ( toolbutton ) );
+	ps[2].val.str = gtk_widget_get_parent ( GTK_WIDGET ( toolbutton ) );
+
+	ps[3].val.str = para->data;
+
+	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
+
+}
 
 
 /**
@@ -3555,8 +3608,9 @@ static void doOnIconPress ( GtkWidget *entry, GtkEntryIconPosition icon_pos, Gdk
 
 /**
 \brief
+	Handle mouse button presses -not a button widget click.
 **/
-static void doOnButton ( GtkWidget *widget, GdkEventButton *event, gpointer data )
+static void doOnMouseButton ( GtkWidget *widget, GdkEventButton *event, gpointer data )
 {
 #ifdef DEBUG_PARSEOPTIONS
 	g_print ( "%s\n", __FUNCTION__ );
@@ -3595,6 +3649,8 @@ static void doOnButton ( GtkWidget *widget, GdkEventButton *event, gpointer data
 	ps[5].val.i = event->y_root;
 	ps[6].val.i = event->button;
 	ps[7].val.i = event->state;
+
+
 
 	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
 }
@@ -4027,6 +4083,15 @@ int gnoclOptOnClicked ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_
 /**
 \brief
 **/
+int gnoclOptOnButtonClicked ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
+{
+	return gnoclConnectOptCmd ( interp, obj, "clicked", G_CALLBACK ( doOnButtonClicked ), opt, NULL, ret );
+}
+
+
+/**
+\brief
+**/
 int gnoclOptOnInteractiveSearch ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
 	return gnoclConnectOptCmd ( interp, obj,  "start-interactive-search", G_CALLBACK ( doOnInteractiveSearch ), opt, NULL, ret );
@@ -4053,11 +4118,12 @@ int gnoclOptOnIconPress ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tc
 
 /**
 \brief
+Handle mouse button event
 **/
 int gnoclOptOnButton ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
 	assert ( *opt->propName == 'R' || *opt->propName == 'P' );
-	return gnoclConnectOptCmd ( interp, obj, *opt->propName == 'P' ?  "button-press-event" : "button-release-event", G_CALLBACK ( doOnButton ), opt, NULL, ret );
+	return gnoclConnectOptCmd ( interp, obj, *opt->propName == 'P' ?  "button-press-event" : "button-release-event", G_CALLBACK ( doOnMouseButton ), opt, NULL, ret );
 }
 
 /**

@@ -66,6 +66,7 @@ typedef struct
 	Tcl_Interp  *interp;
 	char        *name;
 	char        *iconName;
+	char		*data;
 } ButtonParams;
 
 

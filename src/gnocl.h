@@ -242,6 +242,7 @@ gnoclOptFunc gnoclOptOnMarkSet;
 gnoclOptFunc gnoclOptOnMarkDelete;
 gnoclOptFunc gnoclOptOnExpose;
 gnoclOptFunc gnoclOptOnClicked;
+gnoclOptFunc gnoclOptOnButtonClicked;
 gnoclOptFunc gnoclOptOnColumnClicked;
 gnoclOptFunc gnoclOptOnInteractiveSearch;
 gnoclOptFunc gnoclOptArrowTooltip;

@@ -1,4 +1,15 @@
+2012-10:
+	gnocl::entry
+	gnocl::text
+		o new option
+			-onDestroy
+			
 2012-09:
+	gnocl::text
+		cget -baseFont implemented
+		resetUndo
+	gnocl::button
+		switched to the use of ButtonParams
 	gnocl::tree
 	gnocl::list
 		o new option

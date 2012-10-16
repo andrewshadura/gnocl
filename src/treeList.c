@@ -1659,7 +1659,7 @@ static int cget ( Tcl_Interp *interp, TreeListParams *para, GnoclOption options[
 
 	if ( idx == dataIdx )
 	{
-		
+
 		obj = Tcl_NewStringObj ( para->data, -1 );
 		//gnoclOptParaData ( interp, para->data, &obj);
 	}
@@ -1692,8 +1692,8 @@ static int configure ( Tcl_Interp *interp,	TreeListParams *para,	GnoclOption opt
 
 	if ( options[dataIdx].status == GNOCL_STATUS_CHANGED )
 	{
-		g_print ("set data =%s\n",options[dataIdx].val.str);
-		para->data = strdup(options[dataIdx].val.str);
+		g_print ( "set data =%s\n", options[dataIdx].val.str );
+		para->data = strdup ( options[dataIdx].val.str );
 	}
 
 	if ( options[selectionModeIdx].status == GNOCL_STATUS_CHANGED )

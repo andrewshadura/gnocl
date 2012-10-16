@@ -12,7 +12,8 @@
 
 /*
    History:
-   2012-08-23: adde substitution parameter %d
+   2012-10-15: added -onDestroy
+   2012-08-23: added substitution parameter %d
    2012-01-03: added options
 					-focusIn -focusOut
    2011-07-03: cget -data now works properly
@@ -167,6 +168,8 @@ static GnoclOption entryOptions[] =
 	{ "-onFocusIn", GNOCL_OBJ, "I", gnoclOptOnFocus },
 	{ "-onFocusOut", GNOCL_OBJ, "O", gnoclOptOnFocus },
 
+	/* respond to widget destruction */
+	{ "-onDestroy", GNOCL_OBJ, "destroy", gnoclOptCommand },
 	{ NULL }
 };
 
