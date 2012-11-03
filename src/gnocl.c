@@ -792,6 +792,7 @@ static GnoclCmd commands[] =
 	{ "fontButton", gnoclFontButtonCmd },
 	{ "aboutDialog", gnoclAboutDialogCmd },
 	{ "keyFile", gnoclKeyFileCmd},
+	{ "tooltip", gnoclToolTip},
 
 	{ "grab", gnoclGrabCmd},
 

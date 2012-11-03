@@ -13,6 +13,7 @@
 
 /*
    History:
+   2012-11  added -data option to text tag
    2012-10	added -onDestroy
    2012-09	cget -baseFont implemented
 			resetUndo
@@ -1100,7 +1101,6 @@ int gnoclOptOnInsertPB ( Tcl_Interp * interp, GnoclOption * opt, GObject * obj, 
 	assert ( strcmp ( opt->optName, "-onInsertPixBuf" ) == 0 );
 
 	/* connect the signal with its callback function */
-
 	return gnoclConnectOptCmd ( interp, GTK_ENTRY  ( obj ), "insert-pixbuf", G_CALLBACK ( doOnInsertPixbuf ), opt, NULL, ret );
 
 }
@@ -1204,17 +1204,13 @@ static GnoclOption textOptions[] =
 	{ "-justify", GNOCL_OBJ, "justification", gnoclOptJustification },
 	{ "-leftMargin", GNOCL_INT, "left_margin" },
 	{ "-inputMethod", GNOCL_STRING, "im-module" },
-
 	{ "-overwrite", GNOCL_BOOL, "overwrite" },
 	{ "-pixelsBelowLines", GNOCL_INT, "pixels_below_lines" },
 	{ "-pixelsAboveLines", GNOCL_INT, "pixels_above_lines" },
 	{ "-pixelsInsideWrap", GNOCL_INT, "pixels_inside_wrap" },
 	{ "-rightMargin", GNOCL_INT, "right_margin" },
-
 	{ "-tabs", GNOCL_STRING, "tabs", gnoclOptTabs}, /* "tabs" */
 	{ "-wrapMode", GNOCL_OBJ, "wrap_mode", gnoclOptWrapmode },
-
-
 
 	/* GtkTextBuffer properties
 	"copy-target-list"         GtkTargetList*        : Read
@@ -1258,7 +1254,6 @@ static GnoclOption textOptions[] =
 	{ "-onBackspace", GNOCL_OBJ, "", gnoclOptOnBackspace},
 	{ "-onCopyClipboard", GNOCL_OBJ, "C", gnoclOptOnClipboard},
 	{ "-onCutClipboard", GNOCL_OBJ, "X", gnoclOptOnClipboard},
-
 	{ "-onUndo", GNOCL_OBJ, "U", gnoclOptOnUndoRedo},
 	{ "-onRedo", GNOCL_OBJ, "R", gnoclOptOnUndoRedo},
 
@@ -1272,7 +1267,6 @@ static GnoclOption textOptions[] =
 	{ "-onSelectAll", GNOCL_OBJ, "", gnoclOptOnSelectAll},
 	{ "-onPreeditChanged", GNOCL_OBJ, "", gnoclOptOnClipboard},
 
-
 	/* added 30/Apr/2010 */
 	{ "-onSetAnchor", GNOCL_OBJ, "", gnoclOptOnSetAnchor},
 	{ "-onSetScrollAdjustments", GNOCL_OBJ, "", gnoclOptOnScrollAdjustments},
@@ -1282,19 +1276,16 @@ static GnoclOption textOptions[] =
 	{ "-onToggleOverWrite", GNOCL_OBJ, "", gnoclOptOnToggleOverwrite},
 
 	/* -------- end of GtkTexView signals */
-
 	{ "-onButtonPress", GNOCL_OBJ, "P", gnoclOptOnButton },
 	{ "-onButtonRelease", GNOCL_OBJ, "R", gnoclOptOnButton },
 	{ "-onKeyPress", GNOCL_OBJ, "", gnoclOptOnKeyPress },
 	{ "-onKeyRelease", GNOCL_OBJ, "", gnoclOptOnKeyRelease },
 	{ "-onMotion", GNOCL_OBJ, "", gnoclOptOnMotion },
-
 	{ "-onFocusIn", GNOCL_OBJ, "I", gnoclOptOnFocus },
 	{ "-onFocusOut", GNOCL_OBJ, "O", gnoclOptOnFocus },
 	{ "-onEnter", GNOCL_OBJ, "E", gnoclOptTextOnEnterLeave },
 	{ "-onLeave", GNOCL_OBJ, "L", gnoclOptTextOnEnterLeave },
 	{ "-onPopulatePopup", GNOCL_OBJ, "", gnoclOptOnPopulatePopup },
-
 	{ "-heightRequest", GNOCL_INT, "height-request" },
 	{ "-widthRequest", GNOCL_INT, "width-request" },
 
@@ -1315,7 +1306,6 @@ static GnoclOption textOptions[] =
 
 	/*  inherited GtkWidget features */
 	{ "-onScroll", GNOCL_OBJ, "", gnoclOptOnScroll },
-
 	{ "-borderWidth", GNOCL_OBJ, "border-width", gnoclOptPadding },
 
 	/* drag and drop functionality taken from box.c */
@@ -1323,17 +1313,12 @@ static GnoclOption textOptions[] =
 	{ "-dragTargets", GNOCL_LIST, "s", gnoclOptDnDTargets },
 	{ "-onDropData", GNOCL_OBJ, "", gnoclOptOnDropData },
 	{ "-onDragData", GNOCL_OBJ, "", gnoclOptOnDragData },
-
-
 	{ "-hasTooltip", GNOCL_BOOL, "has-tooltip" },
 	{ "-onQueryTooltip", GNOCL_OBJ, "", gnoclOptOnQueryToolTip },
-
 	{ "-onDestroy", GNOCL_OBJ, "destroy", gnoclOptCommand },
 
 	{ NULL }
 };
-
-
 
 /**
 \brief      Convert at text index in the form of {row col} into a GtkTextBuffer iter(ator).
@@ -2085,7 +2070,7 @@ int tagCmd ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, Tcl_Obj *  c
 		CgetIdx, CreateIdx, ConfigureIdx, ApplyIdx,
 		DeleteIdx, RemoveIdx, GetIdx, ClearIdx, SetIdx,
 		RangesIdx, NamesIdx, RaiseIdx, LowerIdx,
-		CopyIdx, PropertiesIdx
+		CopyIdx, PropertiesIdx,
 	};
 
 	/*  see also list.c */
@@ -2176,7 +2161,6 @@ int tagCmd ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, Tcl_Obj *  c
 
 	int idx;
 
-
 	if ( objc < cmdNo + 1 )
 	{
 		Tcl_WrongNumArgs ( interp, cmdNo, objv, "subcommand ?option val ...?" );
@@ -2188,9 +2172,9 @@ int tagCmd ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, Tcl_Obj *  c
 		return TCL_ERROR;
 	}
 
-
 	switch ( idx )
 	{
+
 		case NamesIdx:	// return a list of all tag names
 			{
 #ifdef DEBUG_TAGS
@@ -2328,11 +2312,15 @@ int tagCmd ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, Tcl_Obj *  c
 			break;
 		case CgetIdx:	// tagCmd
 			{
+				g_print ( "tag CgetIdx 1\n" );
+
 				int     idx;
 				Tcl_Obj *resList;
 
 				GtkTextTagTable *tagtable = gtk_text_buffer_get_tag_table ( buffer );
+				g_print ( "tag CgetIdx 2\n" );
 				GtkTextTag *tag = gtk_text_tag_table_lookup ( tagtable, Tcl_GetString ( objv[cmdNo+1] ) );
+				g_print ( "tag CgetIdx 3\n" );
 
 				switch ( gnoclTagCget ( interp, objc, objv, G_OBJECT ( tag ), tagOptions, &idx ) )
 				{
@@ -2917,29 +2905,30 @@ static void gnoclGetTagRanges ( Tcl_Interp * interp, GtkTextBuffer * buffer, gch
 
 	gtk_text_iter_forward_to_tag_toggle ( &iter, tag );
 
-		row = gtk_text_iter_get_line ( &iter );
-		col = gtk_text_iter_get_line_offset ( &iter );
+	row = gtk_text_iter_get_line ( &iter );
+	col = gtk_text_iter_get_line_offset ( &iter );
 
-		sprintf ( s2, "%d %d ", row, col );
-		strcat ( s1, s2 );
+	sprintf ( s2, "%d %d ", row, col );
+	strcat ( s1, s2 );
 
 
-	do 
+	do
 	{
 		row = gtk_text_iter_get_line ( &iter );
 		col = gtk_text_iter_get_line_offset ( &iter );
 
 		sprintf ( s2, "%d %d ", row, col );
 		strcat ( s1, s2 );
-	} while ( ( gtk_text_iter_forward_to_tag_toggle ( &iter, tag ) ) == TRUE );
+	}
+	while ( ( gtk_text_iter_forward_to_tag_toggle ( &iter, tag ) ) == TRUE );
 
 
 	Tcl_AppendStringsToObj ( res, trim ( s1 ), ( char * ) NULL );
 	Tcl_SetObjResult ( interp, res );
-	
-	sprintf ( s1, "");
-	sprintf ( s2, "");
-	
+
+	sprintf ( s1, "" );
+	sprintf ( s2, "" );
+
 	return TCL_OK;
 }
 
@@ -4578,8 +4567,11 @@ static int textFunc ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * 
 			}
 
 			break;
+			// getPos
 		case 6: /* get line/row from root window coordinates, ie passed from an event */
 			{
+
+				g_print ( "tag getPos\n" );
 
 				GtkTextIter iter;
 				gint y, line_no;
@@ -4589,20 +4581,30 @@ static int textFunc ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * 
 				gint bx, by; /* buffer coordinates */
 				gint line, row;
 
-				sscanf ( Tcl_GetString ( objv[2] ), "%d %d", &wx, &wy );
+				//sscanf ( Tcl_GetString ( objv[2] ), "%d %d", &wx, &wy );
 
-				//Tcl_GetIntFromObj ( NULL, objv[2], &wx ) ;
-				//Tcl_GetIntFromObj ( NULL, objv[3], &wy ) ;
+				Tcl_GetIntFromObj ( NULL, objv[3], &wx ) ;
+				Tcl_GetIntFromObj ( NULL, objv[4], &wy ) ;
+
+				g_print ( "1\n" );
 
 				//gdk_window_get_pointer (TxT->window, &wx, &wy, NULL);
 				gtk_text_view_window_to_buffer_coords ( text, GTK_TEXT_WINDOW_WIDGET, wx, wy, &bx, &by );
 				gtk_text_view_get_iter_at_location ( text, &iter, bx, by );
 
+				g_print ( "2\n" );
+
+
 				line = gtk_text_iter_get_line ( &iter );
 				row = gtk_text_iter_get_line_offset ( &iter );
 
+				g_print ( "3\n" );
+
 				gchar str[16];
 				sprintf ( str, "%d %d", line, row );
+
+				g_print ( "4\n" );
+
 				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( str, -1 ) );
 
 			}
@@ -4781,9 +4783,6 @@ int gnoclTextCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj *  co
 	// implement new undo/redo buffer
 	textView = gtk_undo_view_new ( gtk_text_buffer_new  ( NULL ) );
 
-	//add some extra signals to the default setting
-	gtk_widget_add_events ( textView, GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK );
-
 	para->scrolled =  GTK_SCROLLED_WINDOW ( gtk_scrolled_window_new ( NULL, NULL ) );
 
 	gtk_scrolled_window_set_policy ( para->scrolled, GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC );
@@ -4791,6 +4790,9 @@ int gnoclTextCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj *  co
 	gtk_container_add ( GTK_CONTAINER ( para->scrolled ), GTK_WIDGET ( textView ) );
 
 	gtk_widget_show_all ( GTK_WIDGET ( para->scrolled ) );
+
+	//add some extra signals to the default setting -these have no effect!!!
+	gtk_widget_add_events ( textView, GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK );
 
 	ret = gnoclSetOptions ( interp, textOptions, G_OBJECT ( textView ), -1 );
 

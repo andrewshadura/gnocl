@@ -11,9 +11,10 @@
  */
 
 /*
+	2012-10: implemented cget -data
 	2011-05: added hasFocus, setFocus, present, -defaultWidget
     2009-12: added show, hide, synonymous with use of option -visible
-    2009-02: added -bakckgroundImage, -mask
+    2009-02: added -backgroundImage, -mask
     2009-01: added -keepAbove, -keepBelow, -acceptFocus,
             -deletable, -destroyWithParent, -focusOnMap,
             -gravity, -hasTopLevelFocus, -isActive,
@@ -339,7 +340,8 @@ static const int widthIdx       = 6;
 static const int heightIdx      = 7;
 static const int setSizeIdx		= 8;
 static const int defaultIdx		= 9;
-static const int typeIdx	= 10;
+static const int typeIdx		= 10;
+static const int dataIdx		= 11;
 
 static GnoclOption windowOptions[] =
 {
@@ -358,12 +360,14 @@ static GnoclOption windowOptions[] =
 //	{ "-typeHint", GNOCL_OBJ, "", gnoclOptWindowTypeHint }, /* 10 */
 	{ "-type", GNOCL_OBJ, NULL }, /* 10 */
 
+	{ "-data", GNOCL_OBJ, "", gnoclOptData }, /* 11 */
+
 
 	{ "-allowGrow", GNOCL_BOOL, "allow-grow" },
 	{ "-allowShrink", GNOCL_BOOL, "allow-shrink" },
 	{ "-borderWidth", GNOCL_OBJ, "border-width", gnoclOptPadding },
 	{ "-child", GNOCL_OBJ, "", gnoclOptChild },
-	{ "-data", GNOCL_OBJ, "", gnoclOptData },
+
 	{ "-dragTargets", GNOCL_LIST, "s", gnoclOptDnDTargets },
 	{ "-dropTargets", GNOCL_LIST, "t", gnoclOptDnDTargets },
 	{ "-heightRequest", GNOCL_INT, "height-request" },
@@ -974,6 +978,11 @@ static int cget (   Tcl_Interp *interp, GtkWindow *window, GnoclOption options[]
 		int width, height;
 		gtk_window_get_size ( window, &width, &height );
 		obj = Tcl_NewIntObj ( height );
+	}
+
+	else if ( idx == dataIdx )
+	{
+		obj = Tcl_NewStringObj ( g_object_get_data ( window, "gnocl::data" ), -1 );
 	}
 
 	if ( obj != NULL )

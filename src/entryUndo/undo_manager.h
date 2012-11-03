@@ -25,59 +25,59 @@
 
 G_BEGIN_DECLS
 
-#define GTK_SOURCE_TYPE_UNDO_MANAGER            (gtk_source_undo_manager_get_type())
+#define gtk_entry_TYPE_UNDO_MANAGER            (gtk_entry_undo_manager_get_type())
 
-#define GTK_SOURCE_UNDO_MANAGER(obj)            \
-  (G_TYPE_CHECK_INSTANCE_CAST((obj), GTK_SOURCE_TYPE_UNDO_MANAGER, GtkSourceUndoManager))
+#define gtk_entry_UNDO_MANAGER(obj)            \
+  (G_TYPE_CHECK_INSTANCE_CAST((obj), gtk_entry_TYPE_UNDO_MANAGER, GtkEntryUndoManager))
 
-#define GTK_SOURCE_UNDO_MANAGER_CLASS(klass)    \
-  (G_TYPE_CHECK_CLASS_CAST((klass), GTK_SOURCE_TYPE_UNDO_MANAGER, GtkSourceUndoManagerClass))
+#define gtk_entry_UNDO_MANAGER_CLASS(klass)    \
+  (G_TYPE_CHECK_CLASS_CAST((klass), gtk_entry_TYPE_UNDO_MANAGER, GtkEntryUndoManagerClass))
 
-#define GTK_SOURCE_IS_UNDO_MANAGER(obj)         \
-  (G_TYPE_CHECK_INSTANCE_TYPE((obj), GTK_SOURCE_TYPE_UNDO_MANAGER))
+#define gtk_entry_IS_UNDO_MANAGER(obj)         \
+  (G_TYPE_CHECK_INSTANCE_TYPE((obj), gtk_entry_TYPE_UNDO_MANAGER))
 
-#define GTK_SOURCE_IS_UNDO_MANAGER_CLASS(klass) \
-  (G_TYPE_CHECK_CLASS_TYPE((klass), GTK_SOURCE_TYPE_UNDO_MANAGER))
+#define gtk_entry_IS_UNDO_MANAGER_CLASS(klass) \
+  (G_TYPE_CHECK_CLASS_TYPE((klass), gtk_entry_TYPE_UNDO_MANAGER))
 
-#define GTK_SOURCE_UNDO_MANAGER_GET_CLASS(obj)  \
-  (G_TYPE_INSTANCE_GET_CLASS((obj), GTK_SOURCE_TYPE_UNDO_MANAGER, GtkSourceUndoManagerClass))
+#define gtk_entry_UNDO_MANAGER_GET_CLASS(obj)  \
+  (G_TYPE_INSTANCE_GET_CLASS((obj), gtk_entry_TYPE_UNDO_MANAGER, GtkEntryUndoManagerClass))
 
-typedef struct _GtkSourceUndoManager          GtkSourceUndoManager;
-typedef struct _GtkSourceUndoManagerClass   GtkSourceUndoManagerClass;
+typedef struct _GtkEntryUndoManager          GtkEntryUndoManager;
+typedef struct _GtkEntryUndoManagerClass   GtkEntryUndoManagerClass;
 
-typedef struct _GtkSourceUndoManagerPrivate   GtkSourceUndoManagerPrivate;
+typedef struct _GtkEntryUndoManagerPrivate   GtkEntryUndoManagerPrivate;
 
-struct _GtkSourceUndoManager
+struct _GtkEntryUndoManager
 {
 	GObject base;
 
-	GtkSourceUndoManagerPrivate *priv;
+	GtkEntryUndoManagerPrivate *priv;
 };
 
-struct _GtkSourceUndoManagerClass
+struct _GtkEntryUndoManagerClass
 {
 	GObjectClass parent_class;
 
 	/* Signals */
-	void ( *can_undo ) ( GtkSourceUndoManager *um, gboolean can_undo );
-	void ( *can_redo ) ( GtkSourceUndoManager *um, gboolean can_redo );
+	void ( *can_undo ) ( GtkEntryUndoManager *um, gboolean can_undo );
+	void ( *can_redo ) ( GtkEntryUndoManager *um, gboolean can_redo );
 };
 
-GType            gtk_source_undo_manager_get_type ( void ) G_GNUC_CONST;
+GType            gtk_entry_undo_manager_get_type ( void ) G_GNUC_CONST;
 
-GtkSourceUndoManager*   gtk_source_undo_manager_new ( GtkTextBuffer     *buffer );
+GtkEntryUndoManager*   gtk_entry_undo_manager_new ( GtkEntryBuffer     *buffer );
 
-gboolean    gtk_source_undo_manager_can_undo ( const GtkSourceUndoManager *um );
-gboolean    gtk_source_undo_manager_can_redo ( const GtkSourceUndoManager *um );
+gboolean    gtk_entry_undo_manager_can_undo ( const GtkEntryUndoManager *um );
+gboolean    gtk_entry_undo_manager_can_redo ( const GtkEntryUndoManager *um );
 
-void      gtk_source_undo_manager_undo ( GtkSourceUndoManager   *um );
-void      gtk_source_undo_manager_redo ( GtkSourceUndoManager   *um );
+void      gtk_entry_undo_manager_undo ( GtkEntryUndoManager   *um );
+void      gtk_entry_undo_manager_redo ( GtkEntryUndoManager   *um );
 
-void      gtk_source_undo_manager_begin_not_undoable_action ( GtkSourceUndoManager  *um );
-void      gtk_source_undo_manager_end_not_undoable_action ( GtkSourceUndoManager  *um );
+void      gtk_entry_undo_manager_begin_not_undoable_action ( GtkEntryUndoManager  *um );
+void      gtk_entry_undo_manager_end_not_undoable_action ( GtkEntryUndoManager  *um );
 
-gint      gtk_source_undo_manager_get_max_undo_levels ( GtkSourceUndoManager   *um );
-void      gtk_source_undo_manager_set_max_undo_levels ( GtkSourceUndoManager   *um,
+gint      gtk_entry_undo_manager_get_max_undo_levels ( GtkEntryUndoManager   *um );
+void      gtk_entry_undo_manager_set_max_undo_levels ( GtkEntryUndoManager   *um,
 		gint        undo_levels );
 
 G_END_DECLS

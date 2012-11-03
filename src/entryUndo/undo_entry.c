@@ -13,8 +13,7 @@ G_DEFINE_TYPE ( GtkUndoEntry, gtk_undo_entry, GTK_TYPE_ENTRY )
 /**
 \brief
 **/
-static void
-gtk_undo_entry_dispose ( GObject *object )
+static void gtk_undo_entry_dispose ( GObject *object )
 {
 	GtkUndoEntry *uentry = GTK_UNDO_ENTRY ( object );
 
@@ -30,28 +29,25 @@ gtk_undo_entry_dispose ( GObject *object )
 /**
 \brief
 **/
-void
-gtk_undo_entry_undo ( GtkUndoEntry *uentry )
+void gtk_undo_entry_undo ( GtkUndoEntry *uentry )
 {
-	if ( gtk_source_undo_manager_can_undo ( uentry->undo_manager_ ) )
-		gtk_source_undo_manager_undo ( uentry->undo_manager_ );
+	if ( gtk_entry_undo_manager_can_undo ( uentry->undo_manager_ ) )
+		gtk_entry_undo_manager_undo ( uentry->undo_manager_ );
 }
 
 /**
 \brief
 **/
-void
-gtk_undo_entry_redo ( GtkUndoEntry *uentry )
+void gtk_undo_entry_redo ( GtkUndoEntry *uentry )
 {
-	if ( gtk_source_undo_manager_can_redo ( uentry->undo_manager_ ) )
-		gtk_source_undo_manager_redo ( uentry->undo_manager_ );
+	if ( gtk_entry_undo_manager_can_redo ( uentry->undo_manager_ ) )
+		gtk_entry_undo_manager_redo ( uentry->undo_manager_ );
 }
 
 /**
 \brief
 **/
-static void
-gtk_undo_entry_class_init ( GtkUndoEntryClass *klass )
+static void gtk_undo_entry_class_init ( GtkUndoEntryClass *klass )
 {
 	GObjectClass *object_class = G_OBJECT_CLASS ( klass );
 	GtkBindingSet *binding_set;
@@ -90,19 +86,23 @@ gtk_undo_entry_class_init ( GtkUndoEntryClass *klass )
 /**
 \brief
 **/
-static void
-gtk_undo_entry_init ( GtkUndoEntry *self )
+static void gtk_undo_entry_init ( GtkUndoEntry *self )
 {
 }
 
 /**
 \brief
 **/
-GtkWidget*
-gtk_undo_entry_new ( GtkEntryBuffer *buffer )
+GtkWidget *gtk_undo_entry_new ( GtkEntryBuffer *buffer )
 {
+#ifdef DEBUG_ENTRY_UNDO
+	printf ( "%s", __FUNCTION__ );
+#endif
+
+	//GtkWidget *ret = GTK_ENTRY ( gtk_entry_new( ) );
+
 	GtkWidget *ret = g_object_new ( GTK_TYPE_UNDO_ENTRY, "buffer", buffer, NULL );
-	GTK_UNDO_ENTRY ( ret )->undo_manager_ = gtk_source_undo_manager_new ( GTK_ENTRY_BUFFER ( buffer ) );
+	GTK_UNDO_ENTRY ( ret )->undo_manager_ = gtk_entry_undo_manager_new ( GTK_ENTRY_BUFFER ( buffer ) );
 
 	return ret;
 }

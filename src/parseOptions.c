@@ -1225,8 +1225,9 @@ int gnoclOptIconTooltip ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tc
 /**
 /brief      Set tooltip for specified widget.
 /author     Peter G Baum
-/note       Current method deprecated since Gtk+ 2.12
- */
+/note       http://developer.gnome.org/gtk/stable/GtkTooltip.html
+/todo		parse markup string for various options
+*/
 int gnoclOptTooltip ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
 	assert ( opt->propName == NULL || *opt->propName  == '\0' );
@@ -1253,13 +1254,15 @@ int gnoclOptTooltip ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Ob
 		if ( *txt )
 		{
 			//gtk_tooltips_set_tip ( tt, GTK_WIDGET ( obj ), txt, NULL );
-			gtk_widget_set_tooltip_text ( GTK_WIDGET ( obj ), txt );
+			//gtk_widget_set_tooltip_text ( GTK_WIDGET ( obj ), txt );
+			gtk_widget_set_tooltip_markup ( GTK_WIDGET ( obj ), txt );
 		}
 
 		else
 		{
 			//gtk_tooltips_set_tip ( tt, GTK_WIDGET ( obj ), NULL, NULL );
-			gtk_widget_set_tooltip_text ( GTK_WIDGET ( obj ), NULL );
+			//gtk_widget_set_tooltip_text ( GTK_WIDGET ( obj ), NULL );
+			gtk_widget_set_tooltip_markup ( GTK_WIDGET ( obj ), NULL );
 		}
 	}
 
@@ -3796,7 +3799,7 @@ static void doOnLinkButton ( GtkWidget *widget, gpointer data )
             values substituted into % values for further processing by Tcl scripts.
 \author     William J Giddings
 \date       01/11/2009
-\note		Events only apply to windows and not object such as tags.
+\note		Events only apply to windows and not object such as tags. <--- WRONG
 **/
 static void doOnEvent (	GtkTextTag *texttag, GObject *widget, GdkEvent *event, GtkTextIter *arg2, gpointer data )
 {
@@ -3816,12 +3819,14 @@ static void doOnEvent (	GtkTextTag *texttag, GObject *widget, GdkEvent *event, G
 		{ 'X', GNOCL_INT },     /* 7 */
 		{ 'Y', GNOCL_INT },     /* 8 */
 		{ 'g', GNOCL_STRING },  /* 9 glade name */
+		{ 'd', GNOCL_STRING },  /* 10 */
 		{ 0 }
 	};
 
 	/* initialize with default values */
 	ps[0].val.str = gnoclGetNameFromWidget ( widget );
 	ps[9].val.str = gtk_widget_get_name ( GTK_WIDGET ( widget ) );
+	ps[10].val.str = g_object_get_data ( texttag, "gnocl::data" );
 
 	/* most of these events are not reported by the tag */
 
@@ -3894,9 +3899,6 @@ static void doOnEvent (	GtkTextTag *texttag, GObject *widget, GdkEvent *event, G
 	ps[8].val.i = event->button.y_root;
 
 	ps[6].val.str = texttag->name;
-
-
-
 
 	/* other settings, mouse pointer etc can be obtained from the window structure */
 	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );

@@ -1,4 +1,11 @@
+2012-11:
+	new command
+		gnocl::tooltip
+	gnocl::text
+		o new tag option -data 
 2012-10:
+	gnocl::window
+		o implemented cget -data
 	gnocl::entry
 	gnocl::text
 		o new option
@@ -15,7 +22,7 @@
 		o new option
 			-data
 
-	gnocl:;assistant
+	gnocl::assistant
 		o new command
 			delete
 	gnocl::menu

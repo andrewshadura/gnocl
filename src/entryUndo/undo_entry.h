@@ -12,7 +12,7 @@
 
 G_BEGIN_DECLS
 
-#define GTK_TYPE_UNDO_ENTRY gtk_undo_view_get_type()
+#define GTK_TYPE_UNDO_ENTRY gtk_undo_entry_get_type()
 
 #define GTK_UNDO_ENTRY(obj) \
   (G_TYPE_CHECK_INSTANCE_CAST((obj), GTK_TYPE_UNDO_ENTRY, GtkUndoEntry))
@@ -31,8 +31,8 @@ G_BEGIN_DECLS
 
 typedef struct
 {
-	GtkTextView parent;
-	GtkSourceUndoManager *undo_manager_;
+	GtkEntry parent;
+	GtkEntryUndoManager *undo_manager_;
 } GtkUndoEntry;
 
 typedef struct

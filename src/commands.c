@@ -12,6 +12,7 @@
 
 /*
    History:
+   2012-11: added gnocl::tooltip
    2012-03: added gnocl::lset
    2011-12: added gnocl::showURI
    2011-08: added gnocl::exec
@@ -416,7 +417,14 @@ int gnoclSignalStopCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj
 
 	GtkWidget *widget = gnoclGetWidgetFromName (  Tcl_GetString ( objv[1] ), interp );
 
-	g_signal_stop_emission_by_name ( widget , Tcl_GetString ( objv[2] ) );
+
+	if ( strcmp ( Tcl_GetString ( objv[2] ), "motionNotify" ) == 0 )
+	{
+		g_signal_stop_emission_by_name ( widget , "motion-notify-event" );
+		return TCL_OK;
+	}
+
+	//g_signal_stop_emission_by_name ( widget , Tcl_GetString ( objv[2] ) );
 	return TCL_OK;
 }
 
@@ -425,6 +433,7 @@ int gnoclSignalStopCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj
 **/
 int gnoclSignalEmitCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * const objv[] )
 {
+
 
 	if ( objc != 3 )
 	{
@@ -525,7 +534,71 @@ int gnoclStringCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * c
 
 	return TCL_OK;
 }
+/**
+\brief      Triggers a new tooltip query on display,
+\note       Used in order to update the current visible tooltip, or to show/hide the current tooltip.
+			This function is useful to call when, for example, the state of the widget changed by a key press.
+			-x
+			-y
+			*
+gnocl::tooltip widget -x -y
 
+**/
+int gnoclToolTip ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * const objv[] )
+{
+
+#ifdef DEBUG_COMMANDS
+	g_print ( "%s : objc = %d\n", __FUNCTION__, objc );
+#endif
+
+	int idx, x, y;
+	int i = 2;
+	static const char *opts[] = { "-window", NULL};
+	enum optsIdx { WindowIdx };
+
+	if ( objc == 1 )
+	{
+#ifdef DEBUG_COMMANDS
+	g_print ( "\tgtk_tooltip_trigger_tooltip_query\n" );
+#endif
+		GdkDisplay *display = gdk_display_get_default ();
+		gtk_tooltip_trigger_tooltip_query ( display );
+
+		return TCL_OK;
+	}
+
+
+	GtkWidget *widget = gnoclGetWidgetFromName ( Tcl_GetString ( objv[1] ), interp );
+
+
+	/* parse all the options */
+	while ( i <  objc )
+	{
+		
+#ifdef DEBUG_COMMANDS
+	g_print ( "\t%d\n", i );
+#endif		
+		getIdx ( opts, Tcl_GetString ( objv[i] ), &idx );
+
+		switch ( idx )
+		{
+			case WindowIdx:
+				{
+					GtkWidget *window;
+
+					window = gnoclGetWidgetFromName ( Tcl_GetString ( objv[i+1] ), interp );
+					gtk_widget_set_tooltip_window ( widget, window );
+					return TCL_OK;
+				}
+
+		}
+
+		i += 2;
+
+	}
+
+	return TCL_OK;
+}
 
 /**
 \brief      Emits a short beep.
@@ -536,7 +609,7 @@ int gnoclBeepCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * con
 {
 
 #ifdef DEBUG_COMMANDS
-	g_print ( "gnoclBeepCmd\n" );
+	g_print ( "%s\n", __FUNCTION__ );
 #endif
 
 	gdk_beep;
@@ -1095,9 +1168,10 @@ int gnoclInfoCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * con
 				Tcl_SetObjResult ( interp, res );
 			}
 			break;
-		case VersionIdx:{
-			Tcl_SetObjResult ( interp, Tcl_NewStringObj ( VERSION, -1 ) );
-		}
+		case VersionIdx:
+			{
+				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( VERSION, -1 ) );
+			}
 			break;
 		case GtkVersionIdx:
 			{

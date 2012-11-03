@@ -712,7 +712,7 @@ Tcl_ObjCmdProc gnoclExecCmd;
 Tcl_ObjCmdProc gnoclSetOpts;
 Tcl_ObjCmdProc gnoclShowUriCmd;
 Tcl_ObjCmdProc gnoclCairoCmd;
-
+Tcl_ObjCmdProc gnoclToolTip;
 
 Tcl_ObjCmdProc gnoclGrabCmd;
 

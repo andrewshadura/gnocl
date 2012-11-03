@@ -57,7 +57,7 @@
 
 #include "gnocl.h"
 #include "gnoclparams.h"
-
+//#include "./entryUndo/undo_manager.h"
 #include <string.h>
 #include <assert.h>
 
@@ -130,10 +130,8 @@ static GnoclOption entryOptions[] =
 	{ "-textVisible", GNOCL_BOOL, "visibility" },
 	{ "-widthChars", GNOCL_INT, "width-chars" },
 	{ "-align", GNOCL_DOUBLE, "xalign" },
-
 	{ "-primaryIconTooltip", GNOCL_OBJ, "P", gnoclOptIconTooltip },
 	{ "-secondaryIconTooltip", GNOCL_OBJ, "S", gnoclOptIconTooltip },
-
 	{ "-completion", GNOCL_OBJ, "", gnoclOptCompletion },
 
 	/* GtkEntry Signals upto Gtk+ 2.24*/
@@ -163,8 +161,6 @@ static GnoclOption entryOptions[] =
 	{ "-dragTargets", GNOCL_LIST, "s", gnoclOptDnDTargets },
 	{ "-onDropData", GNOCL_OBJ, "", gnoclOptOnDropData },
 	{ "-onDragData", GNOCL_OBJ, "", gnoclOptOnDragData },
-
-
 	{ "-onFocusIn", GNOCL_OBJ, "I", gnoclOptOnFocus },
 	{ "-onFocusOut", GNOCL_OBJ, "O", gnoclOptOnFocus },
 
@@ -947,7 +943,7 @@ int entryFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const o
 int gnoclEntryCmd (	ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
 #ifdef DEBUG_ENTRY
-	printf ( "entry/staticFuncs/gnoclEntryCmd\n" );
+	printf ( "$s", __FUNCTION__ );
 #endif
 
 	EntryParams *para;
@@ -961,7 +957,7 @@ int gnoclEntryCmd (	ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * con
 
 	para = g_new ( EntryParams, 1 );
 	para->entry = GTK_ENTRY ( gtk_entry_new( ) );
-	//para->entry = GTK_ENTRY ( gtk_undo_entry_new() );
+	//para->entry = GTK_ENTRY ( gtk_undo_entry_new ( NULL ) );
 
 	para->interp = interp;
 	para->variable = NULL;

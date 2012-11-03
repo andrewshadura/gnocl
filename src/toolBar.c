@@ -1195,14 +1195,18 @@ int toolButtonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * co
 
 	switch ( idx )
 	{
-		case CgetIdx: {
-		}
-		case ClassIdx: {
-			Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "toolBarButton", -1 ) );
-			break; }
-		case DeleteIdx: {
-			return gnoclDelete ( interp, GTK_WIDGET ( para->item ), objc, objv );
-		}
+		case CgetIdx:
+			{
+			}
+		case ClassIdx:
+			{
+				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "toolBarButton", -1 ) );
+				break;
+			}
+		case DeleteIdx:
+			{
+				return gnoclDelete ( interp, GTK_WIDGET ( para->item ), objc, objv );
+			}
 		case ConfigureIdx:
 			{
 #ifdef DEBUG_TOOLBAR
@@ -1902,7 +1906,7 @@ int toolBarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const
 				//int ret = gnoclParseAndSetOptions ( interp, objc - 1, objv + 1, toolBarOptions, G_OBJECT ( toolBar ) );
 				//gnoclClearOptions ( toolBarOptions );
 				//return ret;
-				
+
 				int ret = TCL_ERROR;
 
 				if ( gnoclParseAndSetOptions ( interp, objc - 1, objv + 1, toolBarOptions, G_OBJECT ( toolBar ) ) == TCL_OK )
@@ -1912,10 +1916,10 @@ int toolBarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const
 
 				gnoclClearOptions ( toolBarOptions );
 
-				return ret;				
-				
-				
-				
+				return ret;
+
+
+
 			}
 
 			break;
