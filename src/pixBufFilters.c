@@ -14,9 +14,26 @@
 #include <string.h>
 #include <assert.h>
 
+#define RADS(var) var * G_PI / 180
+
+
+typedef struct accumulator
+{
+	int rho;
+	double theta;
+	struct accumulator *next;
+};
+
+/* This will be the unchanging first node */
+static struct accumulator *root;
+
+
 static guint32 convertRGBtoPixel ( gchar *clr );
 
 
+/**
+* determine if the colour of the current pixel is black
+**/
 int isBlack ( GdkPixbuf *pixbuf, gint x, gint y, gint threshold )
 {
 	guchar *pixels;
@@ -48,15 +65,14 @@ int isBlack ( GdkPixbuf *pixbuf, gint x, gint y, gint threshold )
 
 	else
 	{
-		gdk_pixbuf_set_pixel ( pixbuf, 0xff000000, x, y );
+		//gdk_pixbuf_set_pixel ( pixbuf, 0xff000000, x, y );
 		return 0;
 	}
 
 }
 
 /**
-\brief	calculate angle between two points
-	For each row, calculate first occurace of black, assume left margin!
+\brief	calculate tangent (in rads) of the angle between two points
 
 	x1,y1
 	+
@@ -82,9 +98,27 @@ double angle ( double x1, double y1, double x2, double y2 )
 	For each row, calculate first occurace of black, assume left margin!
 	Calculate angles between first point and other samples.
 	Average out the angles.
+
+	http://www.cprogramming.com/tutorial/c/lesson15.html
 **/
-int deskew ( GdkPixbuf *pixbuf, Tcl_Interp * interp )
+double deskew ( Tcl_Interp * interp, GdkPixbuf *pixbuf )
 {
+	g_print ( "%s\n", __FUNCTION__ );
+
+
+
+	/* This will point to each node as it traverses the list */
+	struct accumulator *conductor;
+
+	/* Now root points to a node struct */
+	root = malloc ( sizeof ( struct accumulator ) );
+	root->next = 0;
+	conductor = root;
+
+
+//----------------
+
+
 	double angle; /* the calculated angle */
 	gint col, row; /* ie. x/y */
 	gint w, h;
@@ -95,98 +129,157 @@ int deskew ( GdkPixbuf *pixbuf, Tcl_Interp * interp )
 	gint min = INT_MAX;
 	gint max = 0;
 	gint step = 1;
-	gint threshold = 0; /* anything below this is black, anything above is white, ie ignored */
+	gint threshold = 128; /* anything below this is black, anything above is white, ie ignored */
 	gint margin = 0;
-	gint offset = 10;
+	gint offset = 0;
 	gint mean = 0;
 	gint first = 1;
 	gint x1, y1, x2, y2;
 
 
+	angle = 0;
+
+
 	w = gdk_pixbuf_get_width ( pixbuf );
 	h = gdk_pixbuf_get_height ( pixbuf );
+
+	gint count[h];
+
 
 	margin = w / 4;
 
 
-	//g_print ( "width = %d height = %d\n", w, h );
+	g_print ( "width = %d height = %d\n", w, h );
 
 	if ( w <= margin )
 	{
 		margin = w;
 	}
 
+	double theta, rho;
+
+	gint k = 0;
+
+	/* step through the height */
 	for ( row = step ; row < h; row += step )
 	{
+		/* step through the width */
 		for ( col = offset ; col <= margin; col++  )
 		{
+
+			/* count the number of black pixels on that row */
+			count[row] = 0;
+
 			if ( isBlack ( pixbuf, col, row, threshold ) )
 			{
-				sum += col;
-				samples++;
+				count[row]++;
+				gdk_pixbuf_set_pixel ( pixbuf, 0xff000000, col, row );
 
-				if ( col <= min )
+				for ( theta = -5 ; theta <= 5 ; theta += 0.2 )
 				{
-					min = col;
+					angle = RADS ( theta );
+					rho = col * cos ( angle ) + row * sin ( angle );
+
+					/* Creates a node at the end of the list */
+					conductor->next = malloc ( sizeof ( struct accumulator ) );
+					conductor->rho = ( int ) rho;
+					conductor->theta = theta;
+					conductor = conductor->next;
+					k++;
 				}
-
-				if ( col >= max )
-				{
-					max = col;
-				}
-
-				g_print ( "hit black row %d col %d min = %d max = %d\n", row, col, min, max );
-
-				if ( first )
-				{
-					x1 = col; y1 = row;
-					gdk_pixbuf_draw_circle ( pixbuf, 0x0000ff00, col, row, 5, 1 );
-					first = 0;
-				}
-
-				else
-				{
-					x2 = col; y2 = row;
-				}
-
-				break;
 			}
 
-			else
-			{
-				//g_print ( "-----\n" );
-				//gdk_pixbuf_set_pixel ( pixbuf, 0x0000ff00, col, row );
-			}
-		}
+		} /* new col */
+
+	} /* next row */
+
+	countItems ( 50, k );
+
+	free ( root );
+
+	return 1.0;
+}
+
+/**
+12. Find the top 20 (alpha,d) (rho,theta) pairs that have the highest count in the Hough matrix
+13. Calculate the skew angle as an average of the alphas
+14. Rotate the image by – skew angle
+* 
+* int j =
+* int a = 
+* 
+**/
+void countItems ( int j, int a )
+{
+
+	g_print ( "%s j = %d\n", __FUNCTION__, j );
+
+	struct accumulator *conductor;
+
+	conductor = root;
+
+	int i = 0;
+	int k = 0;
+	int l =0;
+	
+	// create array of possible outcomes
+	typedef struct _list
+	{
+		int rho;
+		double theta;
+		int n;
+	} list;
+
+	list items[j];
+
+	// initialize the array
+	for ( k = 0; k < j; k++ )
+	{
+		items[k].rho = 0;
+		items[k].theta = 0.0;
+		items[k].n = 0;
+		g_print ( "k: %d %d %f %d\n", k, items[k].rho,items[k].theta, items[k].rho );
 	}
 
+	g_print ( "1)\n" );
 
-	gdk_pixbuf_flood_fill ( pixbuf, 0x0000ff00, 5, 5 );
+	for (i = 0 ; i < a ; i++ ) {
 
-	gdk_pixbuf_draw_circle ( pixbuf, 0x0000ff00, x2, y2, 5, 1 );
+		/* sort into list */
+		for ( k = 0; k < j; k++ )
+		{
+			
+			if ( ( items[k].theta == conductor->theta ) && ( items[k].rho == conductor->rho ) )
+			{
+				g_print ( "******************* %f %f %d %d\n",items[k].theta,conductor->theta ,items[k].rho, conductor->rho  );
+				//items[k].rho = conductor->rho;
+				//items[k].theta = conductor->theta;
+				items[k].n++;
+			}
+			else
+			{
+				//g_print ( "k %d ~~~~~~~~~~~~~~~~~~~ %f %f %d %d n = %d\n",k, items[k].theta,conductor->theta ,items[k].rho, conductor->rho, items[k].n  );
+				items[k].rho = conductor->rho;
+				items[k].theta = conductor->theta;
+				items[k].n++;
+			}
+			
 
-	mean = sum / samples;
+		} // end for
 
-	g_print ( "samples = %d ; sum = %d ; average = %d\n", samples, sum, mean );
-	g_print ( "min = %d ; max = %d\n", min, max );
+		if ( i == a-1) { g_print ( "i rho %d theta %f\n", i, conductor->rho, conductor->theta);	}
+		
+		conductor = conductor->next;
+	}
 
-	float slope;
-	slope = ( ( float ) max - ( float ) min ) / h;
-	g_print ( "Slope = %f\n", slope );
+	g_print ( "3) total items %d\n", i );
 
-	x2 = ( int ) ( ( float ) y2 * slope );
+	for ( k = 0; k < j; k++ ) { g_print ( "#%d rho %d theta %f items %d\n", k, items[k].rho, items[k].theta, items[k].n ); }
 
-	gdk_pixbuf_draw_circle ( pixbuf, 0x00ff0000, x1, y1, 5, 0 );
-	gdk_pixbuf_draw_line ( pixbuf, 0x00ff0000, x2, y1, x1, y2 );
+	g_print ( "4)\n" );
 
-	angle = atan ( slope ) * 180 / G_PI;
-	g_print ( "angle = %f %d\n", angle, ( int ) angle );
-
-	GdkPixbuf *pb;
-	pb = pixbufRotate ( pixbuf, angle, 255 );
-
-	return gnoclRegisterPixBuf ( interp, pb, pixBufFunc );
 }
+
 
 
 /**
@@ -754,7 +847,22 @@ void gnoclPixBufFilters ( Tcl_Interp *interp, GdkPixbuf *pixbuf, int objc, Tcl_O
 			break;
 		case DeskewIdx:
 			{
-				deskew ( pixbuf, interp );
+				g_print ( "DeskewIdx ------\n" );
+
+
+
+				double a;
+
+				a = deskew ( interp, pixbuf );
+
+
+				g_print ( "Deskew angle = %f\n", a );
+
+				gchar str[32];
+				sprintf ( str, "%f", a );
+
+				Tcl_SetResult ( interp, str, TCL_STATIC );
+
 			}
 			break;
 		case BrightnessRangeIdx:

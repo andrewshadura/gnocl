@@ -306,10 +306,6 @@ int gnoclConfigButtonText ( Tcl_Interp *interp, GtkButton *button, Tcl_Obj *txtO
 
 int gnoclButtonSetSize ( Tcl_Interp  *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret );
 
-int gnoclGladeCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] );
-int gnoclBuilderCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] );
-
-
 int gnoclKeyFileCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * const objv[] );
 
 const char *gnoclGetOptCmd ( GObject *obj, const char *signal );
@@ -711,7 +707,7 @@ Tcl_ObjCmdProc gnoclPointerCmd;
 Tcl_ObjCmdProc gnoclExecCmd;
 Tcl_ObjCmdProc gnoclSetOpts;
 Tcl_ObjCmdProc gnoclShowUriCmd;
-Tcl_ObjCmdProc gnoclCairoCmd;
+//Tcl_ObjCmdProc gnoclCairoCmd;
 Tcl_ObjCmdProc gnoclToolTip;
 
 Tcl_ObjCmdProc gnoclGrabCmd;

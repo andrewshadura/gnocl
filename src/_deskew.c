@@ -257,7 +257,7 @@ void im_shear_x ( image *im, double f )
 /**
  * guchar * gdk_pixbuf_get_pixels (const GdkPixbuf *pixbuf);
  **/
-int _deskew ( int reset, int XRES, int YRES, unsigned char *pixmap, int sk )
+int deskew ( int reset, int XRES, int YRES, unsigned char *pixmap, int sk )
 {
 	static image img;
 	static double f, a, b;

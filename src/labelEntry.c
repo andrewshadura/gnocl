@@ -12,6 +12,10 @@ date	20012
 /**
 \par Modification History
 \verbatim
+	2013-01: new options
+				-primaryIcon
+				-secondaryIcon
+				-baseColor
 	2012-09: new options
 				-data
 				-labelWidthGroup
@@ -98,6 +102,9 @@ static const int editableIdx = 19;
 static const int baseFontIdx = 20;
 static const int useMarkupIdx = 21;
 static const int dataIdx = 22;
+static const int primaryIconIdx = 23;
+static const int secondaryIconIdx = 24;
+static const int baseColorIdx = 25;
 
 //static enum  optsIdx { CollapsedIdx, EllipsizeIdx, ReliefIdx, LabelIdx, LabelWidgetIdx };
 
@@ -135,10 +142,12 @@ static GnoclOption labelEntryOptions[] =
 
 	//{ "-widthChars", GNOCL_INT, "width-chars" },
 	//{ "-data", GNOCL_OBJ, "", gnoclOptData }, // 22
-	{ "-data", GNOCL_STRING, NULL },
+	{ "-data", GNOCL_STRING, NULL }, // 22
 
-	{ "-baseColor", GNOCL_OBJ, "normal", gnoclOptGdkColorBase }, //23
-	{ "-background", GNOCL_OBJ, "normal", gnoclOptGdkColorBg }, //24
+	{ "-primaryIcon", GNOCL_OBJ, NULL },  //23
+	{ "-secondaryIcon", GNOCL_OBJ, NULL },  //24
+
+	{ "-baseColor", GNOCL_STRING,  NULL }, // 25
 
 	{ NULL },
 };
@@ -378,6 +387,22 @@ static int configure ( Tcl_Interp *interp, LabelEntryParams *para, GnoclOption o
 		"changed", G_OBJECT ( para->entry ),
 		G_CALLBACK ( changedFunc ), interp, traceFunc, para ); // see entry.c
 
+	/*
+	GTK_STATE_NORMAL,
+	GTK_STATE_ACTIVE,
+	GTK_STATE_PRELIGHT,
+	GTK_STATE_SELECTED,
+	GTK_STATE_INSENSITIVE,
+	GTK_STATE_INCONSISTENT,
+	GTK_STATE_FOCUSED
+	*/
+	if ( options[baseColorIdx].status == GNOCL_STATUS_CHANGED )
+	{
+		GdkColor color;
+
+		gdk_color_parse ( options[baseColorIdx].val.str, &color ) == 0 ? g_print ( "Colour Set -FAILED\n" ) : g_print ( "Colour Set -OK\n" );
+		gtk_widget_modify_base ( GTK_WIDGET ( para->entry ) , GTK_STATE_NORMAL, &color );
+	}
 
 	if ( options[dataIdx].status == GNOCL_STATUS_CHANGED )
 	{
@@ -545,6 +570,9 @@ static int configure ( Tcl_Interp *interp, LabelEntryParams *para, GnoclOption o
 		pango_font_description_free ( font_desc );
 	}
 
+
+
+
 	if ( options[baseFontIdx].status == GNOCL_STATUS_CHANGED )
 	{
 		g_print ( "%s baseFontIdx\n", __FUNCTION__ );
@@ -554,6 +582,121 @@ static int configure ( Tcl_Interp *interp, LabelEntryParams *para, GnoclOption o
 		gtk_widget_modify_font ( GTK_WIDGET ( para->entry ), font_desc );
 		pango_font_description_free ( font_desc );
 	}
+
+	/* set primary icon */
+	if ( options[primaryIconIdx].status == GNOCL_STATUS_CHANGED )
+	{
+		GnoclStringType type = gnoclGetStringType ( options[primaryIconIdx].val.obj );
+
+		if ( type == GNOCL_STR_EMPTY )
+		{
+
+		}
+
+		else
+		{
+			GtkWidget *image = gnoclFindChild ( GTK_WIDGET ( para->entry ), GTK_TYPE_IMAGE );
+
+
+			if ( ( type & ( GNOCL_STR_STOCK | GNOCL_STR_FILE ) ) == 0 )
+			{
+				Tcl_AppendResult ( interp, "Unknown type for \"",
+								   Tcl_GetString ( options[primaryIconIdx].val.obj ),
+								   "\" must be of type FILE (%/) or STOCK (%#)", NULL );
+				return TCL_ERROR;
+
+			}
+
+			if ( image == NULL )
+			{
+
+			}
+
+			if ( type & GNOCL_STR_STOCK )
+			{
+				GtkStockItem item;
+
+				if ( gnoclGetStockItem ( options[primaryIconIdx].val.obj, interp, &item ) != TCL_OK )
+				{
+					return TCL_ERROR;
+				}
+
+				//gtk_image_set_from_stock ( GTK_IMAGE ( image ), item.stock_id, GTK_ICON_SIZE_BUTTON );
+				gtk_entry_set_icon_from_stock ( para->entry, GTK_ENTRY_ICON_PRIMARY, item.stock_id );
+
+			}
+
+			else if ( type & GNOCL_STR_FILE )
+			{
+				GdkPixbuf *pix = gnoclPixbufFromObj ( interp, options + primaryIconIdx );
+
+				if ( pix == NULL )
+				{
+					return TCL_ERROR;
+				}
+
+				gtk_entry_set_icon_from_pixbuf ( para->entry, GTK_ENTRY_ICON_PRIMARY, pix );
+			}
+		}
+	}
+
+	/* set secondary icon */
+	if ( options[secondaryIconIdx].status == GNOCL_STATUS_CHANGED )
+	{
+		GnoclStringType type = gnoclGetStringType ( options[secondaryIconIdx].val.obj );
+
+		if ( type == GNOCL_STR_EMPTY )
+		{
+
+		}
+
+		else
+		{
+			GtkWidget *image = gnoclFindChild ( GTK_WIDGET ( para->entry ), GTK_TYPE_IMAGE );
+
+
+			if ( ( type & ( GNOCL_STR_STOCK | GNOCL_STR_FILE ) ) == 0 )
+			{
+				Tcl_AppendResult ( interp, "Unknown type for \"",
+								   Tcl_GetString ( options[secondaryIconIdx].val.obj ),
+								   "\" must be of type FILE (%/) or STOCK (%#)", NULL );
+				return TCL_ERROR;
+
+			}
+
+			if ( image == NULL )
+			{
+
+			}
+
+			if ( type & GNOCL_STR_STOCK )
+			{
+				GtkStockItem item;
+
+				if ( gnoclGetStockItem ( options[secondaryIconIdx].val.obj, interp, &item ) != TCL_OK )
+				{
+					return TCL_ERROR;
+				}
+
+				//gtk_image_set_from_stock ( GTK_IMAGE ( image ), item.stock_id, GTK_ICON_SIZE_BUTTON );
+				gtk_entry_set_icon_from_stock ( para->entry, GTK_ENTRY_ICON_SECONDARY, item.stock_id );
+
+			}
+
+			else if ( type & GNOCL_STR_FILE )
+			{
+				GdkPixbuf *pix = gnoclPixbufFromObj ( interp, options + secondaryIconIdx );
+
+				if ( pix == NULL )
+				{
+					return TCL_ERROR;
+				}
+
+				gtk_entry_set_icon_from_pixbuf ( para->entry, GTK_ENTRY_ICON_SECONDARY, pix );
+			}
+		}
+	}
+
 
 	return TCL_OK;
 }
@@ -721,7 +864,7 @@ int gnoclLabelEntryCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj 
 	/* add to containers */
 	if ( needAlign )
 	{
-		GtkWidget *align = gtk_alignment_new ( 1, 0, 0, 0 );
+		GtkWidget *align = gtk_alignment_new ( 1, 0, 1, 0 );
 		gtk_container_add ( align, para->label );
 		gtk_container_add ( para->hbox, align );
 	}

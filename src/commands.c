@@ -12,6 +12,8 @@
 
 /*
    History:
+   2012-01: gnocl::winfo
+				added exists subcommand
    2012-11: added gnocl::tooltip
    2012-03: added gnocl::lset
    2011-12: added gnocl::showURI
@@ -534,15 +536,10 @@ int gnoclStringCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * c
 
 	return TCL_OK;
 }
-/**
-\brief      Triggers a new tooltip query on display,
-\note       Used in order to update the current visible tooltip, or to show/hide the current tooltip.
-			This function is useful to call when, for example, the state of the widget changed by a key press.
-			-x
-			-y
-			*
-gnocl::tooltip widget -x -y
 
+/**
+\brief      Set custom widget tooltip window or triggers a new tooltip query on display,
+\note       Used in order to update the contents of a visible tooltip.
 **/
 int gnoclToolTip ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * const objv[] )
 {
@@ -551,51 +548,82 @@ int gnoclToolTip ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * con
 	g_print ( "%s : objc = %d\n", __FUNCTION__, objc );
 #endif
 
-	int idx, x, y;
+	int idx;
 	int i = 2;
-	static const char *opts[] = { "-window", NULL};
-	enum optsIdx { WindowIdx };
+	GtkWidget *widget, *window;
+	GdkDisplay *display;
 
-	if ( objc == 1 )
+	static const char *opts[] = { "-window", "-position", NULL};
+	enum optsIdx { WindowIdx, PositionIdx };
+
+
+	if ( objc < 1 )
 	{
-#ifdef DEBUG_COMMANDS
-	g_print ( "\tgtk_tooltip_trigger_tooltip_query\n" );
-#endif
-		GdkDisplay *display = gdk_display_get_default ();
+		Tcl_WrongNumArgs ( interp, 1, objv, "Wrong number of arguments. Must be trigger or widget-id -windown tooltip-id" );
+		return TCL_ERROR;
+	}
+
+	if ( strcmp ( Tcl_GetString ( objv[1] ), "trigger" ) == 0 )
+	{
+		display = gdk_display_get_default ();
 		gtk_tooltip_trigger_tooltip_query ( display );
 
 		return TCL_OK;
 	}
 
-
-	GtkWidget *widget = gnoclGetWidgetFromName ( Tcl_GetString ( objv[1] ), interp );
+	widget = gnoclGetWidgetFromName ( Tcl_GetString ( objv[1] ), interp );
 
 
 	/* parse all the options */
 	while ( i <  objc )
 	{
-		
+
 #ifdef DEBUG_COMMANDS
-	g_print ( "\t%d\n", i );
-#endif		
+		g_print ( "\t%d\n", i );
+#endif
 		getIdx ( opts, Tcl_GetString ( objv[i] ), &idx );
 
 		switch ( idx )
 		{
 			case WindowIdx:
 				{
-					GtkWidget *window;
-
 					window = gnoclGetWidgetFromName ( Tcl_GetString ( objv[i+1] ), interp );
 					gtk_widget_set_tooltip_window ( widget, window );
-					return TCL_OK;
+					//return TCL_OK;
 				}
 
+				/* this options will not work properly, perhaps the positioning is controlled by Gtk itself */
+			case PositionIdx:
+				{
+					GtkWidget *parent, *child;
+					gint x, y;
+
+					sscanf ( Tcl_GetString ( objv[i+1] ), "%d %d", &x, &y );
+
+					child = gtk_bin_get_child ( GTK_BIN ( widget ) );
+					parent = gtk_widget_get_parent ( GTK_BIN ( widget ) );
+
+					//window = gtk_widget_get_tooltip_window ( parent );
+					//window = gtk_widget_get_tooltip_window ( child );
+					window = gtk_widget_get_tooltip_window ( widget );
+
+					if ( window == NULL )
+					{
+						g_print ( "NO WINDOW!\n" );
+					}
+
+					gtk_window_move ( GTK_WINDOW ( window ) , x, y );
+
+					//return TCL_OK;
+				}
 		}
 
 		i += 2;
 
 	}
+
+	display = gdk_display_get_default ();
+	gtk_tooltip_trigger_tooltip_query ( display );
 
 	return TCL_OK;
 }
@@ -853,14 +881,14 @@ int gnoclWinfoCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * co
 	static const char *cmd[] =
 	{
 		"path", "parent", "toplevel", "geometry",
-		"style", "pointer", "notify",
+		"style", "pointer", "notify", "exists",
 		NULL
 	};
 
 	enum optIdx
 	{
 		PathIdx, ParentIdx, ToplevelIdx, GeometryIdx,
-		StyleIdx, PointerIdx, NotifyIdx
+		StyleIdx, PointerIdx, NotifyIdx, ExistsIdx
 	};
 	int idx;
 
@@ -881,7 +909,19 @@ int gnoclWinfoCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * co
 
 	switch ( idx )
 	{
-			//gnocl:winfo notify widget-id opts
+		
+		case ExistsIdx: {
+
+				GtkWidget *widget = NULL;
+				widget =  gnoclGetWidgetFromName ( Tcl_GetString ( objv[2] ), interp );
+				if ( widget == NULL ) {
+					Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "0", -1 ) );
+				} else {
+					Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "1", -1 ) );
+				}
+		}
+		break;
+		//gnocl:winfo notify widget-id opts
 		case NotifyIdx:
 			{
 				g_print ( "widget id = %s\n", Tcl_GetString ( objv[2] ) );

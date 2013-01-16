@@ -109,7 +109,7 @@
 #include <assert.h>
 #include <stdlib.h>     /* atof */
 
-#include <glade/glade.h>
+//#include <glade/glade.h>
 
 /*! \page page3 Glade GUI Description Files Loader
   \section sec Glade File Load Command.

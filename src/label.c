@@ -12,6 +12,7 @@
 
 /*
    History:
+   2013-01: added -onDestroy
    2012-08: added -resizable
    2011-06: added -cursorPos, -singleLine, -trackVisitedLinks, -useUnderline
             resolved problems with use of pango markup with the -text option
@@ -114,6 +115,9 @@ static GnoclOption labelOptions[] =
 	{ "-background", GNOCL_OBJ, "normal", gnoclOptGdkColorBg },
 
 	{ "-tooltip", GNOCL_OBJ, "", gnoclOptTooltip },
+
+	/* respond to widget destruction */
+	{ "-onDestroy", GNOCL_OBJ, "destroy", gnoclOptCommand },
 
 	{ NULL }
 };

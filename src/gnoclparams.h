@@ -67,6 +67,8 @@ typedef struct
 	char        *name;
 	char        *iconName;
 	char		*data;
+	char		*align;
+	GtkAlignment *alignment;
 } ButtonParams;
 
 
@@ -332,6 +334,7 @@ typedef struct
 	Tcl_Interp *interp;
 	char *fname;
 } PixbufParams;
+
 
 typedef struct
 {

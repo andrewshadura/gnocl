@@ -73,6 +73,262 @@
 #include <string.h>
 #include <assert.h>
 
+
+/*****************
+ * relocated from cairo.c
+ * used to draw splash screen
+ ******************************/
+
+static gchar *dash;
+
+/* Key for automated pixbuf updating and destruction */
+static const cairo_user_data_key_t pixbuf_key;
+
+cairo_t   *gnoclPixbufCairoCreate ( GdkPixbuf *pixbuf );
+GdkPixbuf *gnoclPixbufCairoDestroy ( cairo_t   *cr, gboolean   create_new_pixbuf );
+
+/* Key for automated pixbuf updating and destruction */
+static const cairo_user_data_key_t pixbuf_key;
+
+
+/**
+\brief	This function will initialize new cairo context with contents of
+		@pixbuf. You can then draw using returned context. When finished
+		drawing, you must call gnoclPixbufCairoDestroy() or your pixbuf
+		will not be updated with new contents!
+
+ 	Return value: New cairo_t context. When you're done with it, call
+ 	gnoclPixbufCairoDestroy() to update your pixbuf and free memory.
+**/
+cairo_t * gnoclPixbufCairoCreate ( GdkPixbuf *pixbuf )
+{
+
+	gint width;					/* Width of both pixbuf and surface */
+	gint height;    			/* Height of both pixbuf and surface */
+	gint p_stride;  			/* Pixbuf stride value */
+	gint p_n_channels; 			/* RGB -> 3, RGBA -> 4 */
+	gint s_stride;     			/* Surface stride value */
+	guchar  *p_pixels;  		/* Pixbuf's pixel data */
+	guchar *s_pixels;			/* Surface's pixel data */
+	cairo_surface_t *surface;	/* Temporary image surface */
+	cairo_t *cr;           		/* Final context */
+
+	g_object_ref ( G_OBJECT ( pixbuf ) );
+
+	/* Inspect input pixbuf and create compatible cairo surface */
+	g_object_get ( G_OBJECT ( pixbuf ), "width",           &width,
+				   "height",          &height,
+				   "rowstride",       &p_stride,
+				   "n-channels",      &p_n_channels,
+				   "pixels",          &p_pixels,
+				   NULL );
+	surface = cairo_image_surface_create ( CAIRO_FORMAT_ARGB32, width, height );
+	s_stride = cairo_image_surface_get_stride ( surface );
+	s_pixels = cairo_image_surface_get_data ( surface );
+
+	/* Copy pixel data from pixbuf to surface */
+	while ( height-- )
+	{
+		gint    i;
+		guchar *p_iter = p_pixels,
+				*s_iter = s_pixels;
+
+		for ( i = 0; i < width; i++ )
+		{
+#if G_BYTE_ORDER == G_LITTLE_ENDIAN
+
+			/* Pixbuf:  RGB(A)
+			 * Surface: BGRA */
+			if ( p_n_channels == 3 )
+			{
+				s_iter[0] = p_iter[2];
+				s_iter[1] = p_iter[1];
+				s_iter[2] = p_iter[0];
+				s_iter[3] = 0xff;
+			}
+
+			else /* p_n_channels == 4 */
+			{
+				gdouble alpha_factor = p_iter[3] / ( gdouble ) 0xff;
+
+				s_iter[0] = ( guchar ) ( p_iter[2] * alpha_factor + .5 );
+				s_iter[1] = ( guchar ) ( p_iter[1] * alpha_factor + .5 );
+				s_iter[2] = ( guchar ) ( p_iter[0] * alpha_factor + .5 );
+				s_iter[3] =           p_iter[3];
+			}
+
+#elif G_BYTE_ORDER == G_BIG_ENDIAN
+
+			/* Pixbuf:  RGB(A)
+			 * Surface: ARGB */
+			if ( p_n_channels == 3 )
+			{
+				s_iter[3] = p_iter[2];
+				s_iter[2] = p_iter[1];
+				s_iter[1] = p_iter[0];
+				s_iter[0] = 0xff;
+			}
+
+			else /* p_n_channels == 4 */
+			{
+				gdouble alpha_factor = p_iter[3] / ( gdouble ) 0xff;
+
+				s_iter[3] = ( guchar ) ( p_iter[2] * alpha_factor + .5 );
+				s_iter[2] = ( guchar ) ( p_iter[1] * alpha_factor + .5 );
+				s_iter[1] = ( guchar ) ( p_iter[0] * alpha_factor + .5 );
+				s_iter[0] =           p_iter[3];
+			}
+
+#else /* PDP endianness */
+
+			/* Pixbuf:  RGB(A)
+			 * Surface: RABG */
+			if ( p_n_channels == 3 )
+			{
+				s_iter[0] = p_iter[0];
+				s_iter[1] = 0xff;
+				s_iter[2] = p_iter[2];
+				s_iter[3] = p_iter[1];
+			}
+
+			else /* p_n_channels == 4 */
+			{
+				gdouble alpha_factor = p_iter[3] / ( gdouble ) 0xff;
+
+				s_iter[0] = ( guchar ) ( p_iter[0] * alpha_factor + .5 );
+				s_iter[1] =           p_iter[3];
+				s_iter[1] = ( guchar ) ( p_iter[2] * alpha_factor + .5 );
+				s_iter[2] = ( guchar ) ( p_iter[1] * alpha_factor + .5 );
+			}
+
+#endif
+			s_iter += 4;
+			p_iter += p_n_channels;
+		}
+
+		s_pixels += s_stride;
+		p_pixels += p_stride;
+	}
+
+	/* Create context and set user data */
+	cr = cairo_create ( surface );
+	cairo_surface_destroy ( surface );
+	cairo_set_user_data ( cr, &pixbuf_key, pixbuf, g_object_unref );
+
+	/* Return context */
+	return ( cr );
+}
+
+/**
+
+\note	If TRUE, new pixbuf will be created and returned.
+		If FALSE, input pixbuf will be updated in place.
+\brief	This function will destroy cairo context, created with gnoclPixbufCairoCreate().
+
+	Return value: New or updated GdkPixbuf. You own a new reference on return
+	value, so you need to call g_object_unref() on returned pixbuf when you don't
+	need it anymore.
+**/
+GdkPixbuf *gnoclPixbufCairoDestroy ( cairo_t  *cr, gboolean  create_new_pixbuf )
+{
+	gint width;				/* Width of both pixbuf and surface */
+	gint height;    		/* Height of both pixbuf and surface */
+	gint p_stride;  		/* Pixbuf stride value */
+	gint p_n_channels; 		/* RGB -> 3, RGBA -> 4 */
+	gint s_stride;     		/* Surface stride value */
+	guchar  *p_pixels;  	/* Pixbuf's pixel data */
+	guchar *s_pixels;		/* Surface's pixel data */
+	cairo_surface_t *surface;	/* Temporary image surface */
+	GdkPixbuf *pixbuf;		/* Pixbuf to be returned */
+	GdkPixbuf *tmp_pix;		/* Temporary storage */
+
+	/* Obtain pixbuf to be returned */
+	tmp_pix = cairo_get_user_data ( cr, &pixbuf_key );
+
+	if ( create_new_pixbuf )
+	{
+		pixbuf = gdk_pixbuf_copy ( tmp_pix );
+	}
+
+	else
+	{
+		pixbuf = g_object_ref ( G_OBJECT ( tmp_pix ) );
+	}
+
+	/* Obtain surface from where pixel values will be copied */
+	surface = cairo_get_target ( cr );
+
+	/* Inspect pixbuf and surface */
+	g_object_get ( G_OBJECT ( pixbuf ), "width", &width, "height", &height, "rowstride", &p_stride,
+				   "n-channels", &p_n_channels, "pixels", &p_pixels, NULL );
+	s_stride = cairo_image_surface_get_stride ( surface );
+	s_pixels = cairo_image_surface_get_data ( surface );
+
+	/* Copy pixel data from surface to pixbuf */
+	while ( height-- )
+	{
+		gint    i;
+		guchar *p_iter = p_pixels,
+				*s_iter = s_pixels;
+
+		for ( i = 0; i < width; i++ )
+		{
+#if G_BYTE_ORDER == G_LITTLE_ENDIAN
+			/* Pixbuf:  RGB(A)
+			 * Surface: BGRA */
+			gdouble alpha_factor = ( gdouble ) 0xff / s_iter[3];
+
+			p_iter[0] = ( guchar ) ( s_iter[2] * alpha_factor + .5 );
+			p_iter[1] = ( guchar ) ( s_iter[1] * alpha_factor + .5 );
+			p_iter[2] = ( guchar ) ( s_iter[0] * alpha_factor + .5 );
+
+			if ( p_n_channels == 4 )
+				p_iter[3] = s_iter[3];
+
+#elif G_BYTE_ORDER == G_BIG_ENDIAN
+			/* Pixbuf:  RGB(A)
+			 * Surface: ARGB */
+			gdouble alpha_factor = ( gdouble ) 0xff / s_iter[0];
+
+			p_iter[0] = ( guchar ) ( s_iter[1] * alpha_factor + .5 );
+			p_iter[1] = ( guchar ) ( s_iter[2] * alpha_factor + .5 );
+			p_iter[2] = ( guchar ) ( s_iter[3] * alpha_factor + .5 );
+
+			if ( p_n_channels == 4 )
+				p_iter[3] = s_iter[0];
+
+#else /* PDP endianness */
+			/* Pixbuf:  RGB(A)
+			 * Surface: RABG */
+			gdouble alpha_factor = ( gdouble ) 0xff / s_iter[1];
+
+			p_iter[0] = ( guchar ) ( s_iter[0] * alpha_factor + .5 );
+			p_iter[1] = ( guchar ) ( s_iter[3] * alpha_factor + .5 );
+			p_iter[2] = ( guchar ) ( s_iter[2] * alpha_factor + .5 );
+
+			if ( p_n_channels == 4 )
+				p_iter[3] = s_iter[1];
+
+#endif
+			s_iter += 4;
+			p_iter += p_n_channels;
+		}
+
+		s_pixels += s_stride;
+		p_pixels += p_stride;
+	}
+
+	/* Destroy context */
+	cairo_destroy ( cr );
+
+	/* Return pixbuf */
+	return ( pixbuf );
+}
+
+
+/**********************************************************************/
+
+
 PixbufParams *gnoclGetPixBufFromName ( const char *id, Tcl_Interp *interp );
 const char *gnoclGetNameFromPixBuf ( GdkPixbuf *pixbuf );
 guint32 convertRGBtoPixel ( gchar *clr );
@@ -421,6 +677,9 @@ GdkPixbuf * pixbufRotate ( GdkPixbuf *pixbuf1, double angle, int acolor )
 
 	/* create output pixbuf2 */
 	pixbuf2 = gdk_pixbuf_new ( color, alpha, nbits, ww2, hh2 );
+
+
+
 
 	if ( ! pixbuf2 ) return 0;
 
@@ -1529,6 +1788,7 @@ int pixBufFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const 
 				   associate the named object with the new buffer which will be enlarged.
 				   error check, this will not work on svg files
 				*/
+				g_print ( "RotateIdx 1\n" );
 				GdkPixbuf *pb;
 				gdouble angle;
 				int acolor;
@@ -1536,14 +1796,17 @@ int pixBufFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const 
 
 				acolor = 255 ; /* default is black */
 
-				name = gnoclGetNameFromPixBuf ( data );
+				//name = gnoclGetNameFromPixBuf ( data );
 
-				Tcl_GetDoubleFromObj ( NULL, objv[3], &angle );
+				g_print ( "RotateIdx 2\n" );
+
+				Tcl_GetDoubleFromObj ( NULL, objv[2], &angle );
 
 				/* only one option */
-				if ( !strcmp ( Tcl_GetString ( objv[4] ), "-backgroundColor" ) )
+
+				if ( !strcmp ( Tcl_GetString ( objv[3] ), "-backgroundColor" ) )
 				{
-					acolor = Tcl_GetIntFromObj ( NULL, objv[5], &acolor ) ;
+					acolor = Tcl_GetIntFromObj ( NULL, objv[4], &acolor ) ;
 				}
 
 				else
@@ -1552,15 +1815,20 @@ int pixBufFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const 
 					return TCL_ERROR;
 				}
 
+
+				g_print ( "RotateIdx 3\n" );
+
 #ifdef DEBUG_PIXBUF
 				g_print ( "Rotate 2 %s %f %s %d\n",
 						  name ,
 						  angle,
-						  Tcl_GetString ( objv[5] ),
+						  Tcl_GetString ( objv[4] ),
 						  acolor ); // works ok!
 #endif
 				/* replace the current buffer with the new buffer */
 				pb = pixbufRotate ( para->pixbuf, angle, acolor );
+
+				g_print ( "RotateIdx 4\n" );
 
 				if ( pb == NULL )
 				{
@@ -1568,10 +1836,13 @@ int pixBufFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const 
 					return TCL_ERROR;
 				}
 
+				g_print ( "RotateIdx 5\n" );
+
 				para->pixbuf = pb;
 
 				return gnoclRegisterPixBuf_ ( interp, para, pixBufFunc );
-				return gnoclRegisterPixBuf ( interp, pb, pixBufFunc );
+				//return gnoclRegisterPixBuf ( interp, pb, pixBufFunc );
+				g_print ( "RotateIdx 6\n" );
 
 			}
 			break;

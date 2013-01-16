@@ -11,6 +11,7 @@ date 	2001-03:
 /**
  \par Modification History
  \verbatim
+ 2012-11: added -align
  2012-09: switched to the use of ButtonParams
  2009-02: added -widthReuest, -heightRequest
  2009-01: added geometry
@@ -38,23 +39,28 @@ date 	2001-03:
 #include <string.h>
 #include <assert.h>
 
-static const int textIdx = 0;
-static const int iconIdx = 1;
-static const int dataIdx = 5;
+static const int textIdx 	= 0;
+static const int iconIdx 	= 1;
+static const int alignIdx 	= 2;
+static const int dataIdx 	= 3;
 
 static GnoclOption buttonOptions[] =
 {
 	/* GtkWidget specific options */
 	{ "-text", GNOCL_OBJ, NULL },    /* 0 */
 	{ "-icon", GNOCL_OBJ, NULL },    /* 1 */
+	{ "-align", GNOCL_OBJ, NULL },   /* 2 */
+	{ "-data", GNOCL_STRING, NULL }, /* 3 */
+
 	{ "-activeBackgroundColor", GNOCL_OBJ, "active", gnoclOptGdkColorBg }, // 2
+
 	/* GtkContainer Properties */
 	{ "-borderWidth", GNOCL_OBJ, "border-width", gnoclOptPadding }, //3
 
 	/* GtkObject Properties */
-	{ "-icon", GNOCL_OBJ, NULL }, //4
+
 	//{ "-data", GNOCL_OBJ, "", gnoclOptData },
-	{ "-data", GNOCL_STRING, NULL }, //5
+
 	{ "-hasFocus", GNOCL_BOOL, "has-focus" }, //6
 	{ "-heightGroup", GNOCL_OBJ, "h", gnoclOptSizeGroup }, //7
 	{ "-name", GNOCL_STRING, "name" },
@@ -96,7 +102,6 @@ static void destroyFunc ( GtkWidget *widget, gpointer data )
 	printf ( "%s\n", __FUNCTION__ );
 #endif
 
-
 	ButtonParams *para = ( ButtonParams * ) data;
 
 	gnoclForgetWidgetFromName ( para->name );
@@ -106,6 +111,32 @@ static void destroyFunc ( GtkWidget *widget, gpointer data )
 	g_free ( para );
 }
 
+/**
+\brief
+**/
+static void buttonAlign ( ButtonParams *para )
+{
+
+#ifdef DEBUG_BUTTON
+	g_print ( "%s\n", __FUNCTION__ );
+#endif
+
+	if ( strcmp ( para->align, "left" ) == 0 )
+	{
+		gtk_alignment_set ( GTK_ALIGNMENT ( para->alignment ), 0.0, 0.0, 0.0, 0.0 );
+	}
+
+	if ( strcmp ( para->align, "right" ) == 0 )
+	{
+		gtk_alignment_set ( GTK_ALIGNMENT ( para->alignment ), 1.0, 1.0, 0.0, 0.0 );
+	}
+
+	if ( strcmp ( para->align, "center" ) == 0 || strcmp ( para->align, "centre" ) == 0 )
+	{
+		gtk_alignment_set ( GTK_ALIGNMENT ( para->alignment ), 0.5, 0.5, 0.0, 0.0 );
+	}
+
+}
 
 
 /**
@@ -122,6 +153,15 @@ static int configure (  Tcl_Interp *interp, ButtonParams *para,  GnoclOption opt
 	if ( options[dataIdx].status == GNOCL_STATUS_CHANGED )
 	{
 		para->data = strdup ( options[dataIdx].val.str );
+	}
+
+	if ( options[alignIdx].status == GNOCL_STATUS_CHANGED )
+	{
+
+		para->align = Tcl_GetString ( options[alignIdx].val.obj );
+
+		buttonAlign ( para );
+
 	}
 
 	if ( options[iconIdx].status == GNOCL_STATUS_CHANGED )
@@ -165,12 +205,16 @@ static int configure (  Tcl_Interp *interp, ButtonParams *para,  GnoclOption opt
 
 			para->iconName = Tcl_GetString ( options[iconIdx].val.obj );
 
-
 			if ( image == NULL )
 			{
 				/* this should match gtkbutton.c */
 				GtkWidget *hbox = gtk_hbox_new ( 0, 2 );
-				GtkWidget *align = gtk_alignment_new ( 0.5, 0.5, 0.0, 0.0 );
+				GtkAlignment *align = gtk_alignment_new ( 0.5, 0.5, 0.0, 0.0 );
+
+				para->alignment = align;
+
+				buttonAlign ( para );
+
 				image = gtk_image_new();
 
 				gtk_box_pack_start ( GTK_BOX ( hbox ), image, 0, 0, 0 );
@@ -209,7 +253,6 @@ static int configure (  Tcl_Interp *interp, ButtonParams *para,  GnoclOption opt
 				gtk_image_set_from_pixbuf ( GTK_IMAGE ( image ), pix );
 			}
 		}
-
 
 	}
 
@@ -344,6 +387,11 @@ static int cget (   Tcl_Interp *interp,  ButtonParams *para,  GnoclOption option
 		//gnoclOptParaData ( interp, para->data, &obj);
 	}
 
+	if ( idx == alignIdx )
+	{
+		obj = Tcl_NewStringObj ( para->align, -1 );
+	}
+
 
 	if ( idx == textIdx )
 	{
@@ -387,6 +435,7 @@ static int cget (   Tcl_Interp *interp,  ButtonParams *para,  GnoclOption option
 
 	return gnoclCgetNotImplemented ( interp, options + idx );
 }
+
 
 /**
 \brief  Function associated with the widget.
@@ -562,7 +611,6 @@ int gnoclButtonCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * co
 	int  ret;
 
 	/* step 1) check validity of switches */
-
 	if ( gnoclParseOptions ( interp, objc, objv, buttonOptions ) != TCL_OK )
 	{
 		gnoclClearOptions ( buttonOptions );
@@ -571,12 +619,12 @@ int gnoclButtonCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * co
 
 	/* step 2) create an instance of the widget and 'show' it*/
 	para->button = GTK_BUTTON ( gtk_button_new( ) );
+	para->align = "center";
 
 	const char *dataID = "gnocl::para";
-
 	g_object_set_data ( G_OBJECT ( para->button ), dataID, para );
-
 	para->interp = interp;
+	para->alignment = gtk_alignment_new ( 0.5, 0.5, 0.0, 0.0 );;
 
 	gtk_widget_show ( GTK_WIDGET ( para->button ) );
 
@@ -593,7 +641,6 @@ int gnoclButtonCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * co
 	gnoclClearOptions ( buttonOptions );
 
 	/* step 6) if the options passed were incorrect, then delete the widget */
-
 	if ( ret != TCL_OK )
 	{
 		gtk_widget_destroy ( GTK_WIDGET ( para->button ) );
@@ -601,22 +648,12 @@ int gnoclButtonCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * co
 		return TCL_ERROR;
 	}
 
-
 	para->name = gnoclGetAutoWidgetId();
-
 	g_signal_connect ( G_OBJECT ( para->button ), "destroy", G_CALLBACK ( destroyFunc ), para );
-
 	gnoclMemNameAndWidget ( para->name, GTK_WIDGET ( para->button ) );
-
 	Tcl_CreateObjCommand ( interp, para->name, buttonFunc, para, NULL );
-
 	Tcl_SetObjResult ( interp, Tcl_NewStringObj ( para->name, -1 ) );
-
 
 	return TCL_OK;
 
 }
-
-
-
-

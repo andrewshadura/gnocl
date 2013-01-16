@@ -12,8 +12,20 @@
  */
 
 /*
+	to do
+		document
+			-acceptTab
+			-tabs
+*/
+/*
    History:
+   2012-12	corrected -accepttTab to -acceptsTab
    2012-11  added -data option to text tag
+			fixed problems with:
+				getIndex subcommand
+				tag get  subcommand
+			added %r(ow) %c(col) substitution string parameters for
+			-onMotion signal handler
    2012-10	added -onDestroy
    2012-09	cget -baseFont implemented
 			resetUndo
@@ -661,19 +673,42 @@ static int gnoclOptText ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tc
 }
 
 /**
-\brief
+\brief	Set equidistant tab stops meausure in pixels.
+http://developer.gnome.org/pango/stable/pango-Tab-Stops.html
 **/
 static int gnoclOptTabs ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
 
 #ifdef DEBUG_TEXT
-	g_print ( "SET SOME INITIAL TABS\n" );
+	g_print ( "%s SET SOME INITIAL TABS\n", __FUNCTION__ );
 #endif
 
-	PangoTabArray *ptaNameList = pango_tab_array_new_with_positions ( 2, TRUE, PANGO_TAB_LEFT, 100, PANGO_TAB_LEFT, 200 );
-	gtk_text_view_set_tabs ( GTK_TEXT_VIEW ( obj ), ptaNameList );
+	gint pos;
 
+	Tcl_GetIntFromObj ( interp, opt->val.obj, &pos );
 
+	PangoTabArray *tab_array = pango_tab_array_new_with_positions ( 1, TRUE, PANGO_TAB_LEFT, pos );
+	gtk_text_view_set_tabs ( GTK_TEXT_VIEW ( obj ), tab_array );
+
+	/*
+	 * An alternative way...
+	*/
+	/*
+	PangoTabArray *tab_array;
+	gint initial_size,tab_index, location;
+	PangoTabAlign alignment;
+
+	initial_size = 2;
+
+	tab_array = pango_tab_array_new (initial_size,1);
+
+	pango_tab_array_set_tab (tab_array,0,PANGO_TAB_LEFT, 100);
+	pango_tab_array_set_tab (tab_array,1,PANGO_TAB_LEFT, 200);
+
+	gtk_text_view_set_tabs ( GTK_TEXT_VIEW ( obj ), tab_array );
+
+	pango_tab_array_free (tab_array);
+	*/
 	return TCL_OK;
 }
 
@@ -1163,12 +1198,13 @@ static const int baseColorIdx = 5;
 static const int variableIdx = 6;
 static const int onChangedIdx = 7;
 static const int baseFontIdx = 8;
+static const int tooltipIdx = 9;
 
 static GnoclOption textOptions[] =
 {
 	/*  textView */
 
-	/*  gnocl-specific options */
+	/*  gnocl-specific options - cget implemented */
 	{ "-scrollbar", GNOCL_OBJ, NULL },
 	{ "-text", GNOCL_STRING, NULL},
 	{ "-buffer", GNOCL_STRING, NULL},
@@ -1178,6 +1214,7 @@ static GnoclOption textOptions[] =
 	{ "-variable", GNOCL_STRING, NULL },
 	{ "-onChanged", GNOCL_STRING, NULL },
 	{ "-baseFont", GNOCL_OBJ, "Sans 14", gnoclOptGdkBaseFont },
+	{ "-tooltip", GNOCL_OBJ, "", gnoclOptTooltip },
 
 	/* GtkTextView properties
 	"accepts-tab"              gboolean              : Read / Write
@@ -1197,7 +1234,7 @@ static GnoclOption textOptions[] =
 	*/
 
 	{ "-markupTags", GNOCL_OBJ, "", gnoclOptMarkupTags },
-	{ "-accepttTab", GNOCL_BOOL, "accepts-tab" },
+	{ "-acceptsTab", GNOCL_BOOL, "accepts-tab" },
 	{ "-cursorVisible", GNOCL_BOOL, "cursor_visible" },
 	{ "-editable", GNOCL_BOOL, "editable" },
 	{ "-indent", GNOCL_INT, "indent" },
@@ -1209,7 +1246,7 @@ static GnoclOption textOptions[] =
 	{ "-pixelsAboveLines", GNOCL_INT, "pixels_above_lines" },
 	{ "-pixelsInsideWrap", GNOCL_INT, "pixels_inside_wrap" },
 	{ "-rightMargin", GNOCL_INT, "right_margin" },
-	{ "-tabs", GNOCL_STRING, "tabs", gnoclOptTabs}, /* "tabs" */
+	{ "-tabs", GNOCL_OBJ, "tabs", gnoclOptTabs}, /* "tabs" */
 	{ "-wrapMode", GNOCL_OBJ, "wrap_mode", gnoclOptWrapmode },
 
 	/* GtkTextBuffer properties
@@ -1222,7 +1259,7 @@ static GnoclOption textOptions[] =
 	*/
 
 	{ "-hasFocus", GNOCL_BOOL, "has-focus" },
-	{ "-tooltip", GNOCL_OBJ, "", gnoclOptTooltip },
+
 	{ "-onShowHelp", GNOCL_OBJ, "", gnoclOptOnShowHelp },
 	{ "-name", GNOCL_STRING, "name" },
 	{ "-visible", GNOCL_BOOL, "visible" },
@@ -2355,65 +2392,64 @@ int tagCmd ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, Tcl_Obj *  c
 
 				ret = 0;
 
-				/*  some DEBUG_TEXTging feedback */
-
-#ifdef DEBUG_TAGS
-				printf ( "Get tags for position: %s\n", Tcl_GetString ( objv[cmdNo+1] ) ) ;
-				printf ( "Get tag state for position: %s\n", Tcl_GetString ( objv[cmdNo+2] ) ) ;
-				printf ( "1 %s\n", Tcl_GetString ( objv[cmdNo+1] ) ) ;
-				printf ( "2 %s\n", Tcl_GetString ( objv[cmdNo+2] ) ) ;
-				printf ( "3 %s\n", Tcl_GetString ( objv[cmdNo+3] ) ) ;
-#endif
-
 				static char *tagOpt[] =
 				{
-					"-on", "-off",	NULL
+					"-on", "-off", "-all", NULL
 				};
 
 				static enum  tagOptIdx
 				{
-					OnIdx, OffIdx
+					OnIdx, OffIdx, AllIdx
 				};
 
 				gint idx;
 
-
 				/*  check the number of arguments */
-				if ( objc < cmdNo + 2 || objc > cmdNo + 4 )
+				if ( objc < 4 || objc > 5 )
 				{
 					Tcl_WrongNumArgs ( interp, cmdNo + 1, objv, "position opts" );
 					return TCL_ERROR;
 				}
 
 				/*  convert the position to a pointer */
-				if ( posToIter ( interp, objv[cmdNo+1], buffer, &iter ) != TCL_OK )
+				if ( posToIter ( interp, objv[3], buffer, &iter ) != TCL_OK )
 				{
 					return -1;
 				}
 
-				getIdx ( tagOpt, Tcl_GetString ( objv[cmdNo+2] ), &idx );
 
-				switch ( idx )
+				if ( objc == 5 )
 				{
-					case OnIdx:
-						{
-							/* build a list of tagOn changes */
-							tagList = gtk_text_iter_get_toggled_tags ( &iter, 1 );
-						}
-						break;
-					case OffIdx:
-						{
-							/* build a list of tagOff changes */
-							tagList = gtk_text_iter_get_toggled_tags ( &iter, 0 );
-						}
-						break;
-					default:
-						{
-							/* get a list of all applicable tags */
-							tagList = gtk_text_iter_get_tags ( &iter );
-						}
+
+					getIdx ( tagOpt, Tcl_GetString ( objv[4] ), &idx );
+
+					switch ( idx )
+					{
+						case OnIdx:
+							{
+								/* build a list of tagOn changes */
+								tagList = gtk_text_iter_get_toggled_tags ( &iter, 1 );
+							}
+							break;
+						case OffIdx:
+							{
+								/* build a list of tagOff changes */
+								tagList = gtk_text_iter_get_toggled_tags ( &iter, 0 );
+							}
+							break;
+						default:
+							{
+								tagList = gtk_text_iter_get_tags ( &iter );
+							}
+					}
+
 				}
 
+				else
+				{
+					/* get a list of all applicable tags */
+					tagList = gtk_text_iter_get_tags ( &iter );
+				}
 
 				/*  initialise list for return to the inpreter */
 				resList = Tcl_NewListObj ( 0, NULL );
@@ -2827,6 +2863,12 @@ static int cget ( Tcl_Interp * interp, GtkTextView * text, GnoclOption options[]
 {
 	/* get the option from the array? */
 	Tcl_Obj *obj = NULL;
+
+
+	if ( idx == tooltipIdx )
+	{
+		obj = Tcl_NewStringObj ( gtk_widget_get_tooltip_markup ( GTK_WIDGET ( text ) ), -1 );
+	}
 
 	if ( idx == baseFontIdx )
 	{
@@ -3381,7 +3423,7 @@ int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl
 		"delete", "configure", "scrollToPosition", "scrollToMark",
 		"parent",
 		"getIndex", "getCoords", "getRect",
-		"undo", "redo", "grabFocus", "resetUndo",
+		"undo", "redo", "grabFocus", "resetUndo", "getPos",
 
 
 
@@ -3401,7 +3443,7 @@ int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl
 		DeleteIdx, ConfigureIdx, ScrollToPosIdx, ScrollToMarkIdx,
 		ParentIdx,
 		GetIndexIdx, GetCoordsIdx, GetRectIdx,
-		UndoIdx, RedoIdx, GrabFocusIdx, ResetUndoIdx,
+		UndoIdx, RedoIdx, GrabFocusIdx, ResetUndoIdx, GetPosIdx,
 
 		SetIdx, EraseIdx, SelectIdx, GetIdx, CutIdx, CopyIdx, PasteIdx,
 		CgetIdx, GetLineCountIdx, GetWordLengthIdx, GetLengthIdx,
@@ -3452,6 +3494,7 @@ int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl
 		case RedoIdx:  			return 10;
 		case GrabFocusIdx:  	return 11;
 		case ResetUndoIdx:  	return 12;
+		case GetPosIdx: 		return 13;
 
 			/* these are GtkTextBuffer operations */
 
@@ -4506,16 +4549,19 @@ static int textFunc ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * 
 	}
 
 	/*
-			case DeleteIdx:         return 1;
-			case ConfigureIdx:      return 2;
-			case ScrollToPosIdx:    return 3;
-			case ScrollToMarkIdx:   return 4;
-			case ParentIdx:         return 5;
-			case GetIndexIdx:       return 6;
-			case GetCoordsIdx:      return 7;
-			case GetRectIdx:        return 8;
-			case UndoIdx:  			return 9;
-			case RedoIdx:  			return 10;
+		case DeleteIdx:         return 1;
+		case ConfigureIdx:      return 2;
+		case ScrollToPosIdx:    return 3;
+		case ScrollToMarkIdx:   return 4;
+		case ParentIdx:         return 5;
+		case GetIndexIdx:       return 6;
+		case GetCoordsIdx:      return 7;
+		case GetRectIdx:        return 8;
+		case UndoIdx:  			return 9;
+		case RedoIdx:  			return 10;
+		case GrabFocusIdx:  	return 11;
+		case ResetUndoIdx:  	return 12;
+		case GetPosIdx: 		return 13;
 	*/
 
 	switch ( gnoclTextCommand ( text, interp, objc, objv, 1, 1 ) )
@@ -4567,11 +4613,11 @@ static int textFunc ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * 
 			}
 
 			break;
-			// getPos
+			// getIndex
 		case 6: /* get line/row from root window coordinates, ie passed from an event */
 			{
 
-				g_print ( "tag getPos\n" );
+				g_print ( "tag getIndex\n" );
 
 				GtkTextIter iter;
 				gint y, line_no;
@@ -4583,14 +4629,16 @@ static int textFunc ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * 
 
 				//sscanf ( Tcl_GetString ( objv[2] ), "%d %d", &wx, &wy );
 
-				Tcl_GetIntFromObj ( NULL, objv[3], &wx ) ;
-				Tcl_GetIntFromObj ( NULL, objv[4], &wy ) ;
+				Tcl_GetIntFromObj ( NULL, objv[2], &wx ) ;
+				Tcl_GetIntFromObj ( NULL, objv[3], &wy ) ;
 
 				g_print ( "1\n" );
 
 				//gdk_window_get_pointer (TxT->window, &wx, &wy, NULL);
 				gtk_text_view_window_to_buffer_coords ( text, GTK_TEXT_WINDOW_WIDGET, wx, wy, &bx, &by );
 				gtk_text_view_get_iter_at_location ( text, &iter, bx, by );
+
+				//gtk_text_layout_get_iter_at_pixel (text->layout, &iter, x, y);
 
 				g_print ( "2\n" );
 
@@ -4667,6 +4715,14 @@ static int textFunc ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * 
 
 				gtk_undo_view_reset ( text );
 
+				return TCL_OK;
+			}
+
+		case 13: /* get iter at pixel */
+			{
+
+				//GtkTextIter iter;
+				//gtk_text_layout_get_iter_at_pixel (text->layout, &iter, x, y);
 				return TCL_OK;
 			}
 

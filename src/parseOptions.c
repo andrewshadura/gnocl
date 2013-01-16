@@ -553,9 +553,7 @@ int gnoclOptPangoVariant ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, T
 int gnoclOptPangoStyle ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
 	const char *txt[] = { "normal", "oblique", "italic", NULL };
-	const int types[] = { PANGO_STYLE_NORMAL, PANGO_STYLE_OBLIQUE,
-						  PANGO_STYLE_ITALIC
-						};
+	const int types[] = { PANGO_STYLE_NORMAL, PANGO_STYLE_OBLIQUE, PANGO_STYLE_ITALIC };
 
 	assert ( sizeof ( PANGO_STYLE_NORMAL ) == sizeof ( int ) );
 
@@ -568,14 +566,15 @@ int gnoclOptPangoStyle ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl
 **/
 int gnoclOptPangoWrapMode ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
-	const char *txt[] = { "word", "char", "none", NULL };
+
+	const char *mode[] = { "word", "char", "wordChar", NULL };
 	const int types[] = {  PANGO_WRAP_WORD, PANGO_WRAP_CHAR, PANGO_WRAP_WORD_CHAR};
 
-	assert ( sizeof ( PANGO_VARIANT_SMALL_CAPS ) == sizeof ( int ) );
+	assert ( sizeof ( PANGO_WRAP_WORD ) == sizeof ( int ) );
 
-	return gnoclOptGeneric ( interp, opt, obj, "wrap-mode", txt, types, ret );
+	return gnoclOptGeneric ( interp, opt, obj, "wrap-mode", mode, types, ret );
+
 }
-
 
 /**
 \brief
@@ -1283,7 +1282,7 @@ int gnoclOptTooltip ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Ob
 
 /**
 **/
-static int modifyWidgetGdkColor ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, void ( *func ) ( GtkWidget *, GtkStateType, const GdkColor * ), glong offset, Tcl_Obj **ret )
+int modifyWidgetGdkColor ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, void ( *func ) ( GtkWidget *, GtkStateType, const GdkColor * ), glong offset, Tcl_Obj **ret )
 {
 
 #ifdef DEBUG_PARSEOPTIONS
@@ -2514,6 +2513,10 @@ static void doOnMotion ( GtkWidget *widget, GdkEventMotion *event, gpointer data
 		{ 'Y', GNOCL_INT },
 		{ 's', GNOCL_INT },
 		{ 'g', GNOCL_STRING },  /* glade name */
+
+		/* textview specific options */
+		{ 'r', GNOCL_INT },
+		{ 'c', GNOCL_INT },
 		{ 0 }
 	};
 
@@ -2524,6 +2527,23 @@ static void doOnMotion ( GtkWidget *widget, GdkEventMotion *event, gpointer data
 	ps[4].val.i = event->y_root;
 	ps[5].val.i = event->state;
 	ps[6].val.str = gtk_widget_get_name ( widget );
+	ps[7].val.i = -1;
+	ps[8].val.i = -1;
+
+	gchar *type =  G_OBJECT_TYPE_NAME ( widget );
+
+	//g_print ( "Widget type: %s\n", type );
+
+	if ( strcmp ( type, "GtkUndoView" ) == 0 || strcmp ( type, "GtkTextView" ) == 0 )
+	{
+		GtkTextIter iter;
+		gint bx, by; /* buffer coordinates */
+		gint line, row;
+		gtk_text_view_window_to_buffer_coords ( widget, GTK_TEXT_WINDOW_WIDGET, event->x, event->y, &bx, &by );
+		gtk_text_view_get_iter_at_location ( widget, &iter, bx, by );
+		ps[7].val.i = gtk_text_iter_get_line ( &iter );
+		ps[8].val.i = gtk_text_iter_get_line_offset ( &iter );
+	}
 
 	/* TODO: gnocl::buttonStateToList -> {MOD1 MOD3 BUTTON2...} */
 	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );

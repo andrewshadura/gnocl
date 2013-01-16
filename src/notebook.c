@@ -12,11 +12,15 @@
 
 /*
    History:
+   2013-01	added options
+    		-startWidget
+			-endWidget
+			-onDestroy
+   2010-07: added -groupId
    			      -onCreateWindow
    			      -tabBorder
 			      -tabHBorder
 				  -tabVBorder
-   2010-07: added -groupId
    2008-10: added command, class
    2003-10: added removePage
    2002-08: switched from GnoclWidgetOptions to GnoclOption
@@ -46,6 +50,8 @@ static int doOnCreateWindow ( GtkNotebook *source_notebook, GtkWidget *child, gi
 	GtkWidget *window, *notebook;
 
 	window = gtk_window_new ( GTK_WINDOW_TOPLEVEL );
+	gtk_window_set_deletable (GTK_WINDOW ( window ), TRUE);   
+	
 	notebook = gtk_notebook_new ();
 
 	gtk_notebook_set_group ( GTK_NOTEBOOK ( notebook ), gtk_notebook_get_group ( source_notebook ) );
@@ -76,10 +82,13 @@ static int doOnCreateWindow ( GtkNotebook *source_notebook, GtkWidget *child, gi
 	/* register the new main window */
 	const char *windowName = gnoclGetAutoWidgetId();
 	gnoclMemNameAndWidget ( windowName, window );
+	gnoclRegisterWidget ( cs->interp, window, windowFunc );
+
 
 	/* register the new notebook */
 	const char *notebookName = gnoclGetAutoWidgetId();
 	gnoclMemNameAndWidget ( notebookName, notebook );
+	gnoclRegisterWidget ( cs->interp, notebook, notebookFunc );
 
 	ps[0].val.str = gnoclGetNameFromWidget ( window );
 	ps[1].val.str = gtk_widget_get_name ( GTK_WIDGET ( window ) );
@@ -129,7 +138,9 @@ static void _doOnCreateWindow ( GtkNotebook *notebook, GtkWidget *page, gint x, 
 	//}
 }
 
-
+/**
+\brief
+**/
 int gnoclOptOnCreateWindow ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
 #ifdef DEBUG_NOTEBOOK
@@ -139,18 +150,90 @@ int gnoclOptOnCreateWindow ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj,
 }
 
 /**
+\brief
+**/
+static void onReorderTabFunc (GtkNotebook *notebook, GtkDirectionType arg1, gboolean arg2, gpointer user_data)
+{
+	
+	GnoclCommandData *cs = ( GnoclCommandData * ) user_data;
+
+	//if ( *cs->interp->result == '\0' )
+	//{
+	GnoclPercSubst ps[] =
+	{
+		{ 'w', GNOCL_STRING },  /* window */
+		{ 0 }
+	};
+
+	/* register the new main window */
+
+//	const char *windowName = gnoclGetAutoWidgetId();
+//	gnoclMemNameAndWidget ( windowName, window );
+
+	/* register the new notebook */
+//	const char *notebookName = gnoclGetAutoWidgetId();
+//	gnoclMemNameAndWidget ( notebookName, notebook );
+
+	ps[0].val.str = gnoclGetNameFromWidget ( notebook );
+
+
+	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
+	//}
+
+}
+
+/*
+int gnoclOptOnReorderTab ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
+{
+#ifdef DEBUG_NOTEBOOK
+	g_print ( "%s\n", __FUNCTION__ );
+#endif
+	return gnoclConnectOptCmd ( interp, obj, "reorder-tab", G_CALLBACK ( doOnReorderTab ), opt, NULL, ret );
+}
+*/
+
+
+
+/**
+\brief	Assign a group name for the notebooks to allow drag and drop.
+\note	requires Gtk 2.24
+**/
+/*
+int gnoclOptGroupName ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
+{
+
+	const gchar *group_name;
+	
+	group_name = Tcl_GetString ( opt->val.obj);
+
+	gtk_notebook_set_group_name (GTK_NOTEBOOK ( obj ), group_name );
+
+	return TCL_OK;
+}
+*/
+/**
 \brief	Assign a group Id for the notebooks to allow drag and drop.
 **/
 int gnoclOptGroupId ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
+
 	gint i;
 
 	Tcl_GetIntFromObj ( NULL, opt->val.obj, &i );
 
 	gtk_notebook_set_group_id ( GTK_NOTEBOOK ( obj ), i );
 
+
+/*
+const gchar *group_name;
+group_name = Tcl_GetString ( opt->val.obj);
+
+	gtk_notebook_set_group_name (GTK_NOTEBOOK ( obj ), group_name );
+*/
+
 	return TCL_OK;
 }
+
 
 static const int childrenIdx     = 0;
 static const int onSwitchPageIdx = 1;
@@ -161,14 +244,14 @@ static const int onPageAdded = 5;
 static const int onPageRemoved = 6;
 static const int onReorderTabIdx = 7;
 static const int onSelectPage = 8;
-
+static const int startWidgetIdx = 9;
+static const int endWidgetIdx = 10;
 
 static GnoclOption notebookOptions[] =
 {
 	/* widget specific options */
 	{ "-children", GNOCL_LIST, NULL },        /* 0 */
 	{ "-onSwitchPage", GNOCL_OBJ, NULL },     /* 1 */
-
 	{ "-onCreateWindow", GNOCL_OBJ, "", gnoclOptOnCreateWindow},  /* 2 */
 	{ "-onFocusTab", GNOCL_OBJ, NULL },       /* 3 */
 	{ "-onFocusOut", GNOCL_OBJ, NULL },       /* 4 */
@@ -176,12 +259,14 @@ static GnoclOption notebookOptions[] =
 	{ "-onPageRemoved", GNOCL_OBJ, NULL },    /* 6 */
 	{ "-onReorderTab", GNOCL_OBJ, NULL },     /* 7 */
 	{ "-onSelectPage", GNOCL_OBJ, NULL },     /* 8 */
-
+	{ "-startWidget", GNOCL_OBJ, NULL },     /* 9 */
+	{ "-endWidget", GNOCL_OBJ, NULL },     /* 10 */
 
 	/* GtkNoteBook soecific properties */
 	{ "-enablePopup", GNOCL_BOOL, "enable-popup" },
 	{ "-group", GNOCL_OBJ, "", ""},
 	{ "-groupId", GNOCL_OBJ, "", gnoclOptGroupId }, //*
+	// { "-groupName", GNOCL_OBJ, "", gnoclOptGroupName }, /* requires ver. 2.24 */
 	{ "-homogeneous", GNOCL_BOOL, "homogeneous" },
 	{ "-page", GNOCL_INT, "page" },
 	{ "-scrollable", GNOCL_BOOL, "scrollable" },
@@ -200,6 +285,9 @@ static GnoclOption notebookOptions[] =
 	{ "-visible", GNOCL_BOOL, "visible" },
 	{ "-sensitive", GNOCL_BOOL, "sensitive" },
 	{ "-borderWidth", GNOCL_OBJ, "border-width", gnoclOptPadding },
+
+	/* respond to widget destruction */
+	{ "-onDestroy", GNOCL_OBJ, "destroy", gnoclOptCommand },
 
 	{ NULL }
 
@@ -422,12 +510,55 @@ static int configure ( Tcl_Interp *interp, GtkNotebook *notebook, GnoclOption op
 		}
 	}
 
-	if ( gnoclConnectOptCmd ( interp, G_OBJECT ( notebook ), "switch-page",
-							  G_CALLBACK ( switchPageFunc ), options + onSwitchPageIdx, NULL,
-							  NULL ) != TCL_OK )
+
+/*
+typedef enum {
+  GTK_PACK_START,
+  GTK_PACK_END
+} GtkPackType;
+*/
+
+	if ( options[startWidgetIdx].status == GNOCL_STATUS_CHANGED )
 	{
-		return TCL_ERROR;
+
+
+		GtkWidget *widget = NULL;
+		widget =  gnoclGetWidgetFromName ( Tcl_GetString ( options[startWidgetIdx].val.obj ), interp );
+
+
+		gtk_notebook_set_action_widget ( G_OBJECT ( notebook ), widget, GTK_PACK_START);
+
 	}
+
+	if ( options[endWidgetIdx].status == GNOCL_STATUS_CHANGED )
+	{
+
+
+		GtkWidget *widget = NULL;
+		widget =  gnoclGetWidgetFromName ( Tcl_GetString ( options[endWidgetIdx].val.obj ), interp );
+
+		gtk_notebook_set_action_widget ( G_OBJECT ( notebook ), widget, GTK_PACK_END);
+
+	}
+
+
+	if ( options[onReorderTabIdx].status == GNOCL_STATUS_CHANGED )
+	{
+		if ( gnoclConnectOptCmd ( interp, G_OBJECT ( notebook ), "page-reordered", G_CALLBACK ( onReorderTabFunc ), options + onReorderTabIdx, NULL, NULL ) != TCL_OK )
+		{
+			return TCL_ERROR;
+		}
+	}
+
+	if ( options[onSwitchPageIdx].status == GNOCL_STATUS_CHANGED )
+	{
+		if ( gnoclConnectOptCmd ( interp, G_OBJECT ( notebook ), "switch-page", G_CALLBACK ( switchPageFunc ), options + onSwitchPageIdx, NULL, NULL ) != TCL_OK )
+		{
+			return TCL_ERROR;
+		}
+	}
+
+
 
 	return TCL_OK;
 }
@@ -435,8 +566,7 @@ static int configure ( Tcl_Interp *interp, GtkNotebook *notebook, GnoclOption op
 /**
 \brief
 **/
-static int notebookNext ( GtkNotebook *notebook, Tcl_Interp *interp,
-						  int objc, Tcl_Obj * const objv[], int isNext )
+static int notebookNext ( GtkNotebook *notebook, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[], int isNext )
 {
 	int cur = gtk_notebook_get_current_page ( notebook );
 	int num = 1;
@@ -472,11 +602,7 @@ static int notebookNext ( GtkNotebook *notebook, Tcl_Interp *interp,
 /**
 \brief
 **/
-int notebookFunc (
-	ClientData data,
-	Tcl_Interp *interp,
-	int objc,
-	Tcl_Obj * const objv[] )
+int notebookFunc ( ClientData data,	Tcl_Interp *interp,	int objc, Tcl_Obj * const objv[] )
 {
 	/* TODO?: notebook insert pos child label ?menu? */
 	static const char *cmds[] = { "delete", "configure", "addPage", "currentPage", "nextPage", "removePage", "class", NULL };
@@ -574,8 +700,7 @@ int notebookFunc (
 /**
 \brief
 **/
-int gnoclNotebookCmd ( ClientData data, Tcl_Interp *interp,
-					   int objc, Tcl_Obj * const objv[] )
+int gnoclNotebookCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
 	int ret;
 	GtkWidget *widget;
@@ -589,8 +714,7 @@ int gnoclNotebookCmd ( ClientData data, Tcl_Interp *interp,
 
 	widget = gtk_notebook_new();
 
-	ret = gnoclSetOptions ( interp, notebookOptions,
-							G_OBJECT ( widget ), -1 );
+	ret = gnoclSetOptions ( interp, notebookOptions, G_OBJECT ( widget ), -1 );
 
 	if ( ret == TCL_OK )
 		ret = configure ( interp, GTK_NOTEBOOK ( widget ), notebookOptions );

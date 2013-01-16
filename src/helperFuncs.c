@@ -25,10 +25,12 @@
    2001-07: Begin of developement
  */
 
-#include "gnocl.h"
-#include <ctype.h>
+#include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include <assert.h>
+#include <ctype.h>
+#include "gnocl.h"
 
 #include <gdk-pixbuf/gdk-pixbuf.h>
 
@@ -188,6 +190,55 @@ void listParameters ( int objc, Tcl_Obj * const objv[], char *str )
 
 }
 
+/**
+\brief	Return the number of items in a CSV data string.
+**/
+int getSize ( char *str1, char *sep )
+{
+	char *pch;
+	int  i;
+	char str2[256];
+
+	/* get a copy of the data string */
+	sprintf ( str2, "%s", str1 );
+
+	i = 0;
+	pch = strtok ( str2, sep );
+
+	while ( pch != NULL )
+	{
+		pch = strtok ( NULL, sep );
+		i++;
+	}
+
+	return i;
+}
+
+/**
+/brief 	Convert a string of CSV decimal numbers into an array of doubles.
+**/
+int getdoubles ( char *str1, gdouble myFloats[] )
+{
+	char * pch;
+	int  i;
+	char str2[strlen ( str1 ) ];
+
+	/* get a copy of the data string */
+	sprintf ( str2, "%s", str1 );
+
+	i = 0;
+	pch = strtok ( str2, "," );
+
+	while ( pch != NULL )
+	{
+		myFloats[i] = atof ( pch );
+		pch = strtok ( NULL, "," );
+		i++;
+	}
+
+	return i;
+
+}
 
 /**
 \brief    Compare string with list of acceptable choices. Return index of any match.

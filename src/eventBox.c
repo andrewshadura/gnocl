@@ -31,6 +31,9 @@
 #include <string.h>
 #include <assert.h>
 
+
+static const int dataIdx = 1;
+
 /**
 \brief
     Set the list of options available to the gnocl::eventBox widget and
@@ -38,6 +41,9 @@
  **/
 static GnoclOption boxOptions[] =
 {
+
+	{ "-data", GNOCL_OBJ, "", gnoclOptData },
+
 	{ "-child", GNOCL_OBJ, "", gnoclOptChild },
 	{ "-name", GNOCL_STRING, "name" },
 	{ "-visible", GNOCL_BOOL, "visible" },
@@ -59,7 +65,7 @@ static GnoclOption boxOptions[] =
 	{ "-backgroundImage", GNOCL_OBJ, "", gnoclOptBackgroundImage2 },
 	{ "-mask", GNOCL_OBJ, "", gnoclOptMask2 },
 
-	{ "-data", GNOCL_OBJ, "", gnoclOptData },
+
 	{ "-width", GNOCL_INT, "width-request" },     /* these must be */
 	{ "-height", GNOCL_INT, "height-request" },   /* before -visible! */
 
@@ -208,11 +214,17 @@ int eventBoxFunc (
 				switch ( gnoclCget ( interp, objc, objv, G_OBJECT ( box ), boxOptions, &idx ) )
 				{
 					case GNOCL_CGET_ERROR:
-						return TCL_ERROR;
+						{
+							return TCL_ERROR;
+						}
 					case GNOCL_CGET_HANDLED:
-						return TCL_OK;
+						{
+							return TCL_OK;
+						}
 					case GNOCL_CGET_NOTHANDLED:
-						assert ( 0 );
+						{
+							assert ( 0 );
+						}
 				}
 
 				assert ( 0 );

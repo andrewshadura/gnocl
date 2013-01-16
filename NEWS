@@ -1,8 +1,29 @@
+2013-01:
+	gnocl::winfo
+		o new subcommand
+			exists
+	gnocl::notebook
+		o new options
+			-startWidget
+			-endWidget
+			-onDestroy
+	gnocl::label
+		o new option 
+			-onDestroy
+
 2012-11:
 	new command
 		gnocl::tooltip
 	gnocl::text
 		o new tag option -data 
+		o fixed problems with:
+			getIndex subcommand
+			tag get  subcommand
+		o added %r(ow) %c(col) substitution string parameters for 
+			-onMotion signal handler
+	gnocl::button
+		o new option
+			-align (currently only applies to button with icons)
 2012-10:
 	gnocl::window
 		o implemented cget -data

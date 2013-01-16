@@ -2142,7 +2142,7 @@ static int gnoclCairoDrawCircle ( ClientData data, Tcl_Interp *interp, int objc,
 /**
 \brief
 **/
-int gnoclCairoCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
+int _gnoclCairoCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
 	/* get the various parameters */
 	//	listParameters ( objc, objv, __FUNCTION__ );

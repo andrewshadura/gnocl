@@ -104,14 +104,14 @@ static GnoclOption entryOptions[] =
 
 	/* other entry properties Gtk+ 2.24 */
 	{ "-activate", GNOCL_BOOL, "activates-default" },
-	{ "-buffer", GNOCL_OBJ, "", NULL }, 							/* to be implemented */
+	{ "-buffer", GNOCL_OBJ, "", NULL }, 						/* to be implemented */
 	{ "-capsLockWarning", GNOCL_BOOL, "caps-lock-warning" },
 	{ "-editable", GNOCL_BOOL, "editable" },
 	{ "-activate", GNOCL_BOOL, "activates-default" },
 	{ "-hasFrame", GNOCL_BOOL, "has-frame" },
-	{ "-inputMethod", GNOCL_OBJ, "im-module", NULL }, 				/* to be implemented */
-	{ "-innerBorder", GNOCL_OBJ, "inner-border", NULL }, 			/* to be implemented */
-	{ "-invisibleChar", GNOCL_INT, "invisible-char"}, 				/* to be implemented */
+	{ "-inputMethod", GNOCL_OBJ, "im-module", NULL }, 			/* to be implemented */
+	{ "-innerBorder", GNOCL_OBJ, "inner-border", NULL }, 		/* to be implemented */
+	{ "-invisibleChar", GNOCL_INT, "invisible-char"}, 			/* to be implemented */
 	{ "-setInvisibleChar", GNOCL_BOOL,  "invisible-char-set" },
 	{ "-maxLength", GNOCL_INT, "max-length" },
 	{ "-overwriteMode", GNOCL_BOOL, "overwrite-mode" },

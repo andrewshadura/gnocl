@@ -676,14 +676,13 @@ static GnoclCmd commands[] =
 	{ "print", gnoclPrintCmd },
 	{ "pixBuf", gnoclPixBufCmd },
 	{ "pixMap", gnoclPixMapCmd },
-	{ "draw", gnoclCairoCmd },
+
+	//{ "cairo", gnoclCairoCmd }, /* moved into own package */
 
 	/* colour convertion commands */
 	{ "clr2rgb", gnoclClr2RGBCmd },
 	{ "rgb2hex", gnoclRGB2HexCmd },
 	{ "parseColor", gnoclParseColorCmd },
-	{ "glade", gnoclGladeCmd},
-	{ "builder", gnoclBuilderCmd},
 	{ "screen", gnoclScreenCmd},
 
 	/* Gtk Widgets */

@@ -2,6 +2,7 @@
 \brief
 \todo	add getColumn and getRow widget commands
 \history
+   2012-12: fixed problem with -wrapMode failing to set to option word
    2012-09: new option
 				-data
 			began work on cget
@@ -11,7 +12,7 @@
    2011-06: getFullList
    2011-05: added options: -onInteractiveSearch
    2011-02: added options: -wrapMode, -wrapWidth, -gridLines
-   				  subcommand: resize columns rows
+   			subcommand: resize columns rows
    2009-02: added -baseFont -baseColor
    2008-10: added class
    2004-02: added stock pixmap
@@ -213,6 +214,7 @@ static GnoclOption treeListOptions[] =
 
 static const int widthIdx = 0;
 static const int widgetIdx = 1;
+static const int wrapModeIdx = 1;
 /**
 \brief	Column Options
 **/
@@ -220,7 +222,6 @@ static GnoclOption colOptions[] =
 {
 	{ "-width", GNOCL_INT, NULL },               /* 0 */
 	{ "-widget", GNOCL_STRING, NULL},
-
 	{ "-clickable", GNOCL_BOOL, "clickable" },
 	{ "-maxWidth", GNOCL_INT, "max-width" },
 	{ "-minWidth", GNOCL_INT, "min-width" },
@@ -234,7 +235,6 @@ static GnoclOption colOptions[] =
 	{ "-onClicked", GNOCL_OBJ, "", gnoclOptOnColumnClicked },
 	/* expiremental */
 	{ "-widthGroup", GNOCL_OBJ, "w", gnoclOptSizeGroup },
-
 	{ NULL }
 };
 
@@ -271,7 +271,7 @@ static GnoclOption textRenderOptions[] =
 	{ "-fontWeight", GNOCL_OBJ, "weight", gnoclOptPangoWeight },
 	{ "-strikethrough", GNOCL_BOOL, "strikethrough" },
 	{ "-underline", GNOCL_OBJ, "underline", gnoclOptUnderline },
-	{ "-wrapMode", GNOCL_STRING, gnoclOptPangoWrapMode },
+	{ "-wrapMode", GNOCL_OBJ, "wrap-mode", gnoclOptPangoWrapMode },
 	{ "-wrapWidth", GNOCL_INT, "wrap-width"  },
 	{ NULL }
 };
@@ -2779,6 +2779,9 @@ static int columnConfigure ( TreeListParams * para, Tcl_Interp * interp, int obj
 #ifdef DEBUG_TREELIST
 	printf ( "%s\n", __FUNCTION__ );
 #endif
+
+	printf ( "%s\n", __FUNCTION__ );
+
 	const int noColOptions = sizeof ( colOptions ) / sizeof ( GnoclOption );
 	int       onCmdIdx = -1;
 	int       startRenderOptions;
@@ -2865,6 +2868,7 @@ static int columnConfigure ( TreeListParams * para, Tcl_Interp * interp, int obj
 	{
 		gtk_tree_view_column_set_sizing ( column, GTK_TREE_VIEW_COLUMN_FIXED );
 		gtk_tree_view_column_set_fixed_width ( column, options[widthIdx].val.i );
+
 	}
 
 	if ( options[widgetIdx].status == GNOCL_STATUS_CHANGED )
@@ -3060,11 +3064,13 @@ static int getFullList ( TreeListParams * para, Tcl_Interp * interp, int objc, T
 	g_print ( "%s\n", __FUNCTION__ );
 #endif
 
-	if ( objc != 4 )
-	{
-		Tcl_WrongNumArgs ( interp, 2, objv, "pathOrReference column" );
-		return TCL_ERROR;
-	}
+	/*
+		if ( objc != 4 )
+		{
+			Tcl_WrongNumArgs ( interp, 2, objv, "pathOrReference column" );
+			return TCL_ERROR;
+		}
+	*/
 
 	/* total number of rows and columns */
 	gint nrows = gtk_tree_model_iter_n_children ( model, NULL );
@@ -3279,8 +3285,6 @@ static int addRow ( TreeListParams * para, Tcl_Interp * interp, int objc, Tcl_Ob
 #ifdef DEBUG_TREELIST
 	g_print ( "%s objc = %d\n", __FUNCTION__, objc );
 #endif
-
-
 
 	GnoclOption options[] =
 	{
@@ -4052,7 +4056,6 @@ for ( k = 0; k < noColumns; ++k )
 		/* set pango wrapmode and wrap width */
 
 		gtk_tree_view_column_pack_start ( column, renderer, 1 );
-
 		gtk_tree_view_column_set_attributes ( column, renderer,
 											  isMarkup[k] ? "markup" : "text", k,
 											  "visible", getOffset ( para, CONFIG_VISIBLE, k ), NULL );
