@@ -909,19 +909,25 @@ int gnoclWinfoCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * co
 
 	switch ( idx )
 	{
-		
-		case ExistsIdx: {
+
+		case ExistsIdx:
+			{
 
 				GtkWidget *widget = NULL;
 				widget =  gnoclGetWidgetFromName ( Tcl_GetString ( objv[2] ), interp );
-				if ( widget == NULL ) {
+
+				if ( widget == NULL )
+				{
 					Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "0", -1 ) );
-				} else {
+				}
+
+				else
+				{
 					Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "1", -1 ) );
 				}
-		}
-		break;
-		//gnocl:winfo notify widget-id opts
+			}
+			break;
+			//gnocl:winfo notify widget-id opts
 		case NotifyIdx:
 			{
 				g_print ( "widget id = %s\n", Tcl_GetString ( objv[2] ) );

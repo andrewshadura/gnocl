@@ -16,6 +16,13 @@
     		-startWidget
 			-endWidget
 			-onDestroy
+			-onReorderTab
+			-onSwitchPage
+			-onFocusTab
+			-onFocusMove
+			-onPageAdded
+			-onPageRemoved
+			-onChangeCurrentPage
    2010-07: added -groupId
    			      -onCreateWindow
    			      -tabBorder
@@ -50,8 +57,8 @@ static int doOnCreateWindow ( GtkNotebook *source_notebook, GtkWidget *child, gi
 	GtkWidget *window, *notebook;
 
 	window = gtk_window_new ( GTK_WINDOW_TOPLEVEL );
-	gtk_window_set_deletable (GTK_WINDOW ( window ), TRUE);   
-	
+	gtk_window_set_deletable ( GTK_WINDOW ( window ), TRUE );
+
 	notebook = gtk_notebook_new ();
 
 	gtk_notebook_set_group ( GTK_NOTEBOOK ( notebook ), gtk_notebook_get_group ( source_notebook ) );
@@ -152,48 +159,128 @@ int gnoclOptOnCreateWindow ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj,
 /**
 \brief
 **/
-static void onReorderTabFunc (GtkNotebook *notebook, GtkDirectionType arg1, gboolean arg2, gpointer user_data)
+static void onReorderTabFunc ( GtkNotebook *notebook, GtkDirectionType arg1, gboolean arg2, gpointer user_data )
 {
-	
+
 	GnoclCommandData *cs = ( GnoclCommandData * ) user_data;
 
-	//if ( *cs->interp->result == '\0' )
-	//{
 	GnoclPercSubst ps[] =
 	{
 		{ 'w', GNOCL_STRING },  /* window */
 		{ 0 }
 	};
 
-	/* register the new main window */
+	ps[0].val.str = gnoclGetNameFromWidget ( notebook );
 
-//	const char *windowName = gnoclGetAutoWidgetId();
-//	gnoclMemNameAndWidget ( windowName, window );
+	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
 
-	/* register the new notebook */
-//	const char *notebookName = gnoclGetAutoWidgetId();
-//	gnoclMemNameAndWidget ( notebookName, notebook );
+}
+
+
+/**
+\brief
+**/
+static void onFocusTabFunc ( GtkNotebook *notebook, GtkNotebookTab arg1, gpointer user_data )
+{
+
+	GnoclCommandData *cs = ( GnoclCommandData * ) user_data;
+
+
+	GnoclPercSubst ps[] =
+	{
+		{ 'w', GNOCL_STRING },  /* window */
+		{ 0 }
+	};
 
 	ps[0].val.str = gnoclGetNameFromWidget ( notebook );
 
+	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
+
+}
+
+/**
+\brief
+typedef enum {
+  GTK_DIR_TAB_FORWARD,
+  GTK_DIR_TAB_BACKWARD,
+  GTK_DIR_UP,
+  GTK_DIR_DOWN,
+  GTK_DIR_LEFT,
+  GTK_DIR_RIGHT
+} GtkDirectionType;
+**/
+static void onFocusOutFunc ( GtkNotebook *notebook, GtkDirectionType arg1, gpointer user_data )
+{
+
+	GnoclCommandData *cs = ( GnoclCommandData * ) user_data;
+
+
+	GnoclPercSubst ps[] =
+	{
+		{ 'w', GNOCL_STRING },  /* window */
+		{ 0 }
+	};
+
+	ps[0].val.str = gnoclGetNameFromWidget ( notebook );
 
 	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
-	//}
 
 }
 
-/*
-int gnoclOptOnReorderTab ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
+
+static void onPageAddedFunc ( GtkNotebook *notebook, GtkWidget *child, guint page_num, gpointer user_data )
 {
-#ifdef DEBUG_NOTEBOOK
-	g_print ( "%s\n", __FUNCTION__ );
-#endif
-	return gnoclConnectOptCmd ( interp, obj, "reorder-tab", G_CALLBACK ( doOnReorderTab ), opt, NULL, ret );
+
+	GnoclCommandData *cs = ( GnoclCommandData * ) user_data;
+
+
+	GnoclPercSubst ps[] =
+	{
+		{ 'w', GNOCL_STRING },  /* window */
+		{ 0 }
+	};
+
+	ps[0].val.str = gnoclGetNameFromWidget ( notebook );
+
+	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
+
 }
-*/
+
+static void onPageRemovedFunc ( GtkNotebook *notebook, GtkWidget *child, guint page_num, gpointer user_data )
+{
+
+	GnoclCommandData *cs = ( GnoclCommandData * ) user_data;
 
 
+	GnoclPercSubst ps[] =
+	{
+		{ 'w', GNOCL_STRING },  /* window */
+		{ 0 }
+	};
 
+	ps[0].val.str = gnoclGetNameFromWidget ( notebook );
+
+	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
+
+}
+
+static void onSelectPageFunc ( GtkNotebook *notebook, gboolean arg1, gpointer     user_data )
+{
+
+	GnoclCommandData *cs = ( GnoclCommandData * ) user_data;
+
+
+	GnoclPercSubst ps[] =
+	{
+		{ 'w', GNOCL_STRING },  /* window */
+		{ 0 }
+	};
+
+	ps[0].val.str = gnoclGetNameFromWidget ( notebook );
+
+	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
+
+}
 /**
 \brief	Assign a group name for the notebooks to allow drag and drop.
 \note	requires Gtk 2.24
@@ -203,7 +290,7 @@ int gnoclOptGroupName ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_
 {
 
 	const gchar *group_name;
-	
+
 	group_name = Tcl_GetString ( opt->val.obj);
 
 	gtk_notebook_set_group_name (GTK_NOTEBOOK ( obj ), group_name );
@@ -224,28 +311,29 @@ int gnoclOptGroupId ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Ob
 	gtk_notebook_set_group_id ( GTK_NOTEBOOK ( obj ), i );
 
 
-/*
-const gchar *group_name;
-group_name = Tcl_GetString ( opt->val.obj);
+	/*
+	const gchar *group_name;
+	group_name = Tcl_GetString ( opt->val.obj);
 
-	gtk_notebook_set_group_name (GTK_NOTEBOOK ( obj ), group_name );
-*/
+		gtk_notebook_set_group_name (GTK_NOTEBOOK ( obj ), group_name );
+	*/
 
 	return TCL_OK;
 }
 
 
 static const int childrenIdx     = 0;
-static const int onSwitchPageIdx = 1;
-static const int onCreateWindowIdx = 2;
-static const int onFocusTabIdx = 3;
-static const int onFocusOut = 4;
-static const int onPageAdded = 5;
-static const int onPageRemoved = 6;
-static const int onReorderTabIdx = 7;
-static const int onSelectPage = 8;
+static const int onSwitchPageIdx = 1; // X
+static const int onCreateWindowIdx = 2; // X
+static const int onFocusTabIdx = 3; // X
+static const int onFocusMoveIdx = 4; // X
+static const int onPageAddedIdx = 5; // X
+static const int onPageRemovedIdx = 6; //X
+static const int onReorderTabIdx = 7; // X
+static const int onSelectPageIdx = 8;
 static const int startWidgetIdx = 9;
 static const int endWidgetIdx = 10;
+static const int onChangeCurrentPageIdx = 11;
 
 static GnoclOption notebookOptions[] =
 {
@@ -261,6 +349,7 @@ static GnoclOption notebookOptions[] =
 	{ "-onSelectPage", GNOCL_OBJ, NULL },     /* 8 */
 	{ "-startWidget", GNOCL_OBJ, NULL },     /* 9 */
 	{ "-endWidget", GNOCL_OBJ, NULL },     /* 10 */
+	{ "-onChangeCurrentPage", GNOCL_OBJ, NULL },     /* 11 */
 
 	/* GtkNoteBook soecific properties */
 	{ "-enablePopup", GNOCL_BOOL, "enable-popup" },
@@ -511,36 +600,60 @@ static int configure ( Tcl_Interp *interp, GtkNotebook *notebook, GnoclOption op
 	}
 
 
-/*
-typedef enum {
-  GTK_PACK_START,
-  GTK_PACK_END
-} GtkPackType;
-*/
+	/*
+	typedef enum {
+	  GTK_PACK_START,
+	  GTK_PACK_END
+	} GtkPackType;
+	*/
 
 	if ( options[startWidgetIdx].status == GNOCL_STATUS_CHANGED )
 	{
-
-
 		GtkWidget *widget = NULL;
 		widget =  gnoclGetWidgetFromName ( Tcl_GetString ( options[startWidgetIdx].val.obj ), interp );
 
-
-		gtk_notebook_set_action_widget ( G_OBJECT ( notebook ), widget, GTK_PACK_START);
-
+		gtk_notebook_set_action_widget ( G_OBJECT ( notebook ), widget, GTK_PACK_START );
 	}
 
 	if ( options[endWidgetIdx].status == GNOCL_STATUS_CHANGED )
 	{
-
-
 		GtkWidget *widget = NULL;
 		widget =  gnoclGetWidgetFromName ( Tcl_GetString ( options[endWidgetIdx].val.obj ), interp );
 
-		gtk_notebook_set_action_widget ( G_OBJECT ( notebook ), widget, GTK_PACK_END);
-
+		gtk_notebook_set_action_widget ( G_OBJECT ( notebook ), widget, GTK_PACK_END );
 	}
 
+	if ( options[onFocusTabIdx].status == GNOCL_STATUS_CHANGED )
+	{
+		if ( gnoclConnectOptCmd ( interp, G_OBJECT ( notebook ), "focus-tab" , G_CALLBACK ( onFocusTabFunc ), options + onFocusTabIdx, NULL, NULL ) != TCL_OK )
+		{
+			return TCL_ERROR;
+		}
+	}
+
+	if ( options[onFocusMoveIdx].status == GNOCL_STATUS_CHANGED )
+	{
+		if ( gnoclConnectOptCmd ( interp, G_OBJECT ( notebook ), "move-focus-out" , G_CALLBACK ( onFocusOutFunc ), options + onFocusMoveIdx, NULL, NULL ) != TCL_OK )
+		{
+			return TCL_ERROR;
+		}
+	}
+
+	if ( options[onPageAddedIdx].status == GNOCL_STATUS_CHANGED )
+	{
+		if ( gnoclConnectOptCmd ( interp, G_OBJECT ( notebook ), "page-added" , G_CALLBACK ( onPageAddedFunc ), options + onPageAddedIdx, NULL, NULL ) != TCL_OK )
+		{
+			return TCL_ERROR;
+		}
+	}
+
+	if ( options[onPageRemovedIdx].status == GNOCL_STATUS_CHANGED )
+	{
+		if ( gnoclConnectOptCmd ( interp, G_OBJECT ( notebook ), "page-removed" , G_CALLBACK ( onPageRemovedFunc ), options + onPageRemovedIdx, NULL, NULL ) != TCL_OK )
+		{
+			return TCL_ERROR;
+		}
+	}
 
 	if ( options[onReorderTabIdx].status == GNOCL_STATUS_CHANGED )
 	{
@@ -558,7 +671,21 @@ typedef enum {
 		}
 	}
 
+	if ( options[onSelectPageIdx].status == GNOCL_STATUS_CHANGED )
+	{
+		if ( gnoclConnectOptCmd ( interp, G_OBJECT ( notebook ), "select-page", G_CALLBACK ( switchPageFunc ), options + onSelectPageIdx, NULL, NULL ) != TCL_OK )
+		{
+			return TCL_ERROR;
+		}
+	}
 
+	if ( options[onChangeCurrentPageIdx].status == GNOCL_STATUS_CHANGED )
+	{
+		if ( gnoclConnectOptCmd ( interp, G_OBJECT ( notebook ), "change-current-page", G_CALLBACK ( switchPageFunc ), options + onSelectPageIdx, NULL, NULL ) != TCL_OK )
+		{
+			return TCL_ERROR;
+		}
+	}
 
 	return TCL_OK;
 }

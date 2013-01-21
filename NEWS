@@ -3,10 +3,17 @@
 		o new subcommand
 			exists
 	gnocl::notebook
-		o new options
-			-startWidget
+		o new options			
+    		-startWidget
 			-endWidget
 			-onDestroy
+			-onReorderTab
+			-onSwitchPage
+			-onFocusTab
+			-onFocusMove
+			-onPageAdded
+			-onPageRemoved
+			-onChangeCurrentPage			
 	gnocl::label
 		o new option 
 			-onDestroy

@@ -27,10 +27,6 @@ typedef struct accumulator
 /* This will be the unchanging first node */
 static struct accumulator *root;
 
-
-static guint32 convertRGBtoPixel ( gchar *clr );
-
-
 /**
 * determine if the colour of the current pixel is black
 **/
@@ -204,10 +200,10 @@ double deskew ( Tcl_Interp * interp, GdkPixbuf *pixbuf )
 12. Find the top 20 (alpha,d) (rho,theta) pairs that have the highest count in the Hough matrix
 13. Calculate the skew angle as an average of the alphas
 14. Rotate the image by – skew angle
-* 
+*
 * int j =
-* int a = 
-* 
+* int a =
+*
 **/
 void countItems ( int j, int a )
 {
@@ -220,8 +216,8 @@ void countItems ( int j, int a )
 
 	int i = 0;
 	int k = 0;
-	int l =0;
-	
+	int l = 0;
+
 	// create array of possible outcomes
 	typedef struct _list
 	{
@@ -238,24 +234,26 @@ void countItems ( int j, int a )
 		items[k].rho = 0;
 		items[k].theta = 0.0;
 		items[k].n = 0;
-		g_print ( "k: %d %d %f %d\n", k, items[k].rho,items[k].theta, items[k].rho );
+		g_print ( "k: %d %d %f %d\n", k, items[k].rho, items[k].theta, items[k].rho );
 	}
 
 	g_print ( "1)\n" );
 
-	for (i = 0 ; i < a ; i++ ) {
+	for ( i = 0 ; i < a ; i++ )
+	{
 
 		/* sort into list */
 		for ( k = 0; k < j; k++ )
 		{
-			
+
 			if ( ( items[k].theta == conductor->theta ) && ( items[k].rho == conductor->rho ) )
 			{
-				g_print ( "******************* %f %f %d %d\n",items[k].theta,conductor->theta ,items[k].rho, conductor->rho  );
+				g_print ( "******************* %f %f %d %d\n", items[k].theta, conductor->theta , items[k].rho, conductor->rho  );
 				//items[k].rho = conductor->rho;
 				//items[k].theta = conductor->theta;
 				items[k].n++;
 			}
+
 			else
 			{
 				//g_print ( "k %d ~~~~~~~~~~~~~~~~~~~ %f %f %d %d n = %d\n",k, items[k].theta,conductor->theta ,items[k].rho, conductor->rho, items[k].n  );
@@ -263,18 +261,24 @@ void countItems ( int j, int a )
 				items[k].theta = conductor->theta;
 				items[k].n++;
 			}
-			
+
 
 		} // end for
 
-		if ( i == a-1) { g_print ( "i rho %d theta %f\n", i, conductor->rho, conductor->theta);	}
-		
+		if ( i == a - 1 )
+		{
+			g_print ( "i rho %d theta %f\n", i, conductor->rho, conductor->theta );
+		}
+
 		conductor = conductor->next;
 	}
 
 	g_print ( "3) total items %d\n", i );
 
-	for ( k = 0; k < j; k++ ) { g_print ( "#%d rho %d theta %f items %d\n", k, items[k].rho, items[k].theta, items[k].n ); }
+	for ( k = 0; k < j; k++ )
+	{
+		g_print ( "#%d rho %d theta %f items %d\n", k, items[k].rho, items[k].theta, items[k].n );
+	}
 
 	g_print ( "4)\n" );
 

@@ -110,16 +110,12 @@ GtkWidget *gnoclChildNotPacked ( const char *name, Tcl_Interp *interp )
 /**
 \brief
 */
-int gnoclAssertNotPacked (
-	GtkWidget *child,
-	Tcl_Interp *interp,
-	const char *name )
+int gnoclAssertNotPacked (	GtkWidget *child,	Tcl_Interp *interp,	const char *name )
 {
 	if ( gtk_widget_get_parent ( child ) != NULL )
 	{
 		if ( name && interp )
-			Tcl_AppendResult ( interp, "window \"", name,
-							   "\" has already a parent.", ( char * ) NULL );
+			Tcl_AppendResult ( interp, "window \"", name, "\" has already a parent.", ( char * ) NULL );
 
 		return 1;
 	}

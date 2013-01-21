@@ -32,8 +32,6 @@ GTK_OBJ := \
 	assistant.o \
 	box.o \
 	button.o \
-	builder.o \
-	cairo.o \
 	calendar.o \
 	callback.o \
 	checkButton.o \
@@ -52,7 +50,6 @@ GTK_OBJ := \
 	dial.o \
 	drawingArea.o \
 	entry.o \
-	./entryUndo/undo_entry.o \
 	eventBox.o \
 	expander.o \
 	fileChooser.o \
@@ -72,6 +69,7 @@ GTK_OBJ := \
 	image.o \
 	itemGroup.o \
 	label.o \
+	labelEntry.o \
 	language.o \
 	layout.o \
 	linkButton.o \
@@ -97,6 +95,7 @@ GTK_OBJ := \
 	printDialog.o \
 	printerDialog.o \
 	progressBar.o \
+	pbar.o \
 	radioButton.o \
 	recentChooser.o \
 	recentChooserDialog.o \
@@ -115,8 +114,8 @@ GTK_OBJ := \
 	table.o \
 	text.o \
 	textBuffer.o \
-    textTag.o \
 	./textPango/gtktextviewpango.o \
+	parseMarkup.o \
 	./textUndo/undo_manager.o \
 	./textUndo/undo_view.o \
 	./ticker/mymarquee.o \
@@ -127,8 +126,6 @@ GTK_OBJ := \
 	treeList.o \
 	volumeButton.o \
 	window.o \
-
-
 
 .PHONY: all $(PACKAGE_NAME) clean install uninstall reinstall devinstall devuninstall
 
