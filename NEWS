@@ -1,7 +1,11 @@
 2013-01:
 	gnocl::winfo
-		o new subcommand
+		o new subcommands
 			exists
+	gnocl::winfo
+		o new coomands
+			hasGlobalFocus
+			isTopLevelFocus
 	gnocl::notebook
 		o new options			
     		-startWidget

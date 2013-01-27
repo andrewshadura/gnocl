@@ -338,9 +338,6 @@ static void removeChild ( GtkWidget *widget, gpointer data )
 \brief
 \note FIXME: create or delete frame if necessary also change: gnoclMemNameAndWidget( name, widget );
 **/
-/*
- * FIXME: create or delete frame if necessary also change: gnoclMemNameAndWidget( name, widget );
-*/
 
 static int configure ( Tcl_Interp *interp, GtkFrame *frame, GtkBox *box, GnoclOption options[] )
 {

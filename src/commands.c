@@ -882,13 +882,15 @@ int gnoclWinfoCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * co
 	{
 		"path", "parent", "toplevel", "geometry",
 		"style", "pointer", "notify", "exists",
+		"hasFocus", "isFocus",
 		NULL
 	};
 
 	enum optIdx
 	{
 		PathIdx, ParentIdx, ToplevelIdx, GeometryIdx,
-		StyleIdx, PointerIdx, NotifyIdx, ExistsIdx
+		StyleIdx, PointerIdx, NotifyIdx, ExistsIdx,
+		HasFocusIdx, IsFocusIdx
 	};
 	int idx;
 
@@ -909,7 +911,23 @@ int gnoclWinfoCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * co
 
 	switch ( idx )
 	{
+case IsFocusIdx: {
 
+				GtkWidget *widget = NULL;
+				widget =  gnoclGetWidgetFromName ( Tcl_GetString ( objv[2] ), interp );
+				
+				Tcl_SetObjResult ( interp, Tcl_NewIntObj ( gtk_widget_is_focus (widget) ) );
+}
+break;
+
+case HasFocusIdx: {
+
+				GtkWidget *widget = NULL;
+				widget =  gnoclGetWidgetFromName ( Tcl_GetString ( objv[2] ), interp );
+				
+				Tcl_SetObjResult ( interp, Tcl_NewIntObj ( gtk_widget_has_focus (widget) ) );
+}
+break;
 		case ExistsIdx:
 			{
 
@@ -1158,7 +1176,8 @@ int gnoclInfoCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * con
 	static const char *cmd[] =
 	{
 		"version", "gtkVersion", "hasGnomeSupport",
-		"allStockItems", "breakpoint", "fonts", NULL
+		"allStockItems", "breakpoint", "fonts", 
+		NULL
 	};
 	enum optIdx
 	{

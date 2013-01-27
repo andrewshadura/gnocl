@@ -342,3 +342,4 @@ typedef struct
 	GtkWindow *window;
 	Tcl_Interp *interp;
 } AccGrpParams;
+

@@ -5982,14 +5982,13 @@ int gnoclCgetOne ( 	Tcl_Interp *interp,	Tcl_Obj *obj, GObject *gObj, GnoclOption
 				}
 
 				return GNOCL_CGET_HANDLED;
+
 			case GNOCL_OBJ:
 				{
 #ifdef DEBUG_PARSEOPTIONS
 					g_print ( "%s WE HAVE AN OBJECT\n", __FUNCTION__ );
 #endif
 				}
-				return GNOCL_CGET_NOTHANDLED;
-				//return GNOCL_CGET_HANDLED;
 			default:
 				{
 

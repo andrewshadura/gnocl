@@ -19,6 +19,7 @@
 */
 /*
    History:
+   2013-01: added subcommands isToplevelFocus and hasGlobalFocus
    2012-12	corrected -accepttTab to -acceptsTab
    2012-11  added -data option to text tag
 			fixed problems with:
@@ -3434,7 +3435,7 @@ int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl
 		"gotoWordEnd", "search", "class", "spawn", "replace",
 		"serialize", "deSerialize", "save", "load", "print", "lorem",
 		"clear", "popup", "getSelectionBounds",
-
+		"hasGlobalFocus", "isToplevelFocus",
 		NULL
 	};
 
@@ -3451,7 +3452,8 @@ int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl
 		DumpIdx, SignalEmitIdx, MarkIdx, GotoWordStartIdx,
 		GotoWordEndIdx, SearchIdx, ClassIdx, SpawnIdx, ReplaceIdx,
 		SerializeIdx, DeSerializeIdx, SaveIdx, LoadIdx, PrintIdx, LoremIdx,
-		ClearIdx, PopupIdx, GetSelectionBounds
+		ClearIdx, PopupIdx, GetSelectionBounds,
+		HasGlobalFocusIdx, IsToplevelFocusIdx
 	};
 
 
@@ -3495,8 +3497,9 @@ int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl
 		case GrabFocusIdx:  	return 11;
 		case ResetUndoIdx:  	return 12;
 		case GetPosIdx: 		return 13;
-
-			/* these are GtkTextBuffer operations */
+		case HasGlobalFocusIdx:	return 14;
+		case IsToplevelFocusIdx:	return 15;
+		/* these are GtkTextBuffer operations */
 
 		case PrintIdx:
 			{
@@ -4562,6 +4565,7 @@ static int textFunc ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * 
 		case GrabFocusIdx:  	return 11;
 		case ResetUndoIdx:  	return 12;
 		case GetPosIdx: 		return 13;
+		case HasFocus			return 14;
 	*/
 
 	switch ( gnoclTextCommand ( text, interp, objc, objv, 1, 1 ) )
@@ -4723,6 +4727,24 @@ static int textFunc ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * 
 
 				//GtkTextIter iter;
 				//gtk_text_layout_get_iter_at_pixel (text->layout, &iter, x, y);
+				return TCL_OK;
+			}
+
+		case 14: /* does the widget have focus */
+			{
+
+				//GtkTextIter iter;
+				//gtk_text_layout_get_iter_at_pixel (text->layout, &iter, x, y);
+				Tcl_SetObjResult ( interp, Tcl_NewIntObj ( gtk_widget_has_focus (text) ) );
+				return TCL_OK;
+			}
+
+		case 15: /* does the widget have focus */
+			{
+
+				//GtkTextIter iter;
+				//gtk_text_layout_get_iter_at_pixel (text->layout, &iter, x, y);
+				Tcl_SetObjResult ( interp, Tcl_NewIntObj ( gtk_widget_is_focus (text) ) );
 				return TCL_OK;
 			}
 
