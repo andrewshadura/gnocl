@@ -35,6 +35,9 @@
 	gnocl::button
 		o new option
 			-align (currently only applies to button with icons)
+	new package
+		gnocl::builder & gnocl::glade moved into separate package
+		
 2012-10:
 	gnocl::window
 		o implemented cget -data

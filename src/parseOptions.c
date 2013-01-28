@@ -12,6 +12,7 @@
 
 /*
    History:
+   2013-11: renamed doOnButtonClicked to doOnToolButtonClicked
    2011-11: -onIconPress %t now returns entry text content. Added %b to review mouse button info.
    2009-12: added %g to those callback with %w substitutions, returns 'glade name'
         08: added padding big, small, default
@@ -3446,9 +3447,9 @@ int gnoclOptOnProximityInOut ( Tcl_Interp *interp, GnoclOption *opt, GObject *ob
 
 
 /**
-\brief
+\brief	callback handler for GTK_BUTTON widgets
 **/
-static void doOnClicked   ( GtkToolButton *toolbutton, gpointer user_data )
+static void doOnClicked   ( GtkWidget *button, gpointer user_data )
 {
 #ifdef DEBUG_PARSEOPTIONS
 	g_print ( "%s\n", __FUNCTION__ );
@@ -3460,18 +3461,17 @@ static void doOnClicked   ( GtkToolButton *toolbutton, gpointer user_data )
 		{ 'w', GNOCL_STRING },  /* widget */
 		{ 'g', GNOCL_STRING },  /* glade name */
 		{ 'p', GNOCL_STRING },  /* parent */
-		//{ 'd', GNOCL_STRING },  /* data */
+		{ 'd', GNOCL_STRING },  /* data */
 		{ 0 }
 	};
 
-	//const char *dataID = "gnocl::data";
-	//ButtonParams *para = g_object_get_data ( G_OBJECT (toolbutton), dataID );
+	const char *dataID = "gnocl::data";
+	ButtonParams *para = g_object_get_data ( G_OBJECT ( button ), dataID );
 
-	ps[0].val.str = gnoclGetNameFromWidget ( toolbutton );
-	ps[1].val.str = gtk_widget_get_name ( GTK_WIDGET ( toolbutton ) );
-	ps[2].val.str = gtk_widget_get_parent ( GTK_WIDGET ( toolbutton ) );
-
-	//ps[3].val.str = para->data;
+	ps[0].val.str = gnoclGetNameFromWidget ( button );
+	ps[1].val.str = gtk_widget_get_name ( GTK_WIDGET ( button ) );
+	ps[2].val.str = gtk_widget_get_parent ( GTK_WIDGET ( button ) ); /* doesn't appear to work */
+	ps[3].val.str = g_object_get_data ( button, "gnocl::data" );
 
 	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
 
@@ -3479,9 +3479,9 @@ static void doOnClicked   ( GtkToolButton *toolbutton, gpointer user_data )
 
 /**
 \brief
-	widget button, not mouse button
+	widget button, *** NOT ** mouse button
 **/
-static void doOnButtonClicked   ( GtkToolButton *toolbutton, gpointer user_data )
+static void doOnToolButtonClicked ( GtkToolButton *toolbutton, gpointer user_data )
 {
 #ifdef DEBUG_PARSEOPTIONS
 	g_print ( "%s\n", __FUNCTION__ );
@@ -4107,7 +4107,7 @@ int gnoclOptOnClicked ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_
 **/
 int gnoclOptOnButtonClicked ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
-	return gnoclConnectOptCmd ( interp, obj, "clicked", G_CALLBACK ( doOnButtonClicked ), opt, NULL, ret );
+	return gnoclConnectOptCmd ( interp, obj, "clicked", G_CALLBACK ( doOnToolButtonClicked ), opt, NULL, ret );
 }
 
 

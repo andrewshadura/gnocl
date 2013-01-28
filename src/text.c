@@ -3499,7 +3499,7 @@ int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl
 		case GetPosIdx: 		return 13;
 		case HasGlobalFocusIdx:	return 14;
 		case IsToplevelFocusIdx:	return 15;
-		/* these are GtkTextBuffer operations */
+			/* these are GtkTextBuffer operations */
 
 		case PrintIdx:
 			{
@@ -4735,7 +4735,7 @@ static int textFunc ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * 
 
 				//GtkTextIter iter;
 				//gtk_text_layout_get_iter_at_pixel (text->layout, &iter, x, y);
-				Tcl_SetObjResult ( interp, Tcl_NewIntObj ( gtk_widget_has_focus (text) ) );
+				Tcl_SetObjResult ( interp, Tcl_NewIntObj ( gtk_widget_has_focus ( text ) ) );
 				return TCL_OK;
 			}
 
@@ -4744,7 +4744,7 @@ static int textFunc ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * 
 
 				//GtkTextIter iter;
 				//gtk_text_layout_get_iter_at_pixel (text->layout, &iter, x, y);
-				Tcl_SetObjResult ( interp, Tcl_NewIntObj ( gtk_widget_is_focus (text) ) );
+				Tcl_SetObjResult ( interp, Tcl_NewIntObj ( gtk_widget_is_focus ( text ) ) );
 				return TCL_OK;
 			}
 

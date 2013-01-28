@@ -42,7 +42,7 @@ date 	2001-03:
 static const int textIdx 	= 0;
 static const int iconIdx 	= 1;
 static const int alignIdx 	= 2;
-static const int dataIdx 	= 3;
+//static const int dataIdx 	= 3;
 
 static GnoclOption buttonOptions[] =
 {
@@ -50,7 +50,7 @@ static GnoclOption buttonOptions[] =
 	{ "-text", GNOCL_OBJ, NULL },    /* 0 */
 	{ "-icon", GNOCL_OBJ, NULL },    /* 1 */
 	{ "-align", GNOCL_OBJ, NULL },   /* 2 */
-	{ "-data", GNOCL_STRING, NULL }, /* 3 */
+	//{ "-data", GNOCL_STRING, NULL }, /* 3 */
 
 	{ "-activeBackgroundColor", GNOCL_OBJ, "active", gnoclOptGdkColorBg }, // 2
 
@@ -69,7 +69,7 @@ static GnoclOption buttonOptions[] =
 	/* GtkButton specific signals, "activate" is not used */
 	{ "-onEnter", GNOCL_OBJ, "E", gnoclOptOnEnterLeave },
 	{ "-onLeave", GNOCL_OBJ, "L", gnoclOptOnEnterLeave },
-	{ "-onClicked", GNOCL_OBJ, "clicked", gnoclOptOnButtonClicked },
+	{ "-onClicked", GNOCL_OBJ, "clicked", gnoclOptOnClicked }, //gnoclOptOnButtonClicked }
 	{ "-onButtonPress", GNOCL_OBJ, "P", gnoclOptOnButton },
 	{ "-onButtonRelease", GNOCL_OBJ, "R", gnoclOptOnButton },
 
@@ -89,6 +89,8 @@ static GnoclOption buttonOptions[] =
 	/* inherited GtkWidget properties */
 	{ "-heightRequest", GNOCL_INT, "height-request" },
 	{ "-widthRequest", GNOCL_INT, "width-request" },
+
+	{ "-data", GNOCL_OBJ, "", gnoclOptData },
 
 	{ NULL },
 };
@@ -114,7 +116,7 @@ static void destroyFunc ( GtkWidget *widget, gpointer data )
 /**
 \brief
 **/
-static void buttonAlign ( ButtonParams *para )
+void buttonAlign ( ButtonParams *para )
 {
 
 #ifdef DEBUG_BUTTON
@@ -150,11 +152,12 @@ static int configure (  Tcl_Interp *interp, ButtonParams *para,  GnoclOption opt
 		return TCL_ERROR;
 	}
 
-	if ( options[dataIdx].status == GNOCL_STATUS_CHANGED )
-	{
-		para->data = strdup ( options[dataIdx].val.str );
-	}
-
+	/*
+		if ( options[dataIdx].status == GNOCL_STATUS_CHANGED )
+		{
+			para->data = strdup ( options[dataIdx].val.str );
+		}
+	*/
 	if ( options[alignIdx].status == GNOCL_STATUS_CHANGED )
 	{
 
@@ -381,12 +384,13 @@ static int cget (   Tcl_Interp *interp,  ButtonParams *para,  GnoclOption option
 
 	Tcl_Obj *obj = NULL;
 
-	if ( idx == dataIdx )
-	{
-		obj = Tcl_NewStringObj ( para->data, -1 );
-		//gnoclOptParaData ( interp, para->data, &obj);
-	}
-
+	/*
+		if ( idx == dataIdx )
+		{
+			obj = Tcl_NewStringObj ( para->data, -1 );
+			gnoclOptParaData ( interp, para->data, &obj);
+		}
+	*/
 	if ( idx == alignIdx )
 	{
 		obj = Tcl_NewStringObj ( para->align, -1 );
@@ -443,6 +447,8 @@ static int cget (   Tcl_Interp *interp,  ButtonParams *para,  GnoclOption option
 **/
 int buttonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+
+	g_print ( "%s 1\n", __FUNCTION__ );
 	static const char *cmds[] =
 	{
 		"delete", "configure", "cget",
@@ -565,7 +571,7 @@ int buttonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const 
 
 			if ( GTK_WIDGET_IS_SENSITIVE ( GTK_WIDGET ( button ) ) )
 			{
-				gtk_button_clicked ( para->button );
+				gtk_button_clicked ( button );
 			}
 
 			break;

@@ -66,7 +66,7 @@ typedef struct
 	Tcl_Interp  *interp;
 	char        *name;
 	char        *iconName;
-	char		*data;
+	char		*data; /* no longer used */
 	char		*align;
 	GtkAlignment *alignment;
 } ButtonParams;

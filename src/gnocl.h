@@ -192,6 +192,7 @@ gnoclOptFunc gnoclOptJustification;
 gnoclOptFunc gnoclOptEllipsize;
 gnoclOptFunc gnoclOptLabelFull;
 gnoclOptFunc gnoclOptOnButton;
+gnoclOptFunc gnoclOptOnButton2; //<--------------------------------------
 //gnoclOptFunc gnoclOptOnSelectionChanged;
 gnoclOptFunc gnoclOptOnFontSet;
 gnoclOptFunc gnoclOptOnFileSet;

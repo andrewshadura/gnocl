@@ -1038,10 +1038,11 @@ int windowFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const 
 	switch ( idx )
 	{
 
-		case ChildrenIdx: {
-			// GtkWidget *gnoclFindChild ( GtkWidget *widget, GtkType type )
-		}
-		break;
+		case ChildrenIdx:
+			{
+				// GtkWidget *gnoclFindChild ( GtkWidget *widget, GtkType type )
+			}
+			break;
 		case PresentIdx:
 			{
 				gtk_window_present ( window );
