@@ -305,18 +305,10 @@ static void onResponse ( GtkDialog *dialog, gint arg1, gpointer data )
 	   if dialog is modal we destroy the widget in gnoclMessageDialogCmd
 	   since we need para for the return value */
 
-	if ( 1 )
-	{
-		if ( para->isModal == 0 && para->ret != TCL_OK )
-		{
-			gtk_widget_destroy ( GTK_WIDGET ( dialog ) );
-		}
-
-		else
-		{
-			gtk_widget_destroy ( GTK_WIDGET ( dialog ) );
-		}
-	}
+	/* reverted to previous code from 0.9.95, since destroying a modal
+	   dialog too early breaks the return value -ag */ 
+	if ( para->isModal == 0 && para->ret != TCL_OK )
+		gtk_widget_destroy ( GTK_WIDGET ( dialog ) );
 
 }
 
@@ -760,7 +752,8 @@ int gnoclDialogCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * co
 		Tcl_SetObjResult ( interp, getObjFromRet ( para, ret ) );
 
 		/* removed, because it causes warnings when the dialog is closed */
-		//gtk_widget_destroy ( GTK_WIDGET ( GTK_WINDOW ( para->dialog ) ) );
+		/* reenabled to make return value work -ag */
+		gtk_widget_destroy ( GTK_WIDGET ( GTK_WINDOW ( para->dialog ) ) );
 	}
 
 	else

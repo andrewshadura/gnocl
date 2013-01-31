@@ -2,6 +2,7 @@
 \brief
 \todo	add getColumn and getRow widget commands
 \history
+   2013-01: added insert 
    2012-12: fixed problem with -wrapMode failing to set to option word
    2012-09: new option
 				-data
@@ -3369,7 +3370,7 @@ int treeListFunc ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * con
 	const char *cmds[] =
 	{
 		"cget", "delete", "configure",
-		"add", "addBegin", "addEnd",
+		"add", "addBegin", "addEnd",  "insert",
 		"getSelection", "setSelection", "onSelectionChanged",
 		"columnConfigure", "columnCget", "get",
 
@@ -3385,7 +3386,7 @@ int treeListFunc ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * con
 	enum cmdIdx
 	{
 		CgetIdx, DeleteIdx, ConfigureIdx,
-		AddIdx, AddBeginIdx, AddEndIdx,
+		AddIdx, AddBeginIdx, AddEndIdx, InsertIdx,
 		GetSelectionIdx, SetSelectionIdx, OnSelectionChangedIdx,
 		ColumnConfigureIdx, ColumnCgetIdx, GetIdx,
 
@@ -3573,18 +3574,12 @@ int treeListFunc ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * con
 			}
 
 			break;
-		case AddIdx:
+		case InsertIdx:
 			{
 #ifdef DEBUG_TREELIST
 				g_print ( "%s AddIdx objc = %d : >%s<\n", __FUNCTION__, objc,  Tcl_GetString ( objv[2] ) );
 #endif
 				gint row;
-
-				/* prepend */
-				if ( strcmp ( Tcl_GetString ( objv[2] ), "" ) == 0  )
-				{
-					return addRow ( para, interp, objc, objv, 0 );
-				}
 
 				/* insert */
 				if  ( Tcl_GetIntFromObj ( NULL, objv[2], &row ) == TCL_OK )
@@ -3592,10 +3587,9 @@ int treeListFunc ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * con
 					return addRow ( para, interp, objc, objv, row );
 				}
 
-				/* append */
-				return addRow ( para, interp, objc, objv, -1 );
 			}
 			break;
+		case AddIdx:
 		case AddEndIdx:
 			{
 #ifdef DEBUG_TREELIST

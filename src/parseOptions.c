@@ -3445,7 +3445,6 @@ int gnoclOptOnProximityInOut ( Tcl_Interp *interp, GnoclOption *opt, GObject *ob
 	return gnoclConnectOptCmd ( interp, obj, opt->optName[3] == 'I' ? "proximity-in-event" : "proximity-out-event", G_CALLBACK ( doOnEnterLeave ), opt, NULL, ret );
 }
 
-
 /**
 \brief	callback handler for GTK_BUTTON widgets
 **/
@@ -3459,8 +3458,8 @@ static void doOnClicked   ( GtkWidget *button, gpointer user_data )
 	GnoclPercSubst ps[] =
 	{
 		{ 'w', GNOCL_STRING },  /* widget */
+		{ 'p', GNOCL_STRING },  /* parent */	
 		{ 'g', GNOCL_STRING },  /* glade name */
-		{ 'p', GNOCL_STRING },  /* parent */
 		{ 'd', GNOCL_STRING },  /* data */
 		{ 0 }
 	};
@@ -3469,10 +3468,11 @@ static void doOnClicked   ( GtkWidget *button, gpointer user_data )
 	ButtonParams *para = g_object_get_data ( G_OBJECT ( button ), dataID );
 
 	ps[0].val.str = gnoclGetNameFromWidget ( button );
-	ps[1].val.str = gtk_widget_get_name ( GTK_WIDGET ( button ) );
-	ps[2].val.str = gtk_widget_get_parent ( GTK_WIDGET ( button ) ); /* doesn't appear to work */
+	ps[1].val.str = gnoclGetNameFromWidget ( gtk_widget_get_parent ( button ) );
+	ps[2].val.str = gtk_widget_get_name ( button );
 	ps[3].val.str = g_object_get_data ( button, "gnocl::data" );
 
+	
 	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
 
 }

@@ -448,7 +448,6 @@ static int cget (   Tcl_Interp *interp,  ButtonParams *para,  GnoclOption option
 int buttonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
 
-	g_print ( "%s 1\n", __FUNCTION__ );
 	static const char *cmds[] =
 	{
 		"delete", "configure", "cget",
