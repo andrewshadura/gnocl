@@ -12,6 +12,7 @@
 
 /*
    History:
+   2013-02: added utility command, gnocl::toggle
    2012-01: gnocl::winfo
 				added exists subcommand
    2012-11: added gnocl::tooltip
@@ -137,14 +138,104 @@ int gnoclSetOpts ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * cons
 }
 
 
-
-
-
-
-
 /*
-\brief  Spawn a background process.
+\brief  EXPIREMENTAL STUB: Explore the possibilty of setting an object property
 */
+int gnoclSetPropertyCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
+{
+
+
+#ifdef DEBUG_COMMANDS
+	g_print ( "%s\n", __FUNCTION__ );
+#endif
+
+	//GPid cpid;
+	//char *com[] = {"./ls"};
+	//char str[6];
+
+	g_print ( "widget = %s\n", Tcl_GetString ( objv[1] ) );
+	g_print ( "property = %s\n", Tcl_GetString ( objv[2] ) );
+	g_print ( "value = %s\n", Tcl_GetString ( objv[3] ) );
+	g_print ( "type = %s\n", Tcl_GetString ( objv[4] ) );
+
+	static const char *types[] =
+	{
+		"i", "d", "c", "b",
+		"int", "double", "char", "bool",
+		NULL
+	};
+
+	enum typesIdx
+	{
+		IIdx, DIdx, CIdx, BIdx,
+		IntIdx, DoubleIdx, CharIdx, BoolIdx
+	};
+
+	gint idx;
+	gboolean b;
+	gint i;
+	gfloat d;
+	GtkWidget *widget;
+
+	getIdx ( types, Tcl_GetString ( objv[4] ), &idx );
+
+	switch ( idx )
+	{
+		case BIdx:
+		case BoolIdx:
+			{
+				widget = gnoclGetWidgetFromName (  Tcl_GetString ( objv[1] ), interp );
+				Tcl_GetIntFromObj ( interp, objv[2], &b );
+				g_object_set ( G_OBJECT ( widget ), Tcl_GetString ( objv[2] ), i, NULL );
+			}
+			break;
+defaul:
+			{
+			}
+	}
+
+
+
+
+
+	//Tcl_SetResult ( interp, str , TCL_STATIC );
+	return TCL_OK;
+}
+
+
+/**
+\brief	simple boolean toggle command
+**/
+int gnoclToggleCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * const objv[] )
+{
+
+	const char *val = Tcl_GetString ( objv[1] );
+
+	if ( strcmp ( val, "1" ) == 0 ||
+			strcmp ( val, "TRUE" ) == 0 ||
+			strcmp  ( val, "ON" ) == 0  )
+	{
+		Tcl_SetResult ( interp, "0" , TCL_STATIC );
+		return TCL_OK;
+	}
+
+	if ( strcmp ( val, "0" ) == 0 ||
+			strcmp ( val, "FALSE" ) == 0 ||
+			strcmp  ( val, "OFF" ) == 0 )
+	{
+		Tcl_SetResult ( interp, "1" , TCL_STATIC );
+		return TCL_OK;
+	}
+
+	Tcl_SetResult ( interp, "ERROR: Must be one of 1 0 TRUE FALSE ON or OFF." , TCL_STATIC );
+	return TCL_ERROR;
+
+}
+
+
+/**
+\brief  Spawn a background process.
+**/
 int gnoclExecCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
 
@@ -152,7 +243,9 @@ int gnoclExecCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * cons
 	char *com[] = {"./ls"};
 	char str[6];
 
+#if 0
 	g_print ( "cmd = %s\n", Tcl_GetString ( objv[1] ) );
+#endif
 
 	if ( g_spawn_async ( NULL, com, NULL, G_SPAWN_DO_NOT_REAP_CHILD, NULL, NULL, &cpid, NULL ) )
 	{

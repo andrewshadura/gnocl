@@ -344,10 +344,11 @@ gtk_source_undo_manager_begin_not_undoable_action ( GtkSourceUndoManager *um )
 
 /**
 \brief
+\note 	generating error report on initialization.
 **/
-static void
-gtk_source_undo_manager_end_not_undoable_action_internal ( GtkSourceUndoManager *um )
+static void gtk_source_undo_manager_end_not_undoable_action_internal ( GtkSourceUndoManager *um )
 {
+
 	g_return_if_fail ( GTK_SOURCE_IS_UNDO_MANAGER ( um ) );
 	g_return_if_fail ( um->priv != NULL );
 
@@ -359,8 +360,7 @@ gtk_source_undo_manager_end_not_undoable_action_internal ( GtkSourceUndoManager 
 /**
 \brief
 **/
-void
-gtk_source_undo_manager_end_not_undoable_action ( GtkSourceUndoManager *um )
+void gtk_source_undo_manager_end_not_undoable_action ( GtkSourceUndoManager *um )
 {
 	g_return_if_fail ( GTK_SOURCE_IS_UNDO_MANAGER ( um ) );
 	g_return_if_fail ( um->priv != NULL );

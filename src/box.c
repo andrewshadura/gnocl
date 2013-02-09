@@ -14,6 +14,7 @@
 
 /*
    History:
+   2013-02: added gnocl::hBox and gnocl::vBox commands
    2012-04: added command, remove
    2010-05: added -labelWidget option
    2009-10: changed default padding from GNOCL_PAD (8 pixels) to GNOCL_PAD_TINY (2 pixels)
@@ -611,5 +612,145 @@ int gnoclBoxCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const
 	return gnoclRegisterWidget ( interp, widget, boxFunc );
 }
 
+/**
+\brief
+\todo   Modify code to specify default padding option for the new box.
+**/
+int gnoclVBoxCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
+{
+	GtkOrientation orient = GTK_ORIENTATION_HORIZONTAL;
+	int            isButtonType = 0;
+	int            ret = TCL_OK;
+	GtkBox         *box;
+	GtkFrame       *frame = NULL;
+	GtkWidget      *widget;
 
+	assert ( strcmp ( boxOptions[startFrameOpts].optName, "-label" ) == 0 );
+	assert ( strcmp ( boxOptions[startCommonOpts].optName, "-name" ) == 0 );
+	assert ( strcmp ( boxOptions[startPackOpts+paddingDiff].optName, "-padding" ) == 0 );
+	assert ( strcmp ( boxOptions[startPackOpts+fillDiff].optName, "-fill" ) == 0 );
+	assert ( strcmp ( boxOptions[startPackOpts+expandDiff].optName, "-expand" ) == 0 );
+	assert ( strcmp ( boxOptions[startPackOpts+alignDiff].optName, "-align" ) == 0 );
+
+	if ( gnoclParseOptions ( interp, objc, objv, boxOptions ) != TCL_OK )
+	{
+		gnoclClearOptions ( boxOptions );
+		return TCL_ERROR;
+	}
+
+	if ( boxOptions[orientationIdx].status == GNOCL_STATUS_CHANGED )
+	{
+		Tcl_SetResult ( interp, "ERROR: The \"-orientation\" switch in invalid for this object.", TCL_STATIC );
+		return TCL_ERROR;
+
+	}
+
+	if ( boxOptions[buttonTypeIdx].status == GNOCL_STATUS_CHANGED )
+	{
+		isButtonType = boxOptions[buttonTypeIdx].val.b;
+	}
+
+	box = GTK_BOX ( isButtonType ?	gtk_vbutton_box_new( ) : gtk_vbox_new ( 0, GNOCL_PAD_TINY ) );
+
+
+	/* set default value */
+	gtk_container_set_border_width ( GTK_CONTAINER ( box ), GNOCL_PAD_TINY );
+
+	if ( needFrame ( boxOptions ) )
+	{
+		frame = GTK_FRAME ( gtk_frame_new ( NULL ) );
+		gtk_container_add ( GTK_CONTAINER ( frame ), GTK_WIDGET ( box ) );
+		widget = GTK_WIDGET ( frame );
+	}
+
+	else
+	{
+		widget = GTK_WIDGET ( box );
+	}
+
+	ret = configure ( interp, frame, box, boxOptions );
+
+	gnoclClearOptions ( boxOptions );
+
+	if ( ret != TCL_OK )
+	{
+		gtk_widget_destroy ( widget );
+		return TCL_ERROR;
+	}
+
+	gtk_widget_show_all ( widget );
+
+	return gnoclRegisterWidget ( interp, widget, boxFunc );
+}
+
+
+/**
+\brief
+\todo   Modify code to specify default padding option for the new box.
+**/
+int gnoclHBoxCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
+{
+	GtkOrientation orient = GTK_ORIENTATION_HORIZONTAL;
+	int            isButtonType = 0;
+	int            ret = TCL_OK;
+	GtkBox         *box;
+	GtkFrame       *frame = NULL;
+	GtkWidget      *widget;
+
+	assert ( strcmp ( boxOptions[startFrameOpts].optName, "-label" ) == 0 );
+	assert ( strcmp ( boxOptions[startCommonOpts].optName, "-name" ) == 0 );
+	assert ( strcmp ( boxOptions[startPackOpts+paddingDiff].optName, "-padding" ) == 0 );
+	assert ( strcmp ( boxOptions[startPackOpts+fillDiff].optName, "-fill" ) == 0 );
+	assert ( strcmp ( boxOptions[startPackOpts+expandDiff].optName, "-expand" ) == 0 );
+	assert ( strcmp ( boxOptions[startPackOpts+alignDiff].optName, "-align" ) == 0 );
+
+	if ( gnoclParseOptions ( interp, objc, objv, boxOptions ) != TCL_OK )
+	{
+		gnoclClearOptions ( boxOptions );
+		return TCL_ERROR;
+	}
+
+	if ( boxOptions[orientationIdx].status == GNOCL_STATUS_CHANGED )
+	{
+		Tcl_SetResult ( interp, "ERROR: The \"-orientation\" switch in invalid for this object.", TCL_STATIC );
+		return TCL_ERROR;
+	}
+
+	if ( boxOptions[buttonTypeIdx].status == GNOCL_STATUS_CHANGED )
+	{
+		isButtonType = boxOptions[buttonTypeIdx].val.b;
+	}
+
+	box = GTK_BOX ( isButtonType ? gtk_hbutton_box_new( ) : gtk_hbox_new ( 0, GNOCL_PAD_TINY ) );
+
+
+	/* set default value */
+	gtk_container_set_border_width ( GTK_CONTAINER ( box ), GNOCL_PAD_TINY );
+
+	if ( needFrame ( boxOptions ) )
+	{
+		frame = GTK_FRAME ( gtk_frame_new ( NULL ) );
+		gtk_container_add ( GTK_CONTAINER ( frame ), GTK_WIDGET ( box ) );
+		widget = GTK_WIDGET ( frame );
+	}
+
+	else
+	{
+		widget = GTK_WIDGET ( box );
+	}
+
+	ret = configure ( interp, frame, box, boxOptions );
+
+	gnoclClearOptions ( boxOptions );
+
+	if ( ret != TCL_OK )
+	{
+		gtk_widget_destroy ( widget );
+		return TCL_ERROR;
+	}
+
+	gtk_widget_show_all ( widget );
+
+	return gnoclRegisterWidget ( interp, widget, boxFunc );
+}
 

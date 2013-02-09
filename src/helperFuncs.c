@@ -407,6 +407,7 @@ static void findChildIntern ( GtkWidget *widget, gpointer data )
 }
 
 /**
+\brief
 **/
 GtkWidget *gnoclFindChild ( GtkWidget *widget, GtkType type )
 {
@@ -450,7 +451,7 @@ int gnoclPosOffset ( Tcl_Interp *interp, const char *txt, int *offset )
 }
 
 /**
-\brief Substitute percentage marker with values and the execute script.
+\brief Substitute percentage marker with values and then execute script.
 
 **/
 int gnoclPercentSubstAndEval ( Tcl_Interp *interp, GnoclPercSubst *ps, const char *orig_script, int background )

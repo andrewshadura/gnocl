@@ -19,6 +19,7 @@
 */
 /*
    History:
+   2013-02: serialize command now returns buffer data as string
    2013-01: added subcommands isToplevelFocus and hasGlobalFocus
    2012-12	corrected -accepttTab to -acceptsTab
    2012-11  added -data option to text tag
@@ -2857,6 +2858,90 @@ static int configure ( Tcl_Interp *interp, TextParams *para, GnoclOption options
 	return TCL_OK;
 }
 
+
+/**
+\brief	** USING ** TEXTPARAMS
+**/
+static int configure_textView ( Tcl_Interp *interp, GtkTextView *text, GnoclOption options[] )
+{
+
+	//GtkScrolledWindow *scrolled = para->scrolled;
+	//GtkTextView *text = GTK_TEXT_VIEW ( gtk_bin_get_child ( GTK_BIN ( scrolled ) ) );
+	GtkTextBuffer *buffer = gtk_text_view_get_buffer ( text );
+
+
+	/****************************/
+
+	/*
+		gnoclAttachOptCmdAndVar (
+			&options[onChangedIdx], &para->onChanged,
+			&options[variableIdx], &para->textVariable,
+			"changed", G_OBJECT ( buffer ),
+			G_CALLBACK ( changedFunc ), interp, traceFunc, para );
+
+		if ( options[variableIdx].status == GNOCL_STATUS_CHANGED && para->textVariable != NULL )
+		{
+			// if variable does not exist -> set it, else set widget state
+			const char *val = Tcl_GetVar ( interp, para->textVariable, TCL_GLOBAL_ONLY );
+
+			if ( val == NULL )
+			{
+
+				GtkTextIter *start, *end;
+
+				gtk_text_buffer_get_bounds ( buffer, start, end );
+
+				val = gtk_text_buffer_get_text ( buffer, start, end, 0 );
+
+				setTextVariable ( para, val );
+			}
+
+			else
+			{
+				//setVal ( para->label, val );
+			}
+		}
+	*/
+	/*****************************/
+
+
+	if ( options[textIdx].status == GNOCL_STATUS_CHANGED )
+	{
+		//printf ( "INSERT SOME TEXT-b\n" );
+
+		char *str = options[textIdx].val.str;
+		gtk_text_buffer_set_text ( buffer, str, -1 );
+	}
+
+	/*
+		if ( options[scrollBarIdx].status == GNOCL_STATUS_CHANGED )
+		{
+			GtkPolicyType hor, vert;
+
+			if ( gnoclGetScrollbarPolicy ( interp, options[scrollBarIdx].val.obj, &hor, &vert ) != TCL_OK )
+			{
+				return TCL_ERROR;
+			}
+
+			gtk_scrolled_window_set_policy ( scrolled, hor, vert );
+		}
+	*/
+	if ( options[bufferIdx].status == GNOCL_STATUS_CHANGED )
+	{
+		printf ( "APPLY NEW BUFFER-%s\n", options[bufferIdx].val.str );
+
+		GtkTextBuffer *buffer;
+
+		buffer = gnoclGetWidgetFromName ( options[bufferIdx].val.str, interp );
+
+		gtk_text_view_set_buffer ( text, buffer );
+
+	}
+
+
+	return TCL_OK;
+}
+
 /**
 \brief
 **/
@@ -3584,20 +3669,44 @@ int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl
 				GtkTextIter	start, end;
 				GdkAtom		se_format;
 
-				se_format = gtk_text_buffer_register_serialize_tagset ( buffer, "default" );
+				se_format = gtk_text_buffer_register_serialize_tagset ( buffer, NULL );
 
 				gtk_text_buffer_get_bounds ( buffer, &start, &end );
 				data = gtk_text_buffer_serialize ( buffer, buffer, se_format, &start, &end, &length );
 
 #ifdef DEBUG_TEXT
-				g_print ( "%s", data );
+				g_print ( "%s\n", data );
 #endif
+
+
 				output = fopen ( Tcl_GetString ( objv[cmdNo+1] ), "w" );
+
 				fwrite ( &length, sizeof ( gsize ), 1, output );
 				fwrite ( data, sizeof ( guint8 ), length, output );
 				fclose ( output );
 
-				g_free ( data );
+#if 0 // attempt to serialize returning a text string
+				GString *buf;
+				buf = g_string_sized_new ( length );
+
+				int i;
+
+				output = fopen ( "serialize.xml", "w" );
+
+				/* ignore the first 32 characters */
+				for ( i = 31; i < length ; i++ )
+				{
+					/* show the content of the data array */
+					g_string_append_unichar ( buf, data[i] ); /* <--- problems here, but why? */
+				}
+
+				fclose ( output );
+
+				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( buf->str, -1 ) );
+
+				g_string_free ( buf, 1 );
+
+#endif
 
 				return TCL_OK;
 
@@ -3614,6 +3723,7 @@ int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl
 				GtkTextIter iter;
 				GdkAtom de_format;
 
+#if 1 	// binary file
 				input = fopen ( Tcl_GetString ( objv[cmdNo+1] ), "r" );
 
 				// Return with error message if the file is not found.
@@ -3632,11 +3742,18 @@ int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl
 				fread ( data, sizeof ( guint8 ), length, input );
 				fclose ( input );
 
+
 				de_format = gtk_text_buffer_register_deserialize_tagset ( buffer, "default" );
 				gtk_text_buffer_get_iter_at_offset ( buffer, &iter, 0 );
 				gtk_text_buffer_deserialize ( buffer, buffer, de_format, &iter, data, length, NULL );
 
 				g_free ( data );
+
+#else  	// text file
+				de_format = gtk_text_buffer_register_deserialize_tagset ( buffer, "default" );
+				gtk_text_buffer_get_iter_at_offset ( buffer, &iter, 0 );
+				gtk_text_buffer_deserialize ( buffer, buffer, de_format, &iter, Tcl_GetString ( objv[cmdNo+1] ), strlen ( Tcl_GetString ( objv[cmdNo+1] ) ), NULL );
+#endif
 
 				return TCL_OK;
 			}
@@ -4831,7 +4948,8 @@ int textViewFunc ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj *  co
 
 
 /**
-\brief	** USING ** TEXTPARAMS
+\brief	Create a fully developed text megawidget.
+\note	** USING ** TEXTPARAMS
 **/
 int gnoclTextCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj *  const objv[] )
 {
@@ -4899,5 +5017,55 @@ int gnoclTextCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj *  co
 	Tcl_SetObjResult ( interp, Tcl_NewStringObj ( para->name, -1 ) );
 
 	return TCL_OK;
+
+}
+
+
+/**
+\brief	Create a plain vanilla GtkTextView widget
+\todo	Create modified version of the configure command
+**/
+int gnoclTextViewCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj *  const objv[] )
+{
+
+	TextParams *para;
+
+	int               ret, k;
+	GtkTextView       *textView;
+	GtkTextView       *textBuffer;
+
+
+	if ( gnoclParseOptions ( interp, objc, objv, textOptions ) != TCL_OK )
+	{
+		gnoclClearOptions ( textOptions );
+		return TCL_ERROR;
+	}
+
+	// implement new undo/redo buffer
+	textView = gtk_undo_view_new ( gtk_text_buffer_new  ( NULL ) );
+
+
+	gtk_widget_show_all ( GTK_WIDGET ( textView ) );
+
+	//add some extra signals to the default setting -these have no effect!!!
+	gtk_widget_add_events ( textView, GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK );
+
+	ret = gnoclSetOptions ( interp, textOptions, G_OBJECT ( textView ), -1 );
+
+
+	if ( ret == TCL_OK )
+	{
+		ret = configure_textView ( interp, textView, textOptions );
+	}
+
+	gnoclClearOptions ( textOptions );
+
+	if ( ret != TCL_OK )
+	{
+		gtk_widget_destroy ( GTK_WIDGET ( textView ) );
+		return TCL_ERROR;
+	}
+
+	return gnoclRegisterWidget ( interp, textView, textViewFunc );
 
 }

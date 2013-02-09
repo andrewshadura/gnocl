@@ -620,6 +620,10 @@ Tcl_ObjCmdProc gnoclAboutDialogCmd;
 Tcl_ObjCmdProc gnoclActionCmd;
 Tcl_ObjCmdProc gnoclButtonCmd;
 Tcl_ObjCmdProc gnoclBoxCmd;
+
+Tcl_ObjCmdProc gnoclHBoxCmd;
+Tcl_ObjCmdProc gnoclVBoxCmd;
+
 Tcl_ObjCmdProc gnoclFixedCmd;
 Tcl_ObjCmdProc gnoclCheckButtonCmd;
 Tcl_ObjCmdProc gnoclColorButtonCmd;
@@ -676,6 +680,7 @@ Tcl_ObjCmdProc gnoclSpinButtonCmd;
 Tcl_ObjCmdProc gnoclStatusBarCmd;
 Tcl_ObjCmdProc gnoclTableCmd;
 Tcl_ObjCmdProc gnoclTextCmd;
+Tcl_ObjCmdProc gnoclTextViewCmd;
 Tcl_ObjCmdProc gnoclTickerTapeCmd;
 Tcl_ObjCmdProc gnoclToolBarCmd;
 Tcl_ObjCmdProc gnoclTreeCmd;
@@ -706,6 +711,8 @@ Tcl_ObjCmdProc gnoclStockItemCmd;
 Tcl_ObjCmdProc gnoclSoundCmd;
 Tcl_ObjCmdProc gnoclPointerCmd;
 Tcl_ObjCmdProc gnoclExecCmd;
+Tcl_ObjCmdProc gnoclToggleCmd;
+Tcl_ObjCmdProc gnoclSetPropertyCmd;
 Tcl_ObjCmdProc gnoclSetOpts;
 Tcl_ObjCmdProc gnoclShowUriCmd;
 //Tcl_ObjCmdProc gnoclCairoCmd;

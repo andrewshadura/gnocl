@@ -9,10 +9,10 @@
 **/
 
 /**
- \par Modification History
- \verbatim
+\par Modification History
+\verbatim
 	2011-04: Begin developement
- \endverbatim
+\endverbatim
 **/
 
 
@@ -35,8 +35,8 @@ static const int titleIdx	  = 1;
 
 static GnoclOption options[] =
 {
-	{ "-parent", GNOCL_STRING, NULL },                 /* 0 */
-	{ "-title", GNOCL_STRING, NULL },                 /* 1 */
+	{"-parent", GNOCL_STRING, NULL },                 /* 0 */
+	{"-title", GNOCL_STRING, NULL },                 /* 1 */
 	{"-currentPage", GNOCL_INT, "current-page"},
 	{"-embedPageSetup", GNOCL_BOOL, "embed-page-setup"},
 	{"-hasSelection", GNOCL_BOOL, "has-selection"},
@@ -57,6 +57,10 @@ static GnoclOption options[] =
 **/
 static int gnoclOptSetPrintCapability ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
+
+#ifdef DEBUG_PRINTER_DIALOG
+	printf ( "%s\n", __FUNCTION__ );
+#endif
 
 	g_print ( "WARNING! Setting printerDialog \"%s\" capability not yet implemented.\n", opt->propName );
 
@@ -139,7 +143,9 @@ static int gnoclOptSetPrintCapability ( Tcl_Interp *interp, GnoclOption *opt, GO
 **/
 static int gnoclOptPageSetup ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
-	debugStep ( __FUNCTION__, 1 );
+#ifdef DEBUG_PRINTER_DIALOG
+	printf ( "%s\n", __FUNCTION__ );
+#endif
 	return TCL_OK;
 }
 
@@ -148,7 +154,9 @@ static int gnoclOptPageSetup ( Tcl_Interp *interp, GnoclOption *opt, GObject *ob
 **/
 static int gnoclOptPrintSettings ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
-	debugStep ( __FUNCTION__, 1 );
+#ifdef DEBUG_PRINTER_DIALOG
+	printf ( "%s\n", __FUNCTION__ );
+#endif
 	return TCL_OK;
 }
 
@@ -157,7 +165,9 @@ static int gnoclOptPrintSettings ( Tcl_Interp *interp, GnoclOption *opt, GObject
 **/
 static int gnoclOptSelectedPrinter ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
-	debugStep ( __FUNCTION__, 1 );
+#ifdef DEBUG_PRINTER_DIALOG
+	printf ( "%s\n", __FUNCTION__ );
+#endif
 	return TCL_OK;
 }
 
@@ -167,7 +177,9 @@ static int gnoclOptSelectedPrinter ( Tcl_Interp *interp, GnoclOption *opt, GObje
 **/
 static int configure ( Tcl_Interp *interp, GtkWidget *dialog, GnoclOption options[] )
 {
-
+#ifdef DEBUG_PRINTER_DIALOG
+	printf ( "%s\n", __FUNCTION__ );
+#endif
 
 	return TCL_OK;
 }
@@ -180,7 +192,9 @@ static int configure ( Tcl_Interp *interp, GtkWidget *dialog, GnoclOption option
 **/
 int printDialogFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-
+#ifdef DEBUG_PRINTER_DIALOG
+	printf ( "%s\n", __FUNCTION__ );
+#endif
 
 	return TCL_OK;
 }
@@ -203,6 +217,10 @@ int printDialogFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * c
 **/
 int gnoclPrintDialogCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+
+#ifdef DEBUG_PRINTER_DIALOG
+	printf ( "%s\n", __FUNCTION__ );
+#endif
 
 	GtkWidget *mainWindow;
 	GtkWidget *dialog;
@@ -246,10 +264,6 @@ int gnoclPrintDialogCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj
 	{
 		dialog = gtk_print_unix_dialog_new  ( "Print Dialog", GTK_WINDOW ( mainWindow ) );
 	}
-
-
-
-
 
 
 	gtk_widget_show ( dialog );

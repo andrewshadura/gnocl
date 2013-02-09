@@ -2,7 +2,7 @@
 \brief
 \todo	add getColumn and getRow widget commands
 \history
-   2013-01: added insert 
+   2013-01: added insert
    2012-12: fixed problem with -wrapMode failing to set to option word
    2012-09: new option
 				-data

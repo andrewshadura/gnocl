@@ -684,6 +684,8 @@ static GnoclCmd commands[] =
 	/* Gtk Widgets */
 	{ "button", gnoclButtonCmd },
 	{ "box", gnoclBoxCmd },
+	{ "hBox", gnoclHBoxCmd },
+	{ "vBox", gnoclVBoxCmd },
 	{ "fixed", gnoclFixedCmd },
 	{ "checkButton", gnoclCheckButtonCmd },
 	{ "colorSelection", gnoclColorSelectionCmd },
@@ -729,6 +731,9 @@ static GnoclCmd commands[] =
 	{ "statusBar", gnoclStatusBarCmd },
 	{ "table", gnoclTableCmd },
 	{ "text", gnoclTextCmd },
+
+	{ "textView", gnoclTextViewCmd },
+
 	{ "toolBar", gnoclToolBarCmd },
 	{ "tree", gnoclTreeCmd },
 	{ "treeStore", gnoclTreeCmd },
@@ -768,6 +773,8 @@ static GnoclCmd commands[] =
 	{ "signalStop", gnoclSignalStopCmd },
 	{ "pointer", gnoclPointerCmd },
 	{ "exec", gnoclExecCmd },
+	{ "toggle", gnoclToggleCmd },
+	{ "setProperty", gnoclSetPropertyCmd },
 	{ "setOpts", gnoclSetOpts},
 	{ "showURI", gnoclShowUriCmd },
 	{ "signalEmit", gnoclSignalEmitCmd },

@@ -1305,7 +1305,9 @@ static int gnoclCairoDrawRectangle ( ClientData data, Tcl_Interp *interp, int ob
 		{
 			case CenterIdx:
 				{
+#if 1
 					g_print ( "Center\n" );
+#endif
 					sscanf ( Tcl_GetString ( objv[i+1] ), "%f %f", &xc, &yc );
 				}
 				break;
@@ -1405,8 +1407,9 @@ static void linearGradient ( ClientData data, Tcl_Interp *interp, int objc, Tcl_
 		StartColorIdx, EndColorIdx,
 		StartOffsetIdx, EndOffsetIdx
 	};
-
+#if 1
 	g_print ( "linearGradient 2\n" );
+#endif
 
 	/* check the number of arguments */
 	if ( objc < 9 )
@@ -1421,6 +1424,7 @@ static void linearGradient ( ClientData data, Tcl_Interp *interp, int objc, Tcl_
 	/* parse all the options */
 	while ( i <  objc )
 	{
+#if 1
 		g_print ( "linearGradient 3 - %d\n", i );
 
 		getIdx ( opts, Tcl_GetString ( objv[i] ), &idx );
@@ -1506,7 +1510,9 @@ static void linearGradient ( ClientData data, Tcl_Interp *interp, int objc, Tcl_
 }
 
 
-
+/**
+\brief
+**/
 static void radialGradient ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
 

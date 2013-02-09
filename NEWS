@@ -1,9 +1,16 @@
+2013-02:
+	added utility command toggling booleans, TRUE FALSE ON OFF 0 1
+		gnocl::toggle
+2013-01:
+	added alternative widget names
+		gnocl::hBox
+		gnocl::vBox
 2013-01:
 	gnocl::winfo
 		o new subcommands
 			exists
 	gnocl::winfo
-		o new coomands
+		o new commands
 			hasGlobalFocus
 			isTopLevelFocus
 	gnocl::notebook
@@ -21,7 +28,6 @@
 	gnocl::label
 		o new option 
 			-onDestroy
-
 2012-11:
 	new command
 		gnocl::tooltip

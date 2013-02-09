@@ -306,7 +306,7 @@ static void onResponse ( GtkDialog *dialog, gint arg1, gpointer data )
 	   since we need para for the return value */
 
 	/* reverted to previous code from 0.9.95, since destroying a modal
-	   dialog too early breaks the return value -ag */ 
+	   dialog too early breaks the return value -ag */
 	if ( para->isModal == 0 && para->ret != TCL_OK )
 		gtk_widget_destroy ( GTK_WIDGET ( dialog ) );
 
