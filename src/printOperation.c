@@ -15,11 +15,6 @@
 
 #include "gnocl.h"
 #include "gnoclparams.h"
-#include <string.h>
-#include <ctype.h>
-#include <glade/glade.h>
-#include <math.h>
-#include <assert.h>
 
 /* some default values */
 #define GNOCL_HEADER_HEIGHT 20.0

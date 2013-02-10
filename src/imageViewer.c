@@ -22,10 +22,6 @@
 **/
 
 #include "gnocl.h"
-#include <math.h>
-#include <string.h>
-#include <assert.h>
-#include <stdlib.h>
 #include <gtkimageview/gtkimageview.h>
 //#include "./imageViewer/gtk-image-viewer.h"
 

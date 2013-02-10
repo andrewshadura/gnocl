@@ -24,8 +24,6 @@
 **/
 
 #include "gnocl.h"
-#include <string.h>
-#include <assert.h>
 
 /***v* statusBar/barOptions
  * AUTHOR

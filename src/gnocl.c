@@ -30,10 +30,8 @@
 **/
 
 #include "gnocl.h"
-#include <string.h>
 #include <ctype.h>
-#include <stdlib.h>
-#include <assert.h>
+
 
 static GHashTable *name2widgetList;
 static const char idPrefix[] = "::gnocl::_WID";

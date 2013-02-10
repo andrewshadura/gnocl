@@ -25,13 +25,7 @@
    2001-07: Begin of developement
  */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <assert.h>
-#include <ctype.h>
 #include "gnocl.h"
-
 #include <gdk-pixbuf/gdk-pixbuf.h>
 
 typedef struct

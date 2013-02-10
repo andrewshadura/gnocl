@@ -37,11 +37,6 @@
 #include "gnocl.h"
 #include "gnoclparams.h"
 
-#include "string.h"
-#include <assert.h>
-
-#define DEBUG 1
-
 static GnoclOption options[] =
 {
 	{ "-onClicked", GNOCL_STRING, NULL },                   /* 0 */

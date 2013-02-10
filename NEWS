@@ -1,3 +1,9 @@
+2013-02: 
+	gnocl::labelEntry
+		o new options
+			-child
+			-onIconPress
+	removed duplicate #include statements from all source files
 2013-02:
 	added utility command toggling booleans, TRUE FALSE ON OFF 0 1
 		gnocl::toggle

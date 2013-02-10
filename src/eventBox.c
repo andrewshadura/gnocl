@@ -28,9 +28,6 @@
 **/
 
 #include "gnocl.h"
-#include <string.h>
-#include <assert.h>
-
 
 static const int dataIdx = 1;
 

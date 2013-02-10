@@ -25,12 +25,7 @@
 
 #include "gnocl.h"
 #include "gnoclparams.h"
-#include "string.h"
-#include "math.h"
 
-#include <gdk/gdkkeysyms.h>
-#include <assert.h>
-#include <gdk/gdk.h>
 
 /* global used to store a pointer to the text/entry popupmenu */
 GtkMenu *popupMenu;

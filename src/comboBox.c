@@ -41,8 +41,7 @@
 
 
 #include "gnocl.h"
-#include <string.h>
-#include <assert.h>
+
 
 
 static const int variableIdx  = 0;

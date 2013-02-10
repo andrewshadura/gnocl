@@ -21,12 +21,6 @@
 \page page_plug  gnocl::plug
 \htmlinclude plug.html
 **/
-/*
-#include "gnocl.h"
-#include <gdk/gdkx.h>
-#include <string.h>
-#include <assert.h>
-*/
 
 #include "gnocl.h"
 #ifdef WIN32  /* native MS */
@@ -34,10 +28,6 @@
 #else
 #include <gdk/gdkx.h>
 #endif
-#include <string.h>
-#include <assert.h>
-
-
 
 static GnoclOption plugOptions[] =
 {

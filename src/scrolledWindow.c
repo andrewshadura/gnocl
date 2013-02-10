@@ -24,8 +24,6 @@
 **/
 
 #include "gnocl.h"
-#include <string.h>
-#include <assert.h>
 
 /* static function declarations */
 static int optScrollValue ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret );

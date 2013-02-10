@@ -4,9 +4,6 @@
  */
 
 #include "gnocl.h"
-#include <string.h>
-#include <assert.h>
-
 
 /* Notice that these are initialized to the empty list. */
 GSList *itemList = NULL;

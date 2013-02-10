@@ -34,9 +34,6 @@
 **/
 
 #include "gnocl.h"
-#include <string.h>
-#include <assert.h>
-
 
 /*
   "activate"                                       : Run First / Action

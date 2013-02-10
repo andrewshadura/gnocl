@@ -9,8 +9,6 @@
 **/
 
 #include "gnocl.h"
-#include <string.h>
-#include <assert.h>
 
 static GnoclOption spinnerOptions[] =
 {
@@ -23,8 +21,6 @@ static GnoclOption spinnerOptions[] =
 	{ "-tooltip", GNOCL_OBJ, "", gnoclOptTooltip },
 	{ NULL },
 };
-
-
 
 /**
 \brief

@@ -1,10 +1,8 @@
 
 #include "gnocl.h"
-#include <string.h>
-#include <assert.h>
+
 
 int toolItemGroupFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] );
-
 
 static GnoclOption options[] =
 {

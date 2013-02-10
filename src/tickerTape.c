@@ -5,9 +5,6 @@
 
 #include "gnocl.h"
 #include "./ticker/mymarquee.h"
-#include <string.h>
-#include <assert.h>
-
 
 /**
 \brief

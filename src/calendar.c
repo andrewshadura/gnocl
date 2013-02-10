@@ -146,9 +146,6 @@ date    20/05/09
 
 #include "gnocl.h"
 #include "gnoclparams.h"
-#include <string.h>
-#include <assert.h>
-
 
 static void calendar_date_to_string ( CalendarParams *para, char *buffer, gint buff_len )
 {

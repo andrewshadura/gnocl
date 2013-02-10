@@ -37,8 +37,6 @@
 **/
 
 #include "gnocl.h"
-#include <string.h>
-#include <assert.h>
 
 /* declarations */
 static int optLayout ( Tcl_Interp *interp, GnoclOption *opt,  GObject *object, Tcl_Obj **ret );

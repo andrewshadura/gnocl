@@ -24,8 +24,6 @@
 */
 
 #include "gnocl.h"
-#include <stdio.h>
-#include <string.h>
 
 /* list to hold names of applied tags */
 static GSList *tagList = NULL;

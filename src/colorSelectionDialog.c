@@ -36,8 +36,6 @@
 #include "gnocl.h"
 #include "gnoclparams.h"
 
-#include <string.h>
-#include <assert.h>
 
 
 static GnoclOption colorSelectDialogOptions[] =

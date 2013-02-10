@@ -34,9 +34,6 @@ htmtlinclude spinButon.html
 **/
 
 #include "gnocl.h"
-#include <string.h>
-#include <assert.h>
-
 
 /* compare with scale widget which is very similar */
 static GnoclOption spinButtonOptions[] =

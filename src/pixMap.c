@@ -7,14 +7,10 @@
 **/
 
 #include "gnocl.h"
-#include <string.h>
-#include <assert.h>
-
 
 /* needs to be public to be accessed by gnocl::inventory */
 static GHashTable *name2pixmapList;
 static const char idPrefix[] = "::gnocl::_PMAP";
-
 
 static const int Option1Idx = 0;
 static const int Option2Idx = 1;

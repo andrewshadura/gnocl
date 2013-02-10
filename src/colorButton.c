@@ -22,8 +22,6 @@
 **/
 
 #include "gnocl.h"
-#include <string.h>
-#include <assert.h>
 
 static GnoclOption colorButtonOptions[] =
 {

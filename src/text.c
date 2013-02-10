@@ -102,9 +102,6 @@
 #include "gnocl.h"
 #include "gnoclparams.h"
 #include "./textUndo/undo_manager.h"
-#include <string.h>
-#include <assert.h>
-
 
 static int textFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *  const objv[] );
 static int cget ( Tcl_Interp *interp, GtkTextView *text, GnoclOption options[], int idx );

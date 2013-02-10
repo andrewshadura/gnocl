@@ -27,8 +27,6 @@
 **/
 
 #include "gnocl.h"
-#include <string.h>
-#include <assert.h>
 
 static const int orientationIdx = 0;
 static const int resizeIdx = 1;

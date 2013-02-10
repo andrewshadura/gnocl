@@ -9,8 +9,6 @@
 
 #include "gnocl.h"
 #include "gnoclparams.h"
-#include <string.h>
-#include <assert.h>
 
 /* some default settings for the default listStore model */
 

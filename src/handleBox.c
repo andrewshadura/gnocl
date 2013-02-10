@@ -8,8 +8,6 @@
 **/
 
 #include "gnocl.h"
-#include <string.h>
-#include <assert.h>
 
 /* derive switches from the list of properties and signals related to this widget */
 /* no need to change name, all widget handleBoxOptions are static within each code module */

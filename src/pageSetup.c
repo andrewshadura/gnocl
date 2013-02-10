@@ -37,9 +37,6 @@ struct _GtkPaperSize
 #include "gnocl.h"
 #include "gnoclparams.h"
 
-#include <string.h>
-#include <assert.h>
-
 /* needs to be public to be accessed by gnocl::inventory */
 static GHashTable *name2pagesetupList;
 static const char idPrefix[] = "::gnocl::_PS";

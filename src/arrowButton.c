@@ -24,9 +24,6 @@ date	2001-03:
 
 
 #include "gnocl.h"
-#include <string.h>
-#include <assert.h>
-
 
 static GnoclOption arrowOptions[] =
 {

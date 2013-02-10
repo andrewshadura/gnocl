@@ -61,10 +61,6 @@
 #include "gnocl.h"
 #include "gnoclparams.h"
 #include "drag_n_drop.h" /* keep separate until all issues ironed out */
-#include <string.h>
-#include <ctype.h>
-#include <stdlib.h>
-#include <assert.h>
 
 /* static function declarations */
 static int optSizing ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret );

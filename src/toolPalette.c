@@ -22,9 +22,6 @@
 **/
 
 #include "gnocl.h"
-#include <string.h>
-#include <assert.h>
-
 
 int gnoclOptDragDest ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret );
 

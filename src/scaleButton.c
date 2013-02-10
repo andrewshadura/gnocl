@@ -22,8 +22,6 @@
 **/
 
 #include "gnocl.h"
-#include <string.h>
-#include <assert.h>
 
 static const int textIdx = 0;
 static const int iconsIdx = 1;

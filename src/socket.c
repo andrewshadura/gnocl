@@ -21,12 +21,6 @@
 \page page_socket gnocl::socket
 \htmlinclude socket.html
 **/
-/*
-#include "gnocl.h"
-#include <gdk/gdkx.h>
-#include <string.h>
-#include <assert.h>
-*/
 
 #include "gnocl.h"
 #ifdef WIN32  /* native MS */
@@ -36,10 +30,6 @@
 #endif
 #include <string.h>
 #include <assert.h>
-
-
-
-
 
 /***v* socket/socketOptions
  * AUTHOR

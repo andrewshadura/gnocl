@@ -11,8 +11,6 @@
 
 #include "gnocl.h"
 #include <gdk/gdkkeysyms.h>
-#include <string.h>
-#include <assert.h>
 
 /*
     The Widget implementation has a number of empty entries within its

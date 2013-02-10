@@ -10,8 +10,6 @@ fixed.c
 
 
 #include "gnocl.h"
-#include <string.h>
-#include <assert.h>
 
 /* function declarations */
 static int gnoclOptRange ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret );

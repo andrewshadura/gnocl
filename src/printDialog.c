@@ -15,11 +15,7 @@
 \endverbatim
 **/
 
-
 #include "gnocl.h"
-#include "string.h"
-#include <assert.h>
-#include <gtk-unix-print-2.0/gtk/gtkprinter.h>
 
 /* static declarations */
 static int gnoclOptPageSetup ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret );

@@ -43,9 +43,6 @@
 **/
 
 #include "gnocl.h"
-#include <string.h>
-#include <assert.h>
-
 
 /*
 	Register new window, and return with

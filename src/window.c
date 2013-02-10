@@ -105,12 +105,6 @@
 **/
 
 #include "gnocl.h"
-#include <gdk/gdk.h>    /* wjg 05/07/08 */
-#include <string.h>
-#include <assert.h>
-#include <stdlib.h>     /* atof */
-
-//#include <glade/glade.h>
 
 /*! \page page3 Glade GUI Description Files Loader
   \section sec Glade File Load Command.

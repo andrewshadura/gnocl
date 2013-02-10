@@ -6,8 +6,7 @@
 
 #include "gnocl.h"
 #include "gnoclparams.h"
-#include <string.h>
-#include <assert.h>
+
 
 AccGrpParams *gnoclGetAccGrpFromName ( const char *id, Tcl_Interp *interp );
 const char *gnoclGetNameFromAccGrp ( GtkAccelGroup *group );

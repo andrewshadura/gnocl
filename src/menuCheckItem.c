@@ -34,14 +34,9 @@
 **/
 
 #include "gnocl.h"
-#include <string.h>
-#include <assert.h>
 
-/****v* menuCheckItem/checkOptions
- * AUTHOR
- *	PGB
- * SOURCE
- */
+/**
+**/
 static GnoclOption checkOptions[] =
 {
 	{ "-text", GNOCL_OBJ, NULL },           /* 0 */

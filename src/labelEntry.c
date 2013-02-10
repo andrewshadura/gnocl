@@ -12,6 +12,9 @@ date	20012
 /**
 \par Modification History
 \verbatim
+	2013-02: new options
+				-child
+				-onIconPress
 	2013-01: new options
 				-primaryIcon
 				-secondaryIcon
@@ -40,12 +43,7 @@ date	20012
 
 #include "gnocl.h"
 #include "gnoclparams.h"
-#include <string.h>
-#include <assert.h>
-#include <gdk/gdkkeysyms.h>
 
-#include <glib.h>
-#include <glib/gprintf.h>
 /*
 #include "gnocl.h"
 #include "string.h"
@@ -64,12 +62,14 @@ typedef struct
 	GtkBox	    *hbox;
 	GtkWidget   *label;
 	GtkWidget   *entry;
+	GtkWidget   *child;
 	char        *variable;
 	char        *focus;
 	char        *onChanged;
 	int         inSetVar;
 	gboolean	check;
 	char		*data;
+	GtkWidget 	*align;
 } LabelEntryParams;
 
 static const char *keyvalToString ( guint keyval );
@@ -105,6 +105,8 @@ static const int dataIdx = 22;
 static const int primaryIconIdx = 23;
 static const int secondaryIconIdx = 24;
 static const int baseColorIdx = 25;
+static const int childIdx = 26;
+static const int onIconPressIdx = 27;
 
 //static enum  optsIdx { CollapsedIdx, EllipsizeIdx, ReliefIdx, LabelIdx, LabelWidgetIdx };
 
@@ -135,19 +137,15 @@ static GnoclOption labelEntryOptions[] =
 	{ "-entryWidthGroup", GNOCL_OBJ, NULL },   // 17  ***** IS THIS NECESSARY? *****
 	{ "-sensitive", GNOCL_BOOL, NULL },		   // 18
 	{ "-editable", GNOCL_BOOL, NULL },		   // 19
-	{ "-baseFont", GNOCL_STRING, NULL },		  // 20
-
+	{ "-baseFont", GNOCL_STRING, NULL },	   // 20
 	{ "-useMarkup", GNOCL_BOOL, NULL},		   // 21 ***** not working properly *****
 
-
-	//{ "-widthChars", GNOCL_INT, "width-chars" },
-	//{ "-data", GNOCL_OBJ, "", gnoclOptData }, // 22
-	{ "-data", GNOCL_STRING, NULL }, // 22
-
-	{ "-primaryIcon", GNOCL_OBJ, NULL },  //23
-	{ "-secondaryIcon", GNOCL_OBJ, NULL },  //24
-
-	{ "-baseColor", GNOCL_STRING,  NULL }, // 25
+	{ "-data", GNOCL_STRING, NULL }, 		   // 22
+	{ "-primaryIcon", GNOCL_OBJ, NULL },       // 23
+	{ "-secondaryIcon", GNOCL_OBJ, NULL },     // 24
+	{ "-baseColor", GNOCL_STRING,  NULL },     // 25
+	{ "-child", GNOCL_STRING, NULL },          // 26
+	{ "-onIconPress",  GNOCL_OBJ, NULL },      // 27
 
 	{ NULL },
 };
@@ -317,9 +315,9 @@ static int setVariable ( LabelEntryParams *para, const char *val )
 **/
 static int setVal ( GtkEntry *entry, const char *txt )
 {
-
+#ifdef DEBUG_labelEntry
 	g_print ( "%s\n", __FUNCTION__ );
-
+#endif
 
 	int blocked = g_signal_handlers_block_matched ( G_OBJECT ( entry ), G_SIGNAL_MATCH_FUNC, 0, 0, NULL, ( gpointer * ) changedFunc, NULL );
 	gtk_entry_set_text ( entry, txt );
@@ -346,6 +344,57 @@ static void changedFunc ( GtkWidget *widget, gpointer data )
 	doCommand ( para, val, 1 );
 }
 
+
+/**
+\brief	Handle entry icon signals.
+\note	Copied from parseOptions.c
+\todo	Share parseptions code.
+**/
+static void doOnIconPress ( GtkWidget *entry, GtkEntryIconPosition icon_pos, GdkEvent  *event, gpointer user_data )
+{
+#ifdef DEBUG_PARSEOPTIONS
+	g_print ( "%s %d\n", __FUNCTION__, icon_pos );
+#endif
+	GnoclCommandData *cs = ( GnoclCommandData * ) user_data;
+
+	GnoclPercSubst ps[] =
+	{
+		{ 'w', GNOCL_STRING },  /* widget */
+		{ 'b', GNOCL_STRING },
+		{ 'p', GNOCL_STRING },  /* icon position */
+		{ 'g', GNOCL_STRING },  /* glade name */
+		{ 't', GNOCL_STRING },  /* glade name */
+		{ 0 }
+	};
+
+	ps[0].val.str = gnoclGetNameFromWidget ( entry );
+
+	switch ( event->type )
+	{
+		case GDK_BUTTON_PRESS:   ps[1].val.str = "buttonPress"; break;
+		case GDK_2BUTTON_PRESS:  ps[1].val.str = "button2Press"; break;
+		case GDK_3BUTTON_PRESS:  ps[1].val.str = "button3Press"; break;
+		case GDK_BUTTON_RELEASE: ps[1].val.str = "buttonRelease"; break;
+		default:  assert ( 0 ); break;
+	}
+
+	if ( icon_pos )
+	{
+		ps[2].val.str = "secondary";
+	}
+
+	else
+	{
+		ps[2].val.str = "primary";
+	}
+
+
+	ps[3].val.str = gtk_widget_get_name ( GTK_WIDGET ( entry ) );
+
+	ps[4].val.str = gtk_entry_get_text  ( GTK_WIDGET ( entry ) );
+
+	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
+}
 
 /**
 \brief
@@ -378,8 +427,9 @@ static int doCommand ( LabelEntryParams *para, const char *val, int background )
 **/
 static int configure ( Tcl_Interp *interp, LabelEntryParams *para, GnoclOption options[] )
 {
+#ifdef DEBUG_labelEntry
 	g_print ( "%s\n", __FUNCTION__ );
-
+#endif
 
 	gnoclAttachOptCmdAndVar (
 		&options[onChangedIdx], &para->onChanged,
@@ -396,6 +446,28 @@ static int configure ( Tcl_Interp *interp, LabelEntryParams *para, GnoclOption o
 	GTK_STATE_INCONSISTENT,
 	GTK_STATE_FOCUSED
 	*/
+
+	if ( options[onIconPressIdx].status == GNOCL_STATUS_CHANGED )
+	{
+#ifdef DEBUG_labelEntry
+		g_print ( "%s onActivateIdx\n", __FUNCTION__ );
+#endif
+		gnoclConnectOptCmd ( interp, G_OBJECT ( para->entry ), "icon-press", G_CALLBACK ( doOnIconPress ), &options[onIconPressIdx], NULL, NULL );
+
+	}
+
+	if ( options[childIdx].status == GNOCL_STATUS_CHANGED )
+	{
+		para->child = gnoclGetWidgetFromName ( options[childIdx].val.str, interp  );
+
+		if ( para->child != NULL )
+		{
+			gtk_box_pack_end ( para->hbox, para->child, 0, 0, 0 );
+			// enforce placement at the end of the list
+			gtk_box_reorder_child  ( para->hbox, para->child, GTK_PACK_END );
+		}
+	}
+
 	if ( options[baseColorIdx].status == GNOCL_STATUS_CHANGED )
 	{
 		GdkColor color;
@@ -411,24 +483,27 @@ static int configure ( Tcl_Interp *interp, LabelEntryParams *para, GnoclOption o
 
 	if ( options[onActivateIdx].status == GNOCL_STATUS_CHANGED )
 	{
+#ifdef DEBUG_labelEntry
 		g_print ( "%s onActivateIdx\n", __FUNCTION__ );
-
+#endif
 		gnoclConnectOptCmd ( interp, G_OBJECT ( para->entry ), "activate", G_CALLBACK ( doOnActivate ), &options[onActivateIdx], NULL, NULL );
 
 	}
 
 	if ( options[onKeyPressIdx].status == GNOCL_STATUS_CHANGED )
 	{
+#ifdef DEBUG_labelEntry
 		g_print ( "%s onKeyPressIdx\n", __FUNCTION__ );
-
+#endif
 		gnoclConnectOptCmd ( interp, G_OBJECT ( para->entry ), "key-press-event", G_CALLBACK ( doOnKey ), &options[onKeyPressIdx], NULL, NULL );
 
 	}
 
 	if ( options[onKeyReleaseIdx].status == GNOCL_STATUS_CHANGED )
 	{
+#ifdef DEBUG_labelEntry
 		g_print ( "%s onKeyReleaseIdx\n", __FUNCTION__ );
-
+#endif
 		gnoclConnectOptCmd ( interp, G_OBJECT ( para->entry ), "key-release-event", G_CALLBACK ( doOnKey ), &options[onKeyReleaseIdx], NULL, NULL );
 
 	}
@@ -490,8 +565,9 @@ static int configure ( Tcl_Interp *interp, LabelEntryParams *para, GnoclOption o
 
 	if ( options[spacingIdx].status == GNOCL_STATUS_CHANGED )
 	{
+#ifdef DEBUG_labelEntry
 		g_print ( "%s spacingIdx\n", __FUNCTION__ );
-
+#endif
 		gint spacing = options[spacingIdx].val.i;
 
 		//g_object_set ( G_OBJECT(para->hbox),"border-width", pad, NULL );
@@ -500,14 +576,18 @@ static int configure ( Tcl_Interp *interp, LabelEntryParams *para, GnoclOption o
 
 	if ( options[textIdx].status == GNOCL_STATUS_CHANGED )
 	{
+#ifdef DEBUG_labelEntry
 		g_print ( "%s textIdx\n", __FUNCTION__ );
+#endif
 		char *str = options[textIdx].val.str;
 		gtk_label_set_text ( para->label, str );
 	}
 
 	if ( options[valueIdx].status == GNOCL_STATUS_CHANGED )
 	{
+#ifdef DEBUG_labelEntry
 		g_print ( "%s valueIdx\n", __FUNCTION__ );
+#endif
 		char *str = options[valueIdx].val.str;
 		gtk_entry_set_text ( para->entry, str );
 	}
@@ -526,15 +606,18 @@ static int configure ( Tcl_Interp *interp, LabelEntryParams *para, GnoclOption o
 
 	if ( options[alignIdx].status == GNOCL_STATUS_CHANGED )
 	{
+#ifdef DEBUG_labelEntry
 		g_print ( "%s alignIdx\n", __FUNCTION__ );
-
+#endif
 		//Tcl_Obj *ret =NULL;
 		//gnoclOptBothAlign ( interp, &options[alignIdx], para->label, &ret );
 	}
 
 	if ( options[widthCharsIdx].status == GNOCL_STATUS_CHANGED )
 	{
+#ifdef DEBUG_labelEntry
 		g_print ( "%s widthCharsIdx\n", __FUNCTION__ );
+#endif
 		gint n_chars = options[widthCharsIdx].val.i;
 		gtk_label_set_width_chars ( para->label, n_chars );
 	}
@@ -792,9 +875,9 @@ int labelEntryFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * co
 			{
 				gint idx2;
 
+#ifdef DEBUG_labelEntry
 				g_print ( "CgetIdx 1, %s\n", Tcl_GetString ( objv[2] ) );
-				//getIdx ( labelEntryOptions, Tcl_GetString(objv[2]), &idx2 );
-				g_print ( "CgetIdx 2\n" );
+#endif
 				cget ( interp, para, labelEntryOptions, 22 );
 			}
 	}
@@ -849,6 +932,7 @@ int gnoclLabelEntryCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj 
 	para->interp = interp;
 	para->variable = NULL;
 	para->onChanged = NULL;
+	para->child = NULL;
 	para->inSetVar = 0;
 
 	int needAlign = 0;
@@ -865,6 +949,7 @@ int gnoclLabelEntryCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj 
 	if ( needAlign )
 	{
 		GtkWidget *align = gtk_alignment_new ( 1, 0, 1, 0 );
+		para->align = align;
 		gtk_container_add ( align, para->label );
 		gtk_container_add ( para->hbox, align );
 	}

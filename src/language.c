@@ -3,8 +3,6 @@
 **/
 
 #include "gnocl.h"
-#include <string.h>
-#include <assert.h>
 
 int getLanguage ( gchar *str )
 {

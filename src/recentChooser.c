@@ -16,15 +16,10 @@
  \endverbatim
 **/
 
-
 #include "gnocl.h"
-#include <string.h>
-#include <assert.h>
 
 static int gnoclOptOnSelectionChanged ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret );
 static int gnoclOptOnItemActivated ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret );
-
-
 
 /*
   "filter"                   GtkRecentFilter*      : Read / Write

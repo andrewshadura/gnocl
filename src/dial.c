@@ -9,8 +9,6 @@
 **/
 
 #include "gnocl.h"
-#include <string.h>
-#include <assert.h>
 #include "./dial/gtkdial.h"
 
 static GnoclOption dialOptions[] =

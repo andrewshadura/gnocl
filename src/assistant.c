@@ -12,8 +12,6 @@
 **/
 
 #include "gnocl.h"
-#include <string.h>
-#include <assert.h>
 
 /* temporary idx vars */
 

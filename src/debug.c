@@ -19,15 +19,13 @@
 */
 
 #include "gnocl.h"
-#include <string.h>
 #include <ctype.h>
 
 /**
 \brief
 \author     PGB
 **/
-int gnoclDebugCmd ( ClientData data, Tcl_Interp *interp,
-					int objc, Tcl_Obj * const objv[] )
+int gnoclDebugCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
 	static const char *cmd[] = { "breakpoint", NULL };
 	enum optIdx { BreakpointIdx };

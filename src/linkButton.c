@@ -15,8 +15,6 @@ GtkLinkButtonUriFunc gtk_link_button_set_uri_hook       (GtkLinkButtonUriFunc fu
 */
 
 #include "gnocl.h"
-#include <string.h>
-#include <assert.h>
 
 /**
 \page page_linkButton gnocl::linkButton

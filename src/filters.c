@@ -8,8 +8,6 @@
 
 
 #include "gnocl.h"
-#include <string.h>
-#include <assert.h>
 
 int filter_invert ( GdkPixbuf *pixbuf, gint x, gint y, gint w, gint h )
 {

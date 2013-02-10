@@ -17,8 +17,6 @@
 
 
 #include "gnocl.h"
-#include "string.h"
-#include <assert.h>
 
 static GtkPrintSettings *settings = NULL;
 static GtkPageSetup *page_setup = NULL;

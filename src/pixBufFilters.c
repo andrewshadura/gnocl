@@ -11,8 +11,6 @@
 
 #include "gnocl.h"
 #include "gnoclparams.h"
-#include <string.h>
-#include <assert.h>
 
 #define RADS(var) var * G_PI / 180
 

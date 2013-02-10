@@ -34,8 +34,6 @@
 
 #include "gnocl.h"
 #include "gnoclparams.h"
-#include <string.h>
-#include <assert.h>
 
 /**
 \page page_progressBar gnocl::progressBar

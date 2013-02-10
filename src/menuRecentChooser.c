@@ -15,12 +15,8 @@
 **/
 
 #include "gnocl.h"
-#include <string.h>
-#include <assert.h>
-
 
 static int gnoclOptOnSelectionDone ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret );
-
 
 static const int patternsIdx = 0;
 static const int sortIdx     = 1;

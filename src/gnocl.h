@@ -18,11 +18,19 @@
 **/
 
 #include "tcl.h"
+#include <glib.h>
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
+#include <glib/gprintf.h>
+#include <glade/glade.h>
+#include <gtk-unix-print-2.0/gtk/gtkprinter.h>
 
+#include <ctype.h>
+#include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include <assert.h>
+#include <math.h>
 
 /* set some padding values */
 #define GNOCL_PAD_TINY  2

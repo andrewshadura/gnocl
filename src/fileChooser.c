@@ -29,8 +29,7 @@
 
 #include "gnocl.h"
 #include "gnoclparams.h"
-#include <string.h>
-#include <assert.h>
+
 
 /* module function declarations */
 int gnoclOptCurrentName ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret );

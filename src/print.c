@@ -51,12 +51,9 @@ also:
 */
 
 #include "gnocl.h"
-#include <string.h>
-#include <stdio.h>
-#include <ctype.h>
-#include <glade/glade.h>
-#include <math.h>
-#include <assert.h>
+
+
+
 
 /* some default values */
 #define HEADER_HEIGHT 20.0

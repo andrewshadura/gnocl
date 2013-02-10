@@ -17,8 +17,6 @@
  */
 
 #include "gnocl.h"
-#include <string.h>
-#include <assert.h>
 
 /**
 \page page_separator gnocl::separator

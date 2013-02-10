@@ -29,12 +29,9 @@
  */
 
 #include "gnocl.h"
-#include <string.h>
-#include <assert.h>
 
 /* declarations */
 static int optStrv ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret );
-
 
 /**
 \brief
