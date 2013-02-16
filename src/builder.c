@@ -23,9 +23,6 @@
 #include "gnocl.h"
 #include "gnoclparams.h"
 
-#include <gdk/gdk.h>
-#include <glade/glade.h>
-
 /* these need to be global so that they can be accessed usind other builder empowered modules */
 static char *GtkTypes[] =
 {

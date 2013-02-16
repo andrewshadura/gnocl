@@ -650,6 +650,8 @@ static GnoclCmd commands[] =
 	/* non-gtk widgets */
 	{ "spinner", gnoclSpinnerCmd },
 	{ "dial", gnoclDialCmd },
+	{ "level", gnoclLevelCmd },
+	{ "tickerTape", gnoclTickerTapeCmd },
 
 	/* recent manager */
 	{ "recentManager", gnoclRecentManagerCmd},
@@ -686,6 +688,7 @@ static GnoclCmd commands[] =
 	{ "vBox", gnoclVBoxCmd },
 	{ "fixed", gnoclFixedCmd },
 	{ "checkButton", gnoclCheckButtonCmd },
+//	{ "clock", gnoclClockCmd },
 	{ "colorSelection", gnoclColorSelectionCmd },
 	{ "colorSelectionDialog", gnoclColorSelectionDialogCmd },
 	{ "colorWheel", gnoclColorWheelCmd },
@@ -697,7 +700,6 @@ static GnoclCmd commands[] =
 	{ "fontSelection", gnoclFontSelectionCmd },
 	{ "image", gnoclImageCmd },
 	{ "label", gnoclLabelCmd },
-	{ "tickerTape", gnoclTickerTapeCmd },
 	{ "list", gnoclListCmd },
 	{ "listStore", gnoclListCmd },
 	{ "menu", gnoclMenuCmd },

@@ -72,6 +72,8 @@ GTK_OBJ := \
 	labelEntry.o \
 	language.o \
 	layout.o \
+	./level/gtklevel.o \
+	level.o \
 	linkButton.o \
 	keyfile.o \
 	menu.o \

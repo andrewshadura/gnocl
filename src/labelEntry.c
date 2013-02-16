@@ -7,6 +7,7 @@ date	20012
 \page page_labelEntry gnocl::labelEntry
 \htmlinclude labelEntry.html
 \note
+\todo	-entryWidthGroup	not working as expected.
 **/
 
 /**
@@ -15,6 +16,7 @@ date	20012
 	2013-02: new options
 				-child
 				-onIconPress
+				-onIconRelease
 	2013-01: new options
 				-primaryIcon
 				-secondaryIcon
@@ -107,6 +109,7 @@ static const int secondaryIconIdx = 24;
 static const int baseColorIdx = 25;
 static const int childIdx = 26;
 static const int onIconPressIdx = 27;
+static const int onIconReleaseIdx = 28;
 
 //static enum  optsIdx { CollapsedIdx, EllipsizeIdx, ReliefIdx, LabelIdx, LabelWidgetIdx };
 
@@ -135,6 +138,7 @@ static GnoclOption labelEntryOptions[] =
 	{ "-onKeyRelease", GNOCL_OBJ, NULL},       // 15
 	{ "-hasFocus", GNOCL_BOOL, NULL },         // 16
 	{ "-entryWidthGroup", GNOCL_OBJ, NULL },   // 17  ***** IS THIS NECESSARY? *****
+	//{ "-entryWidthGroup", GNOCL_OBJ, "w", gnoclOptSizeGroup },
 	{ "-sensitive", GNOCL_BOOL, NULL },		   // 18
 	{ "-editable", GNOCL_BOOL, NULL },		   // 19
 	{ "-baseFont", GNOCL_STRING, NULL },	   // 20
@@ -146,6 +150,7 @@ static GnoclOption labelEntryOptions[] =
 	{ "-baseColor", GNOCL_STRING,  NULL },     // 25
 	{ "-child", GNOCL_STRING, NULL },          // 26
 	{ "-onIconPress",  GNOCL_OBJ, NULL },      // 27
+	{ "-onIconRelease",  GNOCL_OBJ, NULL },  // 27
 
 	{ NULL },
 };
@@ -160,7 +165,6 @@ static GnoclOption labelEntryOptions[] =
 \**/
 static void doOnActivate ( GtkEntry *entry, gpointer user_data )
 {
-
 
 	GnoclCommandData *cs = ( GnoclCommandData * ) user_data;
 	//GtkTextIter *iter;
@@ -315,7 +319,7 @@ static int setVariable ( LabelEntryParams *para, const char *val )
 **/
 static int setVal ( GtkEntry *entry, const char *txt )
 {
-#ifdef DEBUG_labelEntry
+#ifdef DEBUG_LABELENTRY
 	g_print ( "%s\n", __FUNCTION__ );
 #endif
 
@@ -427,7 +431,7 @@ static int doCommand ( LabelEntryParams *para, const char *val, int background )
 **/
 static int configure ( Tcl_Interp *interp, LabelEntryParams *para, GnoclOption options[] )
 {
-#ifdef DEBUG_labelEntry
+#ifdef DEBUG_LABELENTRY
 	g_print ( "%s\n", __FUNCTION__ );
 #endif
 
@@ -449,10 +453,13 @@ static int configure ( Tcl_Interp *interp, LabelEntryParams *para, GnoclOption o
 
 	if ( options[onIconPressIdx].status == GNOCL_STATUS_CHANGED )
 	{
-#ifdef DEBUG_labelEntry
-		g_print ( "%s onActivateIdx\n", __FUNCTION__ );
-#endif
 		gnoclConnectOptCmd ( interp, G_OBJECT ( para->entry ), "icon-press", G_CALLBACK ( doOnIconPress ), &options[onIconPressIdx], NULL, NULL );
+
+	}
+
+	if ( options[onIconReleaseIdx].status == GNOCL_STATUS_CHANGED )
+	{
+		gnoclConnectOptCmd ( interp, G_OBJECT ( para->entry ), "icon-release", G_CALLBACK ( doOnIconPress ), &options[onIconReleaseIdx], NULL, NULL );
 
 	}
 
@@ -483,7 +490,7 @@ static int configure ( Tcl_Interp *interp, LabelEntryParams *para, GnoclOption o
 
 	if ( options[onActivateIdx].status == GNOCL_STATUS_CHANGED )
 	{
-#ifdef DEBUG_labelEntry
+#ifdef DEBUG_LABELENTRY
 		g_print ( "%s onActivateIdx\n", __FUNCTION__ );
 #endif
 		gnoclConnectOptCmd ( interp, G_OBJECT ( para->entry ), "activate", G_CALLBACK ( doOnActivate ), &options[onActivateIdx], NULL, NULL );
@@ -492,7 +499,7 @@ static int configure ( Tcl_Interp *interp, LabelEntryParams *para, GnoclOption o
 
 	if ( options[onKeyPressIdx].status == GNOCL_STATUS_CHANGED )
 	{
-#ifdef DEBUG_labelEntry
+#ifdef DEBUG_LABELENTRY
 		g_print ( "%s onKeyPressIdx\n", __FUNCTION__ );
 #endif
 		gnoclConnectOptCmd ( interp, G_OBJECT ( para->entry ), "key-press-event", G_CALLBACK ( doOnKey ), &options[onKeyPressIdx], NULL, NULL );
@@ -501,7 +508,7 @@ static int configure ( Tcl_Interp *interp, LabelEntryParams *para, GnoclOption o
 
 	if ( options[onKeyReleaseIdx].status == GNOCL_STATUS_CHANGED )
 	{
-#ifdef DEBUG_labelEntry
+#ifdef DEBUG_LABELENTRY
 		g_print ( "%s onKeyReleaseIdx\n", __FUNCTION__ );
 #endif
 		gnoclConnectOptCmd ( interp, G_OBJECT ( para->entry ), "key-release-event", G_CALLBACK ( doOnKey ), &options[onKeyReleaseIdx], NULL, NULL );
@@ -565,7 +572,7 @@ static int configure ( Tcl_Interp *interp, LabelEntryParams *para, GnoclOption o
 
 	if ( options[spacingIdx].status == GNOCL_STATUS_CHANGED )
 	{
-#ifdef DEBUG_labelEntry
+#ifdef DEBUG_LABELENTRY
 		g_print ( "%s spacingIdx\n", __FUNCTION__ );
 #endif
 		gint spacing = options[spacingIdx].val.i;
@@ -576,7 +583,7 @@ static int configure ( Tcl_Interp *interp, LabelEntryParams *para, GnoclOption o
 
 	if ( options[textIdx].status == GNOCL_STATUS_CHANGED )
 	{
-#ifdef DEBUG_labelEntry
+#ifdef DEBUG_LABELENTRY
 		g_print ( "%s textIdx\n", __FUNCTION__ );
 #endif
 		char *str = options[textIdx].val.str;
@@ -585,7 +592,7 @@ static int configure ( Tcl_Interp *interp, LabelEntryParams *para, GnoclOption o
 
 	if ( options[valueIdx].status == GNOCL_STATUS_CHANGED )
 	{
-#ifdef DEBUG_labelEntry
+#ifdef DEBUG_LABELENTRY
 		g_print ( "%s valueIdx\n", __FUNCTION__ );
 #endif
 		char *str = options[valueIdx].val.str;
@@ -597,16 +604,21 @@ static int configure ( Tcl_Interp *interp, LabelEntryParams *para, GnoclOption o
 		gnoclOptWidthGroup ( interp, &options[labelWidthGroupIdx], para->label, NULL );
 	}
 
+#if 1
+
 	if ( options[entryWidthGroupIdx].status == GNOCL_STATUS_CHANGED )
 	{
-		gnoclOptWidthGroup ( interp, &options[labelWidthGroupIdx], para->entry, NULL );
+#ifdef DEBUG_LABELENTRY
+		g_print ( "%s entryWidthGroupIdx = \n", __FUNCTION__ );
+#endif
+		gnoclOptWidthGroup ( interp, &options[entryWidthGroupIdx], para->entry, NULL );
 	}
 
-
+#endif
 
 	if ( options[alignIdx].status == GNOCL_STATUS_CHANGED )
 	{
-#ifdef DEBUG_labelEntry
+#ifdef DEBUG_LABELENTRY
 		g_print ( "%s alignIdx\n", __FUNCTION__ );
 #endif
 		//Tcl_Obj *ret =NULL;
@@ -615,7 +627,7 @@ static int configure ( Tcl_Interp *interp, LabelEntryParams *para, GnoclOption o
 
 	if ( options[widthCharsIdx].status == GNOCL_STATUS_CHANGED )
 	{
-#ifdef DEBUG_labelEntry
+#ifdef DEBUG_LABELENTRY
 		g_print ( "%s widthCharsIdx\n", __FUNCTION__ );
 #endif
 		gint n_chars = options[widthCharsIdx].val.i;
@@ -624,7 +636,9 @@ static int configure ( Tcl_Interp *interp, LabelEntryParams *para, GnoclOption o
 
 	if ( options[entryWidthCharsIdx].status == GNOCL_STATUS_CHANGED )
 	{
+#ifdef DEBUG_LABELENTRY
 		g_print ( "%s entryWidthCharsIdx\n", __FUNCTION__ );
+#endif
 		gint n_chars = options[entryWidthCharsIdx].val.i;
 		gtk_entry_set_width_chars ( para->entry, n_chars );
 	}
@@ -632,8 +646,9 @@ static int configure ( Tcl_Interp *interp, LabelEntryParams *para, GnoclOption o
 
 	if ( options[tooltipIdx].status == GNOCL_STATUS_CHANGED )
 	{
+#ifdef DEBUG_LABELENTRY
 		g_print ( "%s tooltipIdx\n", __FUNCTION__ );
-
+#endif
 		char *txt = options[tooltipIdx].val.str;
 		gtk_widget_set_tooltip_text ( GTK_WIDGET ( para->label ), txt );
 
@@ -645,7 +660,9 @@ static int configure ( Tcl_Interp *interp, LabelEntryParams *para, GnoclOption o
 
 	if ( options[labelBaseFontIdx].status == GNOCL_STATUS_CHANGED )
 	{
+#ifdef DEBUG_LABELENTRY
 		g_print ( "%s labelBaseFontIdx\n", __FUNCTION__ );
+#endif
 		gchar *fnt = options[labelBaseFontIdx].val.str;
 
 		PangoFontDescription *font_desc = pango_font_description_from_string ( fnt );
@@ -653,12 +670,11 @@ static int configure ( Tcl_Interp *interp, LabelEntryParams *para, GnoclOption o
 		pango_font_description_free ( font_desc );
 	}
 
-
-
-
 	if ( options[baseFontIdx].status == GNOCL_STATUS_CHANGED )
 	{
+#ifdef DEBUG_LABELENTRY
 		g_print ( "%s baseFontIdx\n", __FUNCTION__ );
+#endif
 		gchar *fnt = options[baseFontIdx].val.str;
 
 		PangoFontDescription *font_desc = pango_font_description_from_string ( fnt );
@@ -791,7 +807,7 @@ static int configure ( Tcl_Interp *interp, LabelEntryParams *para, GnoclOption o
 **/
 static int cget ( Tcl_Interp *interp, LabelEntryParams *para, GnoclOption options[], int idx )
 {
-#ifdef DEBUG_labelEntry
+#ifdef DEBUG_LABELENTRY
 	g_print ( "%s %s %d\n", __FUNCTION__, options[idx], idx );
 #endif
 
@@ -818,8 +834,8 @@ static int cget ( Tcl_Interp *interp, LabelEntryParams *para, GnoclOption option
 **/
 int labelEntryFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-#ifdef DEBUG_labelEntry
-	g_print ( "%s\n", __FUNCTION__, );
+#ifdef DEBUG_LABELENTRY
+	g_print ( "%s\n", __FUNCTION__ );
 #endif
 
 	LabelEntryParams *para = ( LabelEntryParams * ) data;
@@ -875,7 +891,7 @@ int labelEntryFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * co
 			{
 				gint idx2;
 
-#ifdef DEBUG_labelEntry
+#ifdef DEBUG_LABELENTRY
 				g_print ( "CgetIdx 1, %s\n", Tcl_GetString ( objv[2] ) );
 #endif
 				cget ( interp, para, labelEntryOptions, 22 );
@@ -891,7 +907,7 @@ int labelEntryFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * co
 **/
 static void destroyFunc ( GtkWidget *widget, gpointer data )
 {
-#ifdef DEBUG_labelentry
+#ifdef DEBUG_LABELENTRY
 	printf ( "%s\n", __FUNCTION__ );
 #endif
 
@@ -966,19 +982,24 @@ int gnoclLabelEntryCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj 
 
 	gtk_widget_show_all ( GTK_WIDGET ( para->hbox ) );
 
+#ifdef DEBUG_LABELENTRY
 	g_print ( "%s 1\n", __FUNCTION__ );
+#endif
 
 	if ( ret == TCL_OK )
 	{
 		ret = configure ( interp, para, labelEntryOptions );
 	}
 
+#ifdef DEBUG_LABELENTRY
 	g_print ( "%s 2\n", __FUNCTION__ );
+#endif
 
 	gnoclClearOptions ( labelEntryOptions );
 
+#ifdef DEBUG_LABELENTRY
 	g_print ( "%s 3\n", __FUNCTION__ );
-
+#endif
 	/* STEP 3)  -show the widget */
 
 	if ( ret != TCL_OK )
@@ -987,20 +1008,31 @@ int gnoclLabelEntryCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj 
 		return TCL_ERROR;
 	}
 
+#ifdef DEBUG_LABELENTRY
 	g_print ( "%s 4\n", __FUNCTION__ );
+#endif
 
 	/* STEP 4)  -everything has worked, register the widget with the Tcl interpretor. */
 	para->name = gnoclGetAutoWidgetId();
 	g_signal_connect ( G_OBJECT ( para->hbox ), "destroy", G_CALLBACK ( destroyFunc ), para );
 
+#ifdef DEBUG_LABELENTRY
 	g_print ( "%s 5\n", __FUNCTION__ );
+#endif
+
 	gnoclMemNameAndWidget ( para->name, GTK_WIDGET ( para->hbox ) );
 	Tcl_CreateObjCommand ( interp, para->name, labelEntryFunc, para, NULL );
 
+#ifdef DEBUG_LABELENTRY
 	g_print ( "%s 6\n", __FUNCTION__ );
+#endif
+
 	Tcl_SetObjResult ( interp, Tcl_NewStringObj ( para->name, -1 ) );
 
+#ifdef DEBUG_LABELENTRY
 	g_print ( "%s 7\n", __FUNCTION__ );
+#endif
+
 	return TCL_OK;
 
 }

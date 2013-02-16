@@ -440,7 +440,8 @@ int gnoclArrowButtonCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj
 
 int gnoclDialCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] );
 int gnoclSpinnerCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] );
-
+int gnoclLevelCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] );
+//int gnoclSpinnerCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] );
 
 /*
  */
@@ -689,6 +690,7 @@ Tcl_ObjCmdProc gnoclStatusBarCmd;
 Tcl_ObjCmdProc gnoclTableCmd;
 Tcl_ObjCmdProc gnoclTextCmd;
 Tcl_ObjCmdProc gnoclTextViewCmd;
+//Tcl_ObjCmdProc gnoclClockCmd;
 Tcl_ObjCmdProc gnoclTickerTapeCmd;
 Tcl_ObjCmdProc gnoclToolBarCmd;
 Tcl_ObjCmdProc gnoclTreeCmd;

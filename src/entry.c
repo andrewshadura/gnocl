@@ -57,8 +57,6 @@
 
 #include "gnocl.h"
 #include "gnoclparams.h"
-//#include "./entryUndo/undo_manager.h"
-
 
 /* function declarations */
 static int gnoclOptCompletion ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret );

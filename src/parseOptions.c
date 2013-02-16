@@ -26,7 +26,6 @@
 #include "gnocl.h"
 #include "gnoclparams.h"
 
-
 /* global used to store a pointer to the text/entry popupmenu */
 GtkMenu *popupMenu;
 
@@ -1568,8 +1567,7 @@ int gnoclOptSizeGroup ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_
 \brief
 \author
 \date
-\note
-	used in megawigets such as labelEntry
+\note	used in megawigets such as labelEntry
 **/
 int gnoclOptWidthGroup ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {

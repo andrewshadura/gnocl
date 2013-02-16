@@ -163,9 +163,7 @@ gtk_dial_get_adjustment ( GtkDial *dial )
 	return dial->adjustment;
 }
 
-void
-gtk_dial_set_update_policy ( GtkDial      *dial,
-							 GtkUpdateType  policy )
+void gtk_dial_set_update_policy ( GtkDial *dial, GtkUpdateType  policy )
 {
 	g_return_if_fail ( dial != NULL );
 	g_return_if_fail ( GTK_IS_DIAL ( dial ) );
@@ -173,9 +171,7 @@ gtk_dial_set_update_policy ( GtkDial      *dial,
 	dial->policy = policy;
 }
 
-void
-gtk_dial_set_adjustment ( GtkDial      *dial,
-						  GtkAdjustment *adjustment )
+void gtk_dial_set_adjustment ( GtkDial *dial, GtkAdjustment *adjustment )
 {
 	g_return_if_fail ( dial != NULL );
 	g_return_if_fail ( GTK_IS_DIAL ( dial ) );
@@ -203,8 +199,7 @@ gtk_dial_set_adjustment ( GtkDial      *dial,
 	gtk_dial_update ( dial );
 }
 
-static void
-gtk_dial_realize ( GtkWidget *widget )
+static void gtk_dial_realize ( GtkWidget *widget )
 {
 	GtkDial *dial;
 	GdkWindowAttr attributes;
@@ -239,17 +234,13 @@ gtk_dial_realize ( GtkWidget *widget )
 	gtk_style_set_background ( widget->style, widget->window, GTK_STATE_ACTIVE );
 }
 
-static void
-gtk_dial_size_request ( GtkWidget      *widget,
-						GtkRequisition *requisition )
+static void gtk_dial_size_request ( GtkWidget *widget, GtkRequisition *requisition )
 {
 	requisition->width = DIAL_DEFAULT_SIZE;
 	requisition->height = DIAL_DEFAULT_SIZE;
 }
 
-static void
-gtk_dial_size_allocate ( GtkWidget     *widget,
-						 GtkAllocation *allocation )
+static void gtk_dial_size_allocate ( GtkWidget *widget, GtkAllocation *allocation )
 {
 	GtkDial *dial;
 
@@ -273,9 +264,7 @@ gtk_dial_size_allocate ( GtkWidget     *widget,
 	dial->pointer_width = dial->radius / 5;
 }
 
-static gboolean
-gtk_dial_expose ( GtkWidget      *widget,
-				  GdkEventExpose *event )
+static gboolean gtk_dial_expose ( GtkWidget *widget, GdkEventExpose *event )
 {
 	GtkDial *dial;
 	GdkPoint points[6];
