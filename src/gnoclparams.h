@@ -81,6 +81,7 @@ typedef struct
 	char              *textVariable;
 	char              *onChanged;
 	int               inSetVar;
+	gboolean          useMarkup;
 } TextParams;
 
 
@@ -343,3 +344,10 @@ typedef struct
 	Tcl_Interp *interp;
 } AccGrpParams;
 
+typedef struct
+{
+	GtkToolbar *toolBar;
+	GtkTextView *textView;
+	Tcl_Interp *interp;
+	char *name;
+} RichTextToolbarParams;

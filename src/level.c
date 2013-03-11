@@ -40,7 +40,7 @@ int levelFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const o
 {
 	static const char *cmds[] =
 	{
-		"delete", "configure", 
+		"delete", "configure",
 		"class", "set",
 		NULL
 	};
@@ -64,24 +64,24 @@ int levelFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const o
 
 		case SetIdx:
 			{
-			//g_print ("%s %s\n",__FUNCTION__,cmds[idx]);
+				//g_print ("%s %s\n",__FUNCTION__,cmds[idx]);
 				/* get value */
 				//Tcl_GetString ( objv[2] );
 				gint i;
-				Tcl_GetIntFromObj (interp, objv[2], &i);
+				Tcl_GetIntFromObj ( interp, objv[2], &i );
 				level->sel = i;
-				
-				GtkWidget *widget = GTK_WIDGET (level);  
-				
+
+				GtkWidget *widget = GTK_WIDGET ( level );
+
 				GdkRegion *region;
-				region = gdk_drawable_get_clip_region(widget->window);
-				gdk_window_invalidate_region(widget->window, region, TRUE);
-				
+				region = gdk_drawable_get_clip_region ( widget->window );
+				gdk_window_invalidate_region ( widget->window, region, TRUE );
+
 				//gtk_level_paint (level);
-				
+
 			}
 			break;
-			
+
 		case ClassIdx:
 			{
 				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "level", -1 ) );

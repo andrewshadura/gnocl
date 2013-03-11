@@ -102,6 +102,7 @@ GTK_OBJ := \
 	recentChooser.o \
 	recentChooserDialog.o \
 	recentManager.o \
+	richTextToolBar.o \
 	ruler.o \
 	scale.o \
 	scaleButton.o \

@@ -177,7 +177,7 @@ int gnoclClockCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * co
 
 	fd = pango_font_description_from_string ( "Monospace 30" );
 	clock = gtk_clock_new() ;
-	
+
 	gtk_widget_show ( GTK_WIDGET ( clock ) );
 
 	if ( 1 )

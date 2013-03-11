@@ -965,6 +965,7 @@ static int gnoclOptMarkupTags ( Tcl_Interp * interp, GnoclOption * opt, GObject 
 
 	else
 	{
+		return TCL_OK;
 		usemarkup = 1;
 		/* delete markup tags */
 	}
@@ -982,8 +983,8 @@ static int gnoclOptMarkupTags ( Tcl_Interp * interp, GnoclOption * opt, GObject 
 	gtk_text_buffer_create_tag ( buffer, "<s>", "strikethrough", 1, NULL );
 	gtk_text_buffer_create_tag ( buffer, "<u>", "underline", PANGO_UNDERLINE_SINGLE, NULL );
 	gtk_text_buffer_create_tag ( buffer, "<tt>", "font", "Monospace", NULL );
-	gtk_text_buffer_create_tag ( buffer, "<sub>", "rise", -8, "scale", PANGO_SCALE_XX_SMALL, NULL );
-	gtk_text_buffer_create_tag ( buffer, "<sup>", "rise",  8, "scale", PANGO_SCALE_XX_SMALL, NULL );
+	gtk_text_buffer_create_tag ( buffer, "<sub>", "scale", PANGO_SCALE_SMALL, "rise", -10, NULL );
+	gtk_text_buffer_create_tag ( buffer, "<sup>", "scale", PANGO_SCALE_SMALL, "rise",  +10, NULL );
 	gtk_text_buffer_create_tag ( buffer, "<small>", "scale", PANGO_SCALE_SMALL, NULL );
 	gtk_text_buffer_create_tag ( buffer, "<big>", "scale", PANGO_SCALE_LARGE, NULL );
 
@@ -4964,6 +4965,8 @@ int gnoclTextCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj *  co
 	para->textVariable = NULL;
 	para->onChanged = NULL;
 	para->inSetVar = 0;
+	para->useMarkup = FALSE;
+
 
 	if ( gnoclParseOptions ( interp, objc, objv, textOptions ) != TCL_OK )
 	{

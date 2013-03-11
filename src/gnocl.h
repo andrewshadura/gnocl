@@ -441,6 +441,11 @@ int gnoclArrowButtonCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj
 int gnoclDialCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] );
 int gnoclSpinnerCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] );
 int gnoclLevelCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] );
+
+int gnoclRichTextToolBarCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] );
+
+
+
 //int gnoclSpinnerCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] );
 
 /*

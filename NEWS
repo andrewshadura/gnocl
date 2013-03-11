@@ -1,24 +1,39 @@
+2013-03:
+	new widget
+		o gnocl::richTextToolBar
+			added core code for gnocl megawidget to supply complete 
+			buttons set for editing pango-markup in a gnocl::text widget
+			
 2013-02: 
+	new widget
+		o gnocl::level
+
 	gnocl::labelEntry
 		o new options
 			-child
 			-onIconPress
+	
 	removed duplicate #include statements from all source files
+
 2013-02:
 	added utility command toggling booleans, TRUE FALSE ON OFF 0 1
 		gnocl::toggle
+
 2013-01:
 	added alternative widget names
 		gnocl::hBox
 		gnocl::vBox
+		
 2013-01:
 	gnocl::winfo
 		o new subcommands
 			exists
+
 	gnocl::winfo
 		o new commands
 			hasGlobalFocus
 			isTopLevelFocus
+
 	gnocl::notebook
 		o new options			
     		-startWidget
@@ -31,12 +46,14 @@
 			-onPageAdded
 			-onPageRemoved
 			-onChangeCurrentPage			
+
 	gnocl::label
 		o new option 
 			-onDestroy
 2012-11:
 	new command
 		gnocl::tooltip
+
 	gnocl::text
 		o new tag option -data 
 		o fixed problems with:
@@ -44,16 +61,20 @@
 			tag get  subcommand
 		o added %r(ow) %c(col) substitution string parameters for 
 			-onMotion signal handler
+
 	gnocl::button
 		o new option
 			-align (currently only applies to button with icons)
+
 	new package
 		gnocl::builder & gnocl::glade moved into separate package
 		
 2012-10:
 	gnocl::window
 		o implemented cget -data
+
 	gnocl::entry
+
 	gnocl::text
 		o new option
 			-onDestroy
@@ -62,8 +83,10 @@
 	gnocl::text
 		cget -baseFont implemented
 		resetUndo
+
 	gnocl::button
 		switched to the use of ButtonParams
+
 	gnocl::tree
 	gnocl::list
 		o new option
@@ -81,11 +104,11 @@
 	gnocl::entry
 		o new substitution parameter
 			%d widget data
-		
+
 	gnocl::text
 		o new option
 			-variable
-			
+
 	gnocl::label
 		o new option
 			-resizable
@@ -145,7 +168,7 @@
 	new command
 		gnocl::setOpts
 			set blocks of variables or lists of '-' prefixed proc switches
-		
+	
 	gnocl::text
 		o implemented tag sub-command 'ranges'. 
 

@@ -644,6 +644,7 @@ typedef struct
 	Tcl_ObjCmdProc *proc;
 } GnoclCmd;
 
+
 static GnoclCmd commands[] =
 {
 
@@ -652,6 +653,7 @@ static GnoclCmd commands[] =
 	{ "dial", gnoclDialCmd },
 	{ "level", gnoclLevelCmd },
 	{ "tickerTape", gnoclTickerTapeCmd },
+	{ "richTextToolBar", gnoclRichTextToolBarCmd },
 
 	/* recent manager */
 	{ "recentManager", gnoclRecentManagerCmd},
