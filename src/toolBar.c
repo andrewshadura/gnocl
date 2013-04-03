@@ -1085,6 +1085,8 @@ static void buttonDestroyFunc ( GtkWidget *widget, gpointer data )
 			1) a pre-exisiting widget, or
 			2) a toolbar button with a stock item. (default)
 		This is a 'one-time' choice has to be made during widget creation.
+		Problems redisplaying toolitem widget icon after changing.
+		Resolved using call to gtk_widget_show (icon) after changing the icon.
 **/
 static int menuButtonConfigure ( Tcl_Interp *interp, ToolButtonMenuParams *para, GnoclOption options[] )
 {
@@ -1314,6 +1316,7 @@ static int addCheckButton ( GtkToolbar *toolbar, Tcl_Interp *interp, int objc, T
 	/* create base object then add icon and label widgets */
 	para->item = gtk_toggle_tool_button_new ();
 	gtk_tool_button_set_icon_widget ( para->item, icon );
+	gtk_widget_show ( icon );
 	gtk_tool_button_set_label ( para->item, txt );
 
 	//gtk_tool_button_set_label_widget (para->item, txt);
@@ -1527,6 +1530,7 @@ static int addRadioButton ( GtkToolbar *toolbar, Tcl_Interp *interp, int objc, T
 
 	/* use custom icon and label widgets */
 	gtk_tool_button_set_icon_widget ( para->widget, icon );
+	gtk_widget_show ( icon );
 	gtk_tool_button_set_label ( para->widget, txt );
 
 	/* add widget to toolbar and display */

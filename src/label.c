@@ -10,6 +10,12 @@
  *
  */
 
+/* KNOWN ISSUES
+ *
+ *  Gtk-CRITICAL **: IA__gtk_label_get_text: assertion `GTK_IS_LABEL (label)' failed
+ *
+ */
+
 /*
    History:
    2013-01: added -onDestroy
@@ -66,7 +72,7 @@ static GnoclOption labelOptions[] =
 	/* gnocl specific options */
 	{ "-textVariable", GNOCL_STRING, NULL },            /* 0 */
 	{ "-onChanged", GNOCL_STRING, NULL },               /* 1 */
-	{ "-value", GNOCL_STRING, NULL},
+	{ "-value", GNOCL_STRING, NULL},                    /* 2 */
 	{ "-text", GNOCL_STRING, NULL},                     /* 3 */
 	{ "-showCursor", GNOCL_BOOL, NULL},					/* 4 */
 	{ "-mnemonicWidget", GNOCL_STRING, NULL }, //6
@@ -244,7 +250,7 @@ static void changedFunc ( GtkWidget *widget, gpointer data )
 
 	LabelParams *para = ( LabelParams * ) data;
 
-	const char *val = gtk_label_get_text ( para->label );
+	const char *val = gtk_label_get_text ( GTK_LABEL ( para->label ) );
 	setTextVariable ( para, val );
 	doCommand ( para, val, 1 );
 }
@@ -300,7 +306,7 @@ static int configure ( Tcl_Interp *interp, LabelParams *para, GnoclOption option
 
 		if ( val == NULL )
 		{
-			val = gtk_label_get_text ( para->label );
+			val = gtk_label_get_text ( GTK_LABEL ( para->label ) );
 			setTextVariable ( para, val );
 		}
 
@@ -390,14 +396,14 @@ static int cget ( Tcl_Interp *interp, LabelParams *para, GnoclOption options[], 
 		obj = Tcl_NewStringObj ( para->textVariable, -1 );
 	}
 
-	else if ( idx == onChangedIdx )
+	if ( idx == onChangedIdx )
 	{
 		obj = Tcl_NewStringObj ( para->onChanged ? para->onChanged : "", -1 );
 	}
 
-	else if ( idx == textIdx )
+	if ( idx == textIdx )
 	{
-		obj = Tcl_NewStringObj ( gtk_label_get_text ( para->label ), -1 );
+		obj = Tcl_NewStringObj ( gtk_label_get_text ( GTK_LABEL ( para->label ) ), -1 );
 	}
 
 	if ( obj != NULL )
@@ -483,7 +489,7 @@ int labelFunc (	ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const o
 
 		case OnChangedIdx:
 			{
-				const char *txt = gtk_label_get_text ( para->label );
+				const char *txt = gtk_label_get_text ( GTK_LABEL ( para->label ) );
 
 				if ( objc != 2 )
 				{

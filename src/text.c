@@ -19,6 +19,7 @@
 */
 /*
    History:
+   2013-04: resolved problem with tag sub-command "ranges"
    2013-02: serialize command now returns buffer data as string
    2013-01: added subcommands isToplevelFocus and hasGlobalFocus
    2012-12	corrected -accepttTab to -acceptsTab
@@ -281,6 +282,9 @@ Tcl_Obj *getMarkUpString ( Tcl_Interp *interp, GtkTextBuffer *buffer, GtkTextIte
 #ifdef DEBUG_TEXT
 	g_print ( "%s usemarkup = %d\n", __FUNCTION__, usemarkup );
 #endif
+
+	g_print ( "%s\n", __FUNCTION__ );
+
 
 	Tcl_Obj *res;
 	//gchar *txt = NULL;
@@ -1003,6 +1007,8 @@ static int gnoclOptMarkupTags ( Tcl_Interp * interp, GnoclOption * opt, GObject 
 	gtk_text_buffer_create_tag ( buffer, "<span background='cyan'>",    "background", "cyan", NULL );
 	gtk_text_buffer_create_tag ( buffer, "<span background='magenta'>", "background", "magenta", NULL );
 	gtk_text_buffer_create_tag ( buffer, "<span background='yellow'>",  "background", "yellow", NULL );
+	gtk_text_buffer_create_tag ( buffer, "<span background='orange'>",  "background", "orange", NULL );
+
 
 	gtk_text_buffer_create_tag ( buffer, "<span background='black'>", "background", "black", NULL );
 	gtk_text_buffer_create_tag ( buffer, "<span background='gray'>",  "background", "gray", NULL );
@@ -2423,22 +2429,27 @@ int tagCmd ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, Tcl_Obj *  c
 
 					getIdx ( tagOpt, Tcl_GetString ( objv[4] ), &idx );
 
+//g_print ("here I am... idx = %d\n", idx);
+
 					switch ( idx )
 					{
 						case OnIdx:
 							{
 								/* build a list of tagOn changes */
-								tagList = gtk_text_iter_get_toggled_tags ( &iter, 1 );
+								//g_print ("get onTags\n");
+								tagList = gtk_text_iter_get_toggled_tags ( &iter, TRUE );
 							}
 							break;
 						case OffIdx:
 							{
 								/* build a list of tagOff changes */
-								tagList = gtk_text_iter_get_toggled_tags ( &iter, 0 );
+								//g_print ("get offTags\n");
+								tagList = gtk_text_iter_get_toggled_tags ( &iter, FALSE );
 							}
 							break;
 						default:
 							{
+								g_print ( "got everything!\n" );
 								tagList = gtk_text_iter_get_tags ( &iter );
 							}
 					}
@@ -3007,7 +3018,7 @@ static int cget ( Tcl_Interp * interp, GtkTextView * text, GnoclOption options[]
 /**
 \brief	Return a list of all occuranances of a named tag within a buffer
 **/
-static void gnoclGetTagRanges ( Tcl_Interp * interp, GtkTextBuffer * buffer, gchar * tagName )
+static void gnoclGetTagRanges ( Tcl_Interp *interp, GtkTextBuffer *buffer, gchar *tagName )
 {
 #ifdef DEBUG_TEXT
 	g_print ( "%s %s\n", __FUNCTION__, tagName );
@@ -3026,28 +3037,30 @@ static void gnoclGetTagRanges ( Tcl_Interp * interp, GtkTextBuffer * buffer, gch
 	static char s2[10];
 
 	gtk_text_buffer_get_start_iter ( buffer, &iter );
+
 	table = gtk_text_buffer_get_tag_table ( buffer );
 	tag = gtk_text_tag_table_lookup ( table, tagName );
 
-	gtk_text_iter_forward_to_tag_toggle ( &iter, tag );
-
-	row = gtk_text_iter_get_line ( &iter );
-	col = gtk_text_iter_get_line_offset ( &iter );
-
-	sprintf ( s2, "%d %d ", row, col );
-	strcat ( s1, s2 );
-
-
-	do
+	/* check to see if tag applied at start of text */
+	if ( gtk_text_iter_begins_tag ( &iter, tag ) == TRUE )
 	{
+
 		row = gtk_text_iter_get_line ( &iter );
 		col = gtk_text_iter_get_line_offset ( &iter );
 
 		sprintf ( s2, "%d %d ", row, col );
 		strcat ( s1, s2 );
 	}
-	while ( ( gtk_text_iter_forward_to_tag_toggle ( &iter, tag ) ) == TRUE );
 
+	while ( ( gtk_text_iter_forward_to_tag_toggle ( &iter, tag ) ) == TRUE )
+	{
+		row = gtk_text_iter_get_line ( &iter );
+		col = gtk_text_iter_get_line_offset ( &iter );
+
+		sprintf ( s2, "%d %d ", row, col );
+		strcat ( s1, s2 );
+
+	}
 
 	Tcl_AppendStringsToObj ( res, trim ( s1 ), ( char * ) NULL );
 	Tcl_SetObjResult ( interp, res );

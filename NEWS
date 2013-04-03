@@ -1,3 +1,7 @@
+2013-04: 
+	gnocl::text
+		o resolved problems with tag sub-command "ranges"
+		
 2013-03:
 	new widget
 		o gnocl::richTextToolBar

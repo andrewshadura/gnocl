@@ -1301,7 +1301,9 @@ int modifyWidgetGdkColor ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, v
 		GdkColor color;
 
 		if ( getGdkColor ( interp, opt->val.obj, &color ) != TCL_OK )
+		{
 			return TCL_ERROR;
+		}
 
 		( *func ) ( GTK_WIDGET ( obj ), type, &color );
 	}

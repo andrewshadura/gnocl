@@ -350,4 +350,10 @@ typedef struct
 	GtkTextView *textView;
 	Tcl_Interp *interp;
 	char *name;
+	char *fgClr;
+	char *bgClr;
+	GtkWidget *fgImg;
+	GtkWidget *bgImg;
+	GtkWidget *bg;
+	GtkWidget *fg;
 } RichTextToolbarParams;

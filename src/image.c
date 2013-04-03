@@ -209,7 +209,9 @@ static int configure ( Tcl_Interp *interp, GtkImage *image, GnoclOption options[
 	{
 		GdkPixbuf *src, *dest;
 		int       width, height;
+#ifdef DEBUG_PIXBUF
 		g_print ( "%s 1\n", __FUNCTION__ );
+#endif
 
 		if ( gtk_image_get_storage_type ( image ) != GTK_IMAGE_PIXBUF )
 		{
@@ -217,14 +219,18 @@ static int configure ( Tcl_Interp *interp, GtkImage *image, GnoclOption options[
 			return TCL_ERROR;
 		}
 
+#ifdef DEBUG_PIXBUF
 		g_print ( "%s 2\n", __FUNCTION__ );
+#endif
 
 		if ( gnoclGet2Int ( interp, options[sizeIdx].val.obj, &width, &height ) != TCL_OK )
 		{
 			return TCL_ERROR;
 		}
 
+#ifdef DEBUG_PIXBUF
 		g_print ( "%s 3\n", __FUNCTION__ );
+#endif
 
 		if ( width <= 0  || height <= 0 )
 		{
@@ -232,11 +238,18 @@ static int configure ( Tcl_Interp *interp, GtkImage *image, GnoclOption options[
 			return TCL_ERROR;
 		}
 
+#ifdef DEBUG_PIXBUF
 		g_print ( "%s 4\n", __FUNCTION__ );
+#endif
 		src = gtk_image_get_pixbuf ( image );
+
+#ifdef DEBUG_PIXBUF
 		g_print ( "%s 5\n", __FUNCTION__ );
+#endif
 		dest = gdk_pixbuf_scale_simple ( src, width, height, GDK_INTERP_BILINEAR );
+#ifdef DEBUG_PIXBUF
 		g_print ( "%s 6\n", __FUNCTION__ );
+#endif
 
 		if ( dest == NULL )
 		{
@@ -244,9 +257,13 @@ static int configure ( Tcl_Interp *interp, GtkImage *image, GnoclOption options[
 			return TCL_ERROR;
 		}
 
+#ifdef DEBUG_PIXBUF
 		g_print ( "%s 7\n", __FUNCTION__ );
+#endif
 		gtk_image_set_from_pixbuf ( image, dest );
+#ifdef DEBUG_PIXBUF
 		g_print ( "%s 8\n", __FUNCTION__ );
+#endif
 		g_object_unref ( dest );
 	}
 

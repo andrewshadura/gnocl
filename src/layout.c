@@ -168,7 +168,6 @@ static int configure ( Tcl_Interp *interp, GtkLayout *layout, GnoclOption option
 **/
 int gnoclConfigLayout ( Tcl_Interp *interp, GtkWidget *widget, Tcl_Obj *txtObj )
 {
-	printf ( "gnoclConfigArrowButton\n" );
 
 	GtkArrow *arrow;
 
@@ -185,7 +184,7 @@ int gnoclConfigLayout ( Tcl_Interp *interp, GtkWidget *widget, Tcl_Obj *txtObj )
 **/
 static int cget ( Tcl_Interp *interp, GtkWidget *widget, GnoclOption options[], int idx )
 {
-	printf ( "cget\n" );
+
 
 	const char *dataIDa = "gnocl::data1";
 	const char *dataIDb = "gnocl::data2";
@@ -195,13 +194,13 @@ static int cget ( Tcl_Interp *interp, GtkWidget *widget, GnoclOption options[], 
 
 	/* this will enable us to obtain widget data for the arrow object */
 	char *result = g_object_get_data ( G_OBJECT ( arrow ), dataIDa );
-	printf ( "cget result = %s\n", result );
+
 
 	result = g_object_get_data ( G_OBJECT ( arrow ), dataIDb );
-	printf ( "cget result = %s\n", result );
+
 
 	str = gnoclGetNameFromWidget ( arrow );
-	printf ( "configure %s\n", str );
+
 
 
 	/*-----*/
