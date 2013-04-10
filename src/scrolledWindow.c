@@ -81,36 +81,33 @@ void doOnChanged ( GtkAdjustment *adj, gpointer data )
 /**
 \brief
 **/
-static int optOnChanged ( Tcl_Interp *interp, GnoclOption *opt,
-						  GObject *obj, Tcl_Obj **ret )
+static int optOnChanged ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
-	GtkAdjustment *adj = gtk_scrolled_window_get_hadjustment (
-							 GTK_SCROLLED_WINDOW ( obj ) );
-	/* "changed" is emitted for horizontal, even if
-	   only vertical is changed. Is this a GTK bug? */
-	gnoclConnectOptCmd ( interp, G_OBJECT ( adj ), "changed",
-						 G_CALLBACK ( doOnChanged ), opt, obj, ret );
-	gnoclConnectOptCmd ( interp, G_OBJECT ( adj ), "value-changed",
-						 G_CALLBACK ( doOnChanged ), opt, obj, ret );
-	adj = gtk_scrolled_window_get_vadjustment (
-			  GTK_SCROLLED_WINDOW ( obj ) );
-	gnoclConnectOptCmd ( interp, G_OBJECT ( adj ), "value-changed",
-						 G_CALLBACK ( doOnChanged ), opt, obj, ret );
+	GtkAdjustment *adj = gtk_scrolled_window_get_hadjustment ( GTK_SCROLLED_WINDOW ( obj ) );
+	/* "changed" is emitted for horizontal, even if only vertical is changed. Is this a GTK bug? */
+	gnoclConnectOptCmd ( interp, G_OBJECT ( adj ), "changed", G_CALLBACK ( doOnChanged ), opt, obj, ret );
+	gnoclConnectOptCmd ( interp, G_OBJECT ( adj ), "value-changed", G_CALLBACK ( doOnChanged ), opt, obj, ret );
+	adj = gtk_scrolled_window_get_vadjustment ( GTK_SCROLLED_WINDOW ( obj ) );
+	gnoclConnectOptCmd ( interp, G_OBJECT ( adj ), "value-changed", G_CALLBACK ( doOnChanged ), opt, obj, ret );
 	return TCL_OK;
 }
 
 /**
 \brief
 **/
-static int optScrollValue ( Tcl_Interp *interp, GnoclOption *opt,
-							GObject *obj, Tcl_Obj **ret )
+static int optScrollValue ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
 	GtkAdjustment *adj;
 
 	if ( opt->optName[1] == 'x' )
+	{
 		adj = gtk_scrolled_window_get_hadjustment ( GTK_SCROLLED_WINDOW ( obj ) );
+	}
+
 	else
+	{
 		adj = gtk_scrolled_window_get_vadjustment ( GTK_SCROLLED_WINDOW ( obj ) );
+	}
 
 	assert ( opt->optName[1] == 'x' || opt->optName[1] == 'y' );
 
@@ -122,30 +119,33 @@ static int optScrollValue ( Tcl_Interp *interp, GnoclOption *opt,
 			double val;
 
 			if ( Tcl_GetDoubleFromObj ( interp, opt->val.obj, &val ) != TCL_OK )
+			{
 				return TCL_ERROR;
+			}
 
 			if ( val < adj->lower )
+			{
 				val = adj->lower;
-			else if ( val > adj->upper - adj->page_size )
-				val = adj->upper - adj->page_size;
+			}
 
-			blocked = g_signal_handlers_block_matched (
-						  G_OBJECT ( adj ), G_SIGNAL_MATCH_FUNC,
-						  0, 0, NULL, ( gpointer * ) doOnChanged, NULL );
+			else if ( val > adj->upper - adj->page_size )
+			{
+				val = adj->upper - adj->page_size;
+			}
+
+			blocked = g_signal_handlers_block_matched ( G_OBJECT ( adj ), G_SIGNAL_MATCH_FUNC, 0, 0, NULL, ( gpointer * ) doOnChanged, NULL );
 
 			gtk_adjustment_set_value ( adj, val );
 
 			if ( blocked )
-				g_signal_handlers_unblock_matched (
-					G_OBJECT ( adj ), G_SIGNAL_MATCH_FUNC,
-					0, 0, NULL, ( gpointer * ) doOnChanged, NULL );
-
+			{
+				g_signal_handlers_unblock_matched ( G_OBJECT ( adj ), G_SIGNAL_MATCH_FUNC, 0, 0, NULL, ( gpointer * ) doOnChanged, NULL );
+			}
 		}
 
 		else
 		{
-			Tcl_AppendResult ( interp, "option \"", opt->optName,
-							   "\" is read only.", NULL );
+			Tcl_AppendResult ( interp, "option \"", opt->optName, "\" is read only.", NULL );
 			return TCL_ERROR;
 		}
 	}
@@ -168,40 +168,43 @@ static int optScrollValue ( Tcl_Interp *interp, GnoclOption *opt,
 /**
 \brief
 **/
-static int configure ( Tcl_Interp *interp, GtkScrolledWindow *window,
-					   GnoclOption options[] )
+static int configure ( Tcl_Interp *interp, GtkScrolledWindow *window, GnoclOption options[] )
 {
 	if ( options[childIdx].status == GNOCL_STATUS_CHANGED )
 	{
-		GtkWidget *childWidget = gnoclChildNotPacked (
-									 options[childIdx].val.str, interp );
+		GtkWidget *childWidget = gnoclChildNotPacked ( options[childIdx].val.str, interp );
 
 		if ( childWidget == NULL )
+		{
 			return TCL_ERROR;
+		}
 
 		if ( gtk_bin_get_child ( GTK_BIN ( window ) ) )
+		{
 			g_object_unref ( gtk_bin_get_child ( GTK_BIN ( window ) ) );
+		}
 
 		if ( GTK_IS_LAYOUT ( childWidget ) )
 		{
 			gtk_container_add ( GTK_CONTAINER ( window ), childWidget );
-			gtk_scrolled_window_set_hadjustment ( window,
-												  gtk_layout_get_hadjustment ( GTK_LAYOUT ( childWidget ) ) );
-			gtk_scrolled_window_set_vadjustment ( window,
-												  gtk_layout_get_vadjustment ( GTK_LAYOUT ( childWidget ) ) );
+			gtk_scrolled_window_set_hadjustment ( window, gtk_layout_get_hadjustment ( GTK_LAYOUT ( childWidget ) ) );
+			gtk_scrolled_window_set_vadjustment ( window, gtk_layout_get_vadjustment ( GTK_LAYOUT ( childWidget ) ) );
 		}
 
 		else
+		{
 			gtk_scrolled_window_add_with_viewport ( window, childWidget );
+		}
 	}
 
 	if ( options[scrollbarIdx].status == GNOCL_STATUS_CHANGED )
 	{
 		GtkPolicyType hor, vert;
 
-		if ( gnoclGetScrollbarPolicy ( interp, options[scrollbarIdx].val.obj,
-									   &hor, &vert ) != TCL_OK )
+		if ( gnoclGetScrollbarPolicy ( interp, options[scrollbarIdx].val.obj, &hor, &vert ) != TCL_OK )
+		{
 			return TCL_ERROR;
+		}
 
 		gtk_scrolled_window_set_policy ( window, hor, vert );
 	}
@@ -212,8 +215,7 @@ static int configure ( Tcl_Interp *interp, GtkScrolledWindow *window,
 /**
 \brief
 **/
-static int cget ( Tcl_Interp *interp, GtkScrolledWindow *window,
-				  GnoclOption options[], int idx )
+static int cget ( Tcl_Interp *interp, GtkScrolledWindow *window, GnoclOption options[], int idx )
 {
 	Tcl_Obj *obj = NULL;
 
@@ -222,9 +224,14 @@ static int cget ( Tcl_Interp *interp, GtkScrolledWindow *window,
 		GtkWidget *child = gtk_bin_get_child ( GTK_BIN ( window ) );
 
 		if ( child )
+		{
 			obj = Tcl_NewStringObj ( gnoclGetNameFromWidget ( child ), -1 );
+		}
+
 		else
+		{
 			obj = Tcl_NewStringObj ( "", 0 );
+		}
 	}
 
 	if ( obj != NULL )
@@ -313,8 +320,7 @@ int gnoclScrolledWindowCmd ( ClientData data, Tcl_Interp *interp,
 
 	window = GTK_SCROLLED_WINDOW ( gtk_scrolled_window_new ( NULL, NULL ) );
 
-	gtk_scrolled_window_set_policy ( window, GTK_POLICY_AUTOMATIC,
-									 GTK_POLICY_AUTOMATIC );
+	gtk_scrolled_window_set_policy ( window, GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC );
 	gtk_widget_show ( GTK_WIDGET ( window ) );
 
 	/* set default value */
@@ -323,7 +329,9 @@ int gnoclScrolledWindowCmd ( ClientData data, Tcl_Interp *interp,
 	ret = gnoclSetOptions ( interp, windowOptions, G_OBJECT ( window ), -1 );
 
 	if ( ret == TCL_OK )
+	{
 		ret = configure ( interp, window, windowOptions );
+	}
 
 	gnoclClearOptions ( windowOptions );
 

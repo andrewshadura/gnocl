@@ -13,6 +13,7 @@
 
 /*
    History:
+   2013-04: fixed bug with -onHandleMoved option
    2011-11: added -proportion, -onHandleMoved, cget, -data
    2009-12: adapted for use in glade files.
    2008-10: added parent command
@@ -48,7 +49,7 @@ static GnoclOption panedOptions[] =
 	{ "-name", GNOCL_STRING, "name" },
 	{ "-visible", GNOCL_BOOL, "visible" },
 	{ "-sensitive", GNOCL_BOOL, "sensitive" },
-	{ "-onHandleMoved", GNOCL_OBJ, gnoclOptMoveHandle},
+	{ "-onHandleMoved", GNOCL_OBJ, "move-handle", gnoclOptMoveHandle},
 	{ "-data", GNOCL_OBJ, "", gnoclOptData },
 	{ NULL },
 };

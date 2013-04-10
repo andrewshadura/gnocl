@@ -1,4 +1,9 @@
 2013-04: 
+	gnocl::paned
+		o fixed bug with -onHandleMoved option
+	gnocl::expander
+		o new option
+			-onActivate
 	gnocl::text
 		o resolved problems with tag sub-command "ranges"
 		

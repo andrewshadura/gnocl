@@ -1923,6 +1923,28 @@ int gnoclOptCharWidth ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_
 \date
 \note
 **/
+int gnoclOptHeightRequest ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
+{
+
+	gint width, height;
+
+
+	if ( Tcl_GetIntFromObj ( interp, opt->val.obj, &height ) != TCL_OK )
+	{
+		return TCL_ERROR;
+	}
+
+	gtk_widget_set_size_request ( GTK_WIDGET ( obj ), -1, height );
+
+
+}
+
+/**
+\brief
+\author
+\date
+\note
+**/
 int gnoclOptChild ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
 	if ( ret == NULL ) /* set value */
@@ -2182,6 +2204,8 @@ static void doOnMoveHandle ( GtkWidget *widget, GtkScrollType scroll_type, gpoin
 	g_print ( "%s\n", __FUNCTION__ );
 #endif
 
+	// g_print ("%s\n",__FUNCTION__);
+
 	GnoclCommandData *cs = ( GnoclCommandData * ) user_data;
 
 	GnoclPercSubst ps[] =
@@ -2202,11 +2226,11 @@ static void doOnMoveHandle ( GtkWidget *widget, GtkScrollType scroll_type, gpoin
 
 
 /**
-\brief React to movement of the paned window handle
+\brief React to movement of the paned window handle throught key bindings
 **/
 int gnoclOptMoveHandle ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
-
+	// g_print ("%s\n",__FUNCTION__);
 	assert ( strcmp ( opt->optName, "-onHandleMoved" ) == 0 );
 	return gnoclConnectOptCmd ( interp, obj, "move-handle", G_CALLBACK ( doOnMoveHandle ), opt, NULL, ret );
 
@@ -3440,6 +3464,9 @@ int gnoclOptOnProximityInOut ( Tcl_Interp *interp, GnoclOption *opt, GObject *ob
 	return gnoclConnectOptCmd ( interp, obj, opt->optName[3] == 'I' ? "proximity-in-event" : "proximity-out-event", G_CALLBACK ( doOnEnterLeave ), opt, NULL, ret );
 }
 
+
+
+
 /**
 \brief	callback handler for GTK_BUTTON widgets
 **/
@@ -4133,6 +4160,8 @@ int gnoclOptOnIconPress ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tc
 	return gnoclConnectOptCmd ( interp, obj, *opt->propName == 'P' ?  "icon-press" : "icon-release", G_CALLBACK ( doOnIconPress ), opt, NULL, ret );
 }
 
+
+
 /**
 \brief
 Handle mouse button event
@@ -4151,6 +4180,8 @@ int gnoclOptOnUndoRedo ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl
 	assert ( *opt->propName == 'U' || *opt->propName == 'R' );
 	return gnoclConnectOptCmd ( interp, obj, *opt->propName == 'U' ?  "undo" : "redo", G_CALLBACK ( doOnUndoRedo ), opt, NULL, ret );
 }
+
+
 
 
 /**

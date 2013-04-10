@@ -300,6 +300,7 @@ gnoclOptFunc gnoclOptOnEntryInsert;
 gnoclOptFunc gnoclOptOnPreEditChanged;
 gnoclOptFunc gnoclOptOnQueryToolTip;
 gnoclOptFunc gnoclOptMoveHandle;
+gnoclOptFunc gnoclOptHeightRequest;
 
 int gnoclClearOptions ( GnoclOption *opts );
 int gnoclResetSetOptions ( GnoclOption *opts );

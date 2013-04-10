@@ -12,6 +12,7 @@
 
 /*
    History:
+   2013-04: added options -onActivate
    2009-12: added options -spacing -expanderSize -underline
    2008-10: added command, class
    2005-01: Begin of developement
@@ -24,12 +25,17 @@
 
 #include "gnocl.h"
 
+static int gnoclOptOnActivate ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret );
+
+
 static GnoclOption expanderOptions[] =
 {
 	{ "-child", GNOCL_OBJ, "", gnoclOptChild },
 	{ "-expand", GNOCL_BOOL, "expanded" },
 	{ "-label", GNOCL_OBJ, "label", gnoclOptLabelFull },
 	{ "-onDestroy", GNOCL_OBJ, "destroy", gnoclOptCommand },
+	{ "-onActivate", GNOCL_OBJ, "activate", gnoclOptOnActivate },
+	{ "-heightRequest", GNOCL_OBJ, "", gnoclOptHeightRequest},
 	{ "-visible", GNOCL_BOOL, "visible" },
 	{ "-spacing", GNOCL_INT, "spacing" },
 	{ "-expanderSize", GNOCL_INT, "expander-size"},
@@ -38,17 +44,54 @@ static GnoclOption expanderOptions[] =
 	{ NULL },
 };
 
+
+/**
+\brief	callback handler for GTK_EXPANDER widgets
+**/
+static void doOnActivate   ( GtkExpander *expander, gpointer user_data )
+{
+#ifdef DEBUG_EXPANDER
+	g_print ( "%s\n", __FUNCTION__ );
+#endif
+	GnoclCommandData *cs = ( GnoclCommandData * ) user_data;
+
+	GnoclPercSubst ps[] =
+	{
+		{ 'w', GNOCL_STRING },  /* widget */
+		{ 'g', GNOCL_STRING },  /* glade name */
+		{ 'e', GNOCL_BOOL},     /* expanded */
+		{ 'd', GNOCL_STRING },  /* data */
+		{ 0 }
+	};
+
+	ps[0].val.str = gnoclGetNameFromWidget ( expander );
+	ps[1].val.str = gtk_widget_get_name ( expander );
+	ps[2].val.i	  = gtk_expander_get_expanded ( expander );
+	ps[3].val.str = g_object_get_data ( expander, "gnocl::data" );
+
+	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
+
+}
+
+/**
+\brief		Click on the expander up/down arrow
+\author     William J Giddings
+\date       09/Apr/13
+**/
+static int gnoclOptOnActivate ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
+{
+	return gnoclConnectOptCmd ( interp, obj, "activate", G_CALLBACK ( doOnActivate ), opt, NULL, ret );
+}
+
+
+
 /**
 \brief
 **/
-static int setExpanderSize (
-	Tcl_Interp *interp,
-	GnoclOption *opt,
-	GObject *obj,
-	Tcl_Obj **ret )
+static int setExpanderSize ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
 
-#ifdef DEBUG
+#ifdef DEBUG_EXPANDER
 	g_print ( "treeLinePattern -this option currently under development.\n" );
 #endif
 
@@ -72,13 +115,9 @@ static int setExpanderSize (
 /**
 \brief
 **/
-static int setExpanderSpacing (
-	Tcl_Interp *interp,
-	GnoclOption *opt,
-	GObject *obj,
-	Tcl_Obj **ret )
+static int setExpanderSpacing ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
-#ifdef DEBUG
+#ifdef DEBUG_EXPANDER
 	g_print ( "treeLinePattern -this option currently under development.\n" );
 #endif
 	static const gchar *rc_string =
@@ -189,10 +228,9 @@ int expanderFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * cons
 /**
 \brief
 **/
-int gnoclExpanderCmd ( ClientData data, Tcl_Interp *interp,
-					   int objc, Tcl_Obj * const objv[] )
+int gnoclExpanderCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-	int         ret;
+	int ret;
 	GtkExpander *expander;
 
 	if ( gnoclParseOptions ( interp, objc, objv, expanderOptions ) != TCL_OK )
