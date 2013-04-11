@@ -14,6 +14,8 @@
 
 /*
    History:
+   2012-04: added commands, reorder, addStart
+			corrected bugs in addBegin command
    2013-02: added gnocl::hBox and gnocl::vBox commands
    2012-04: added command, remove
    2010-05: added -labelWidget option
@@ -418,14 +420,16 @@ int boxFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const obj
 	static const char *cmds[] =
 	{
 		"cget", "delete", "configure", "add",
-		"addBegin", "addEnd", "class", "remove",
+		"addBegin", "addStart", "addEnd", "class", "remove",
+		"reorder",
 		NULL
 	};
 
 	enum cmdIdx
 	{
 		CgetIdx, DeleteIdx, ConfigureIdx, AddIdx,
-		BeginIdx, EndIdx, ClassIdx, RemoveIdx
+		BeginIdx, StartIdx, EndIdx, ClassIdx, RemoveIdx,
+		ReorderIdx
 	};
 
 	int idx;
@@ -516,14 +520,34 @@ int boxFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const obj
 			}
 
 			break;
-		case AddIdx:
+		case StartIdx:
 		case BeginIdx:
+			{
+				gint ret;
+				/* increase reference count of object to prevent loss on possible call by remove */
+				g_object_ref ( G_OBJECT ( gnoclGetWidgetFromName ( Tcl_GetString ( objv[2] ), interp ) ) );
+				ret = boxFuncAdd ( box, interp, objc, objv, idx != EndIdx );
+				gtk_box_reorder_child  ( box, gnoclGetWidgetFromName ( Tcl_GetString ( objv[2] ), interp ), 0 );
+				return ret;
+			}
+			break;
+		case AddIdx:
 		case EndIdx:
 			{
-				/* increas reference count of object to prevent loss on possible call by remove */
+				gint ret;
+				/* increase reference count of object to prevent loss on possible call by remove */
 				g_object_ref ( G_OBJECT ( gnoclGetWidgetFromName ( Tcl_GetString ( objv[2] ), interp ) ) );
-				return boxFuncAdd ( box, interp, objc, objv, idx != EndIdx );
+				ret = boxFuncAdd ( box, interp, objc, objv, idx != EndIdx );
+				return ret;
 			} break;
+		case ReorderIdx:
+			{
+				gint pos;
+				Tcl_GetIntFromObj ( interp, objv[3], &pos );
+				gtk_box_reorder_child  ( box, gnoclGetWidgetFromName ( Tcl_GetString ( objv[2] ), interp ), pos );
+
+			}
+			break;
 		default: {}
 	}
 

@@ -3673,18 +3673,34 @@ static void doOnMouseButton ( GtkWidget *widget, GdkEventButton *event, gpointer
 		{ 'b', GNOCL_INT },
 		{ 's', GNOCL_INT },
 		{ 'g', GNOCL_STRING },  /* glade name */
+		{ 'e', GNOCL_STRING },  /* event type */
 		{ 0 }
 	};
 
 	ps[0].val.str = gnoclGetNameFromWidget ( widget );
 	ps[8].val.str = gtk_widget_get_name ( widget );
 
+
 	switch ( event->type )
 	{
-		case GDK_BUTTON_PRESS:   ps[1].val.str = "buttonPress"; break;
-		case GDK_2BUTTON_PRESS:  ps[1].val.str = "button2Press"; break;
-		case GDK_3BUTTON_PRESS:  ps[1].val.str = "button3Press"; break;
-		case GDK_BUTTON_RELEASE: ps[1].val.str = "buttonRelease"; break;
+		case GDK_BUTTON_PRESS:
+			{
+				ps[1].val.str = "buttonPress";
+			}
+			break;
+		case GDK_2BUTTON_PRESS:
+			{
+				ps[1].val.str = "button2Press";
+			} break;
+		case GDK_3BUTTON_PRESS:
+			{
+				ps[1].val.str = "button3Press";
+			}
+			break;
+		case GDK_BUTTON_RELEASE:
+			{
+				ps[1].val.str = "buttonRelease";
+			} break;
 		default:  assert ( 0 ); break;
 	}
 
@@ -3695,7 +3711,7 @@ static void doOnMouseButton ( GtkWidget *widget, GdkEventButton *event, gpointer
 	ps[6].val.i = event->button;
 	ps[7].val.i = event->state;
 
-
+	ps[9].val.str = "button-press-event";
 
 	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
 }

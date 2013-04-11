@@ -518,7 +518,20 @@ int gnoclSignalStopCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj
 		return TCL_OK;
 	}
 
-	//g_signal_stop_emission_by_name ( widget , Tcl_GetString ( objv[2] ) );
+	if ( strcmp ( Tcl_GetString ( objv[2] ), "button2Press" ) == 0 )
+	{
+		g_signal_stop_emission_by_name ( widget , "button_press_event" );
+		return TCL_OK;
+	}
+
+	if ( strcmp ( Tcl_GetString ( objv[2] ), "button3Press" ) == 0 )
+	{
+		g_signal_stop_emission_by_name ( widget , "button_press_event" );
+		return TCL_OK;
+	}
+
+
+	g_signal_stop_emission_by_name ( widget, Tcl_GetString ( objv[2] ) );
 	return TCL_OK;
 }
 

@@ -1,6 +1,13 @@
 2013-04: 
+	gnocl::box
+		o added commands, reorder, addStart
+		o corrected bugs in addBegin command
 	gnocl::paned
 		o fixed bug with -onHandleMoved option
+		o new options
+			-onButtonPress
+			-onButtonRelease
+			-tooltip
 	gnocl::expander
 		o new option
 			-onActivate

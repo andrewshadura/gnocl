@@ -14,6 +14,7 @@
 /*
    History:
    2013-04: fixed bug with -onHandleMoved option
+			added -onButtonPress, -onButtonRelease, -tooltip
    2011-11: added -proportion, -onHandleMoved, cget, -data
    2009-12: adapted for use in glade files.
    2008-10: added parent command
@@ -51,6 +52,9 @@ static GnoclOption panedOptions[] =
 	{ "-sensitive", GNOCL_BOOL, "sensitive" },
 	{ "-onHandleMoved", GNOCL_OBJ, "move-handle", gnoclOptMoveHandle},
 	{ "-data", GNOCL_OBJ, "", gnoclOptData },
+	{ "-onButtonPress", GNOCL_OBJ, "P", gnoclOptOnButton },
+	{ "-onButtonRelease", GNOCL_OBJ, "R", gnoclOptOnButton },
+	{ "-tooltip", GNOCL_OBJ, "", gnoclOptTooltip },
 	{ NULL },
 };
 
@@ -141,8 +145,7 @@ static int cget ( Tcl_Interp *interp, GtkWidget *paned, GnoclOption options[], i
 /**
 \brief
 **/
-static int addChildren ( GtkPaned *paned, Tcl_Interp *interp, Tcl_Obj *children,
-						 Tcl_Obj *resizeObj, Tcl_Obj *shrinkObj )
+static int addChildren ( GtkPaned *paned, Tcl_Interp *interp, Tcl_Obj *children, Tcl_Obj *resizeObj, Tcl_Obj *shrinkObj )
 {
 	int n, noChilds;
 	int shrink[2] = { 1, 1};
@@ -224,7 +227,9 @@ static int configure ( Tcl_Interp *interp, GtkPaned *paned, GnoclOption options[
 	{
 		if ( addChildren ( paned, interp, options[childrenIdx].val.obj,
 						   VAL_IF_SET ( resizeIdx ), VAL_IF_SET ( shrinkIdx ) ) != TCL_OK )
+		{
 			return TCL_ERROR;
+		}
 	}
 
 #undef VAL_IF_SET
@@ -268,22 +273,56 @@ int panedFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const o
 		"cget",
 		"delete", "configure",
 		"class", "parent",
+		"pack",
 		NULL
 	};
 	enum cmdIdx
 	{
 		CgetIdx,
 		DeleteIdx, ConfigureIdx,
-		ClassIdx, ParentIdx
+		ClassIdx, ParentIdx,
+		PackIdx
 	};
 	GtkPaned *paned = GTK_PANED ( data );
 	int idx;
 
 	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "command", TCL_EXACT, &idx ) != TCL_OK )
+	{
 		return TCL_ERROR;
+	}
 
 	switch ( idx )
 	{
+		case PackIdx:
+			{
+				g_print ( "%s pack\n", __FUNCTION__ );
+				char *str1 = Tcl_GetString ( objv[2] );
+
+				if ( strcmp ( str1, "1" ) == 0 )
+				{
+					char *str2 = Tcl_GetString ( objv[3] );
+					g_print ( "str1 %s str2 %s\n", str1, str2 );
+
+					GtkWidget *child = gnoclGetWidgetFromName ( str2, interp );
+					gtk_paned_pack1  ( paned, GTK_WIDGET ( child ), 1, 1 );
+
+				}
+
+				else if ( strcmp ( str1, "2" ) == 0 )
+				{
+					char *str2 = Tcl_GetString ( objv[3] );
+					g_print ( "str1 %s str2 %s\n", str1, str2 );
+				}
+
+				else
+				{
+					return TCL_ERROR;
+				}
+
+
+
+			}
+			break;
 		case CgetIdx:
 			{
 				int     idx;
@@ -315,17 +354,19 @@ int panedFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const o
 
 			break;
 		case ClassIdx:
-			Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "paned", -1 ) );
+			{
+				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "paned", -1 ) );
+			}
 			break;
 		case DeleteIdx:
-			return gnoclDelete ( interp, GTK_WIDGET ( paned ), objc, objv );
-
+			{
+				return gnoclDelete ( interp, GTK_WIDGET ( paned ), objc, objv );
+			}
 		case ConfigureIdx:
 			{
 				int ret = TCL_ERROR;
 
-				if ( gnoclParseAndSetOptions ( interp, objc - 1, objv + 1,
-											   panedOptions, G_OBJECT ( paned ) ) == TCL_OK )
+				if ( gnoclParseAndSetOptions ( interp, objc - 1, objv + 1, panedOptions, G_OBJECT ( paned ) ) == TCL_OK )
 				{
 					ret = configure ( interp, paned, panedOptions );
 				}
