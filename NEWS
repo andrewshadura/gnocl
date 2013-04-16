@@ -1,4 +1,15 @@
 2013-04: 
+	gnocl::colorButton
+		o new options
+			-widthRequest
+			-heightRequest
+		o code reworking
+			Began replacing generic widget signal handlers for signal 
+			handlers specific to this object.
+			deprecated
+			-onClicked, now use -onColorSet
+	gnocl::setStyle
+		o bugs-fixed and remember, must be called before widgets shown.
 	gnocl::box
 		o added commands, reorder, addStart
 		o corrected bugs in addBegin command

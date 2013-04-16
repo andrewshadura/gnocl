@@ -117,10 +117,8 @@ GnoclOption comboBoxOptions[] =
 	{ "-hasFocus", GNOCL_BOOL, "has-focus" },
 	{ "-heightRequest", GNOCL_INT, "height-request" },
 	{ "-widthRequest", GNOCL_INT, "width-request" },
-
 	{ "-onKeyPress", GNOCL_OBJ, "", gnoclOptOnKeyPress },
 	{ "-onKeyRelease", GNOCL_OBJ, "", gnoclOptOnKeyRelease },
-
 	{ "-widthChars", GNOCL_INT, "width-chars" },
 
 	{ NULL },

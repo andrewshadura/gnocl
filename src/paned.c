@@ -14,7 +14,7 @@
 /*
    History:
    2013-04: fixed bug with -onHandleMoved option
-			added -onButtonPress, -onButtonRelease, -tooltip
+			added -onButtonPress, -onButtonRelease, -tooltip, 
    2011-11: added -proportion, -onHandleMoved, cget, -data
    2009-12: adapted for use in glade files.
    2008-10: added parent command
@@ -72,6 +72,9 @@ static int cget ( Tcl_Interp *interp, GtkWidget *paned, GnoclOption options[], i
 {
 
 	Tcl_Obj *obj = NULL;
+
+
+
 
 	if ( idx == childrenIdx )
 	{
@@ -258,7 +261,6 @@ static int configure ( Tcl_Interp *interp, GtkPaned *paned, GnoclOption options[
 
 		gtk_paned_set_position ( paned, pos );
 	}
-
 
 	return TCL_OK;
 }

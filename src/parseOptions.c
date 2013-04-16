@@ -3466,6 +3466,46 @@ int gnoclOptOnProximityInOut ( Tcl_Interp *interp, GnoclOption *opt, GObject *ob
 
 
 
+/**
+\brief	callback handler for GTK_BUTTON widgets
+**/
+static void doOnColorSet   ( GtkWidget *color_button, gpointer user_data )
+{
+#ifdef DEBUG_PARSEOPTIONS
+	g_print ( "%s\n", __FUNCTION__ );
+#endif
+	GnoclCommandData *cs = ( GnoclCommandData * ) user_data;
+
+	gchar str[32];
+
+	GnoclPercSubst ps[] =
+	{
+		{ 'w', GNOCL_STRING },  /* widget */
+		{ 'g', GNOCL_STRING },  /* glade name */
+		{ 'd', GNOCL_STRING },  /* data */
+		{ 'c', GNOCL_STRING },  /* colour selected */
+		{ 0 }
+	};
+
+	const char *dataID = "gnocl::data";
+	ButtonParams *para = g_object_get_data ( G_OBJECT ( color_button ), dataID );
+
+	GdkColor color;
+
+	gtk_color_button_get_color (color_button, &color);
+
+	sprintf (str,"%d %d %d",color.red, color.green, color.blue);
+
+
+	ps[0].val.str = gnoclGetNameFromWidget ( color_button );
+	ps[1].val.str = gtk_widget_get_name ( color_button );
+	ps[2].val.str = g_object_get_data ( color_button, "gnocl::data" );
+	ps[3].val.str = str;
+
+	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
+
+}
+
 
 /**
 \brief	callback handler for GTK_BUTTON widgets
@@ -4130,6 +4170,15 @@ static void XXXXXdoOnEvent (
 
 	/* other settings, mouse pointer etc can be obtained from the window structure */
 	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
+}
+
+
+/**
+\brief	Signal handler for colorButton widget
+**/
+int gnoclOptOnColorSet ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
+{
+	return gnoclConnectOptCmd ( interp, obj, "color-set", G_CALLBACK ( doOnColorSet ), opt, NULL, ret );
 }
 
 /**

@@ -12,6 +12,7 @@
 
 /*
    History:
+   2013-03: bug-fixed gnocl::setStyle
    2013-02: added utility command, gnocl::toggle
    2012-01: gnocl::winfo
 				added exists subcommand
@@ -540,7 +541,6 @@ int gnoclSignalStopCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj
 **/
 int gnoclSignalEmitCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * const objv[] )
 {
-
 
 	if ( objc != 3 )
 	{
@@ -1648,6 +1648,8 @@ int gnoclStockItemCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj 
 
 /**
 \brief 	Set style for specified widget.
+	usage: gnocl::setStyle class style value
+	notes: must be declared before widget shown
 **/
 int gnoclSetStyleCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
@@ -1656,28 +1658,18 @@ int gnoclSetStyleCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * 
 	char *style = Tcl_GetString ( objv[2] );
 	char *val = Tcl_GetString ( objv[3] );
 
-
-	g_print ( "%s %s %s\n", id, style, val );
-
 	GtkWidget *widget = gnoclGetWidgetFromName ( id, interp ) ;
 
 	char str[512];
 
-	sprintf ( str, "style \"%s_style\"\n{\n%s = \"%s\"\n}\nwidget \"*.%s\" style \"%s_style\"" , id, style, val, id, id );
+	//sprintf ( str, "style \"%s_style\"\n{\n%s = \"%s\"\n}\nwidget \"*.%s\" style \"%s_style\"" , id, style, val, id, id );
 
-	g_print ( "%s\n", str );
+	sprintf ( str,
+			  "style \"myStyle\" {\n \
+	%s::%s = %s\n}\n \
+	class \"%s\" style \"myStyle\"\n",
+			  id, style, val, id );
 
-	/*
-	    gtk_rc_parse_string (
-	         "style \"myStyle\"\n"
-	         "{\n"
-	         "  GtkWidget::focus-padding = 0\n"
-	         "  GtkWidget::focus-line-width = 0\n"
-	         "  xthickness = 0\n"
-	         "  ythickness = 0\n"
-	         "}\n"
-	         "widget \"*.my-close-button\" style \"my-button-style\"");
-	*/
 	gtk_rc_parse_string ( str );
 
 	return TCL_OK;

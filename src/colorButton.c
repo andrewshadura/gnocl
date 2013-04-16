@@ -12,9 +12,15 @@
 
 /*
    History:
+   2013-04: new options -widthRequest, -heightRequest
    2008-10: added command, class
    2004-12: Begin of developement
  */
+
+/*
+ * TODO
+ * implement -variable option
+*/
 
 /**
 \page page_colorButton gnocl::colorButtton
@@ -25,15 +31,16 @@
 
 static GnoclOption colorButtonOptions[] =
 {
+	{ "-variable", GNOCL_STRING, NULL }, /* 0 */
 	{ "-alpha", GNOCL_INT, "alpha" },
 	{ "-color", GNOCL_OBJ, "color", gnoclOptGdkColor },
 	{ "-data", GNOCL_OBJ, "", gnoclOptData },
 	{ "-hasFocus", GNOCL_BOOL, "has-focus" },
-	{ "-heightGroup", GNOCL_OBJ, "h", gnoclOptSizeGroup },
 	{ "-name", GNOCL_STRING, "name" },
 	{ "-onButtonPress", GNOCL_OBJ, "P", gnoclOptOnButton },
 	{ "-onButtonRelease", GNOCL_OBJ, "R", gnoclOptOnButton },
 	{ "-onClicked", GNOCL_OBJ, "clicked", gnoclOptCommand },
+	{ "-onColorSet", GNOCL_OBJ, "color-set", gnoclOptOnColorSet },
 	{ "-onPopupMenu", GNOCL_OBJ, "popup-menu", gnoclOptCommand },
 	{ "-onRealize", GNOCL_OBJ, "realize", gnoclOptCommand },
 	{ "-onShowHelp", GNOCL_OBJ, "", gnoclOptOnShowHelp },
@@ -44,7 +51,10 @@ static GnoclOption colorButtonOptions[] =
 	{ "-tooltip", GNOCL_OBJ, "", gnoclOptTooltip },
 	{ "-useAlpha", GNOCL_BOOL, "use-alpha" },
 	{ "-visible", GNOCL_BOOL, "visible" },
+	{ "-heightGroup", GNOCL_OBJ, "h", gnoclOptSizeGroup },
 	{ "-widthGroup", GNOCL_OBJ, "w", gnoclOptSizeGroup },
+	{ "-widthRequest", GNOCL_INT, "width-request" },
+	{ "-heightRequest", GNOCL_INT, "height-request" },	
 	{ NULL },
 };
 
