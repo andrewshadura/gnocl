@@ -1,4 +1,7 @@
 2013-04: 
+	gnocl::button
+		o new option
+			-baseFont
 	gnocl::colorButton
 		o new options
 			-widthRequest

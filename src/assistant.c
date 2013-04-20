@@ -549,7 +549,7 @@ static void assistant_cancel ( GtkAssistant *assistant, gpointer data )
 \brief
 **/
 /* This function is where you would apply the changes and destroy the assistant. */
-static void assistant_close ( GtkAssistant *assistant, gpointer data )
+static void do_close ( GtkAssistant *assistant, gpointer data )
 {
 	g_print ( "You would apply your changes now!\n" );
 	gtk_widget_destroy ( GTK_WIDGET ( assistant ) );

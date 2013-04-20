@@ -2056,7 +2056,7 @@ static void destroyCmdData ( gpointer data, GClosure *closure )
 }
 
 /**
-\brief
+\brief		a generic widget signal handler
 \author
 \date
 \note      07-Dec-09   Added %g option to return glade name as part of mark-up string.
@@ -3476,14 +3476,20 @@ static void doOnColorSet   ( GtkWidget *color_button, gpointer user_data )
 #endif
 	GnoclCommandData *cs = ( GnoclCommandData * ) user_data;
 
-	gchar str[32];
+	gchar str1[32], str2[32], str3[32], str4[32], str5[32];
+	gint r, g, b;
+	gdouble h, s, v;
 
 	GnoclPercSubst ps[] =
 	{
 		{ 'w', GNOCL_STRING },  /* widget */
 		{ 'g', GNOCL_STRING },  /* glade name */
 		{ 'd', GNOCL_STRING },  /* data */
-		{ 'c', GNOCL_STRING },  /* colour selected */
+		{ 'C', GNOCL_STRING },  /* colour selected 0-65535*/
+		{ 'c', GNOCL_STRING },  /* colour selected 0-255*/
+		{ 'x', GNOCL_STRING },  /* colour selected 00-FF*/
+		{ 'f', GNOCL_STRING },  /* colour selected 0-1.0*/
+		{ 'h', GNOCL_STRING },  /* colour as HSV*/
 		{ 0 }
 	};
 
@@ -3492,15 +3498,27 @@ static void doOnColorSet   ( GtkWidget *color_button, gpointer user_data )
 
 	GdkColor color;
 
-	gtk_color_button_get_color (color_button, &color);
-
-	sprintf (str,"%d %d %d",color.red, color.green, color.blue);
-
+	gtk_color_button_get_color ( color_button, &color );
 
 	ps[0].val.str = gnoclGetNameFromWidget ( color_button );
 	ps[1].val.str = gtk_widget_get_name ( color_button );
 	ps[2].val.str = g_object_get_data ( color_button, "gnocl::data" );
-	ps[3].val.str = str;
+
+	r = 255 * color.red / 65535; g =  255 * color.green / 65535; b = 255 * color.blue / 65535;
+
+	gtk_rgb_to_hsv  ( ( float ) r / 255.0, ( float ) g / 255, ( float ) b / 255, &h, &s, &v );
+
+	sprintf ( str1, "%d %d %d", color.red, color.green, color.blue );
+	sprintf ( str2, "%d %d %d", r, g, b );
+	sprintf ( str3, "#%02X%02X%02X", r, g, b );
+	sprintf ( str4, "%1.5f %1.5f %1.5f", ( float ) r / 255.0, ( float ) g / 255, ( float ) b / 255 );
+	sprintf ( str5, "%.0f %.0f %.0f", 100 * h, 100 * s, 100 * v );
+
+	ps[3].val.str = str1;
+	ps[4].val.str = str2;
+	ps[5].val.str = str3;
+	ps[6].val.str = str4;
+	ps[7].val.str = str5;
 
 	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
 

@@ -114,7 +114,7 @@ static GnoclOption labelOptions[] =
 
 	{ "-xPad", GNOCL_INT, "xpad" },
 	{ "-yPad", GNOCL_INT, "ypad" },
-	{ "-baseFont", GNOCL_OBJ, "Sans 14", gnoclOptGdkBaseFont },
+	{ "-baseFont", GNOCL_OBJ, "", gnoclOptGdkBaseFont },
 	{ "-baseColor", GNOCL_OBJ, "normal", gnoclOptGdkColorBase },
 	{ "-background", GNOCL_OBJ, "normal", gnoclOptGdkColorBg },
 

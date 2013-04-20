@@ -73,10 +73,8 @@ typedef struct
 \brief
 \author
 **/
-static int configure ( Tcl_Interp *interp, GtkAboutDialog *dialog,
-					   GnoclOption options[] )
+static int configure ( Tcl_Interp *interp, GtkAboutDialog *dialog, GnoclOption options[] )
 {
-
 	return TCL_OK;
 }
 
@@ -100,16 +98,14 @@ static void onButtonFunc ( ColorSelDialogParams *para, int isOk )
 		};
 		GdkColor color;
 
-		gtk_color_selection_get_current_color (
-			GTK_COLOR_SELECTION ( para->colorSel->colorsel ), &color );
+		gtk_color_selection_get_current_color (	GTK_COLOR_SELECTION ( para->colorSel->colorsel ), &color );
 
 		ps[0].val.str = para->name;
 		ps[1].val.str = isOk ? "OK" : "CANCEL";
 		ps[2].val.i = color.red;
 		ps[3].val.i = color.green;
 		ps[4].val.i = color.blue;
-		ps[5].val.i = gtk_color_selection_get_current_alpha (
-						  GTK_COLOR_SELECTION ( para->colorSel->colorsel ) );
+		ps[5].val.i = gtk_color_selection_get_current_alpha ( GTK_COLOR_SELECTION ( para->colorSel->colorsel ) );
 
 		gnoclPercentSubstAndEval ( para->interp, ps, para->onClicked, 1 );
 	}
@@ -137,10 +133,15 @@ static void onCancelFunc ( GtkWidget *widget, gpointer data )
 \brief
 \author
 **/
-int colorSelDialogFunc ( ClientData data, Tcl_Interp *interp,
-						 int objc, Tcl_Obj * const objv[] )
+int colorSelDialogFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-	static const char *cmds[] = { "delete", "configure", "hide", "show", NULL };
+	static const char *cmds[] =
+	{
+		"delete", "configure",
+		"hide", "show",
+		NULL
+	};
+
 	enum cmdIdx { DeleteIdx, ConfigureIdx, HideIdx, ShowIdx };
 	ColorSelDialogParams *para = ( ColorSelDialogParams * ) data;
 	GtkWidget *widget = GTK_WIDGET ( para->colorSel );
@@ -152,9 +153,10 @@ int colorSelDialogFunc ( ClientData data, Tcl_Interp *interp,
 		return TCL_ERROR;
 	}
 
-	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "command",
-							   TCL_EXACT, &idx ) != TCL_OK )
+	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "command", TCL_EXACT, &idx ) != TCL_OK )
+	{
 		return TCL_ERROR;
+	}
 
 	switch ( idx )
 	{
@@ -169,12 +171,12 @@ int colorSelDialogFunc ( ClientData data, Tcl_Interp *interp,
 			}
 			break;
 		case DeleteIdx:
-			return gnoclDelete ( interp, widget, objc, objv );
-
+			{
+				return gnoclDelete ( interp, widget, objc, objv );
+			}
 		case ConfigureIdx:
 
-			if ( gnoclParseOptions ( interp, objc - 2, objv + 2, colorSelectDialogOptions )
-					== TCL_OK )
+			if ( gnoclParseOptions ( interp, objc - 2, objv + 2, colorSelectDialogOptions ) == TCL_OK )
 			{
 				/* TODO? error if modalIdx has changed? */
 				if ( colorSelectDialogOptions[commandIdx].status == GNOCL_STATUS_CHANGED )
@@ -196,8 +198,7 @@ int colorSelDialogFunc ( ClientData data, Tcl_Interp *interp,
 \brief
 \author
 **/
-int gnoclColorSelectionDialogCmd ( ClientData data, Tcl_Interp *interp,
-								   int objc, Tcl_Obj * const objv[] )
+int gnoclColorSelectionDialogCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
 	ColorSelDialogParams *para = NULL;
 	int           ret = TCL_ERROR;
@@ -208,12 +209,13 @@ int gnoclColorSelectionDialogCmd ( ClientData data, Tcl_Interp *interp,
 	assert ( strcmp ( colorSelectDialogOptions[colSelectIdx].optName, "-color" ) == 0 );
 
 	if ( gnoclParseOptions ( interp, objc, objv, colorSelectDialogOptions )  != TCL_OK )
+	{
 		goto cleanExit;
+	}
 
 	para = g_new ( ColorSelDialogParams, 1 );
 
-	para->colorSel = GTK_COLOR_SELECTION_DIALOG (
-						 gtk_color_selection_dialog_new ( "" ) );
+	para->colorSel = GTK_COLOR_SELECTION_DIALOG ( gtk_color_selection_dialog_new ( "" ) );
 
 	para->interp = interp;
 
@@ -227,30 +229,36 @@ int gnoclColorSelectionDialogCmd ( ClientData data, Tcl_Interp *interp,
 	}
 
 	else
+	{
 		para->onClicked = NULL;
+	}
 
 	/* set default values */
-	gtk_color_selection_set_has_palette (
-		GTK_COLOR_SELECTION ( para->colorSel->colorsel ), 1 );
+	gtk_color_selection_set_has_palette (		GTK_COLOR_SELECTION ( para->colorSel->colorsel ), 1 );
 
-	if ( gnoclSetOptions ( interp, colorSelectDialogOptions, G_OBJECT ( para->colorSel ),
-						   colSelectIdx ) != TCL_OK )
+	if ( gnoclSetOptions ( interp, colorSelectDialogOptions, G_OBJECT ( para->colorSel ),						   colSelectIdx ) != TCL_OK )
+	{
 		goto cleanExit;
+	}
 
-	if ( gnoclSetOptions ( interp, colorSelectDialogOptions + colSelectIdx,
-						   G_OBJECT ( para->colorSel->colorsel ), -1 ) != TCL_OK )
+	if ( gnoclSetOptions ( interp, colorSelectDialogOptions + colSelectIdx,						   G_OBJECT ( para->colorSel->colorsel ), -1 ) != TCL_OK )
+	{
 		goto cleanExit;
+	}
 
 	if ( colorSelectDialogOptions[modalIdx].status == GNOCL_STATUS_SET )
+	{
 		isModal = colorSelectDialogOptions[modalIdx].val.b;
+	}
+
 	else
+	{
 		gtk_window_set_modal ( GTK_WINDOW ( para->colorSel ), isModal );
+	}
 
-	g_signal_connect ( GTK_OBJECT ( para->colorSel->ok_button ),
-					   "clicked", G_CALLBACK ( onOkFunc ), para );
+	g_signal_connect ( GTK_OBJECT ( para->colorSel->ok_button ), "clicked", G_CALLBACK ( onOkFunc ), para );
 
-	g_signal_connect ( GTK_OBJECT ( para->colorSel->cancel_button ),
-					   "clicked", G_CALLBACK ( onCancelFunc ), para );
+	g_signal_connect ( GTK_OBJECT ( para->colorSel->cancel_button ), "clicked", G_CALLBACK ( onCancelFunc ), para );
 
 	gtk_widget_show ( GTK_WIDGET ( para->colorSel ) );
 
@@ -263,15 +271,12 @@ int gnoclColorSelectionDialogCmd ( ClientData data, Tcl_Interp *interp,
 			GdkColor color;
 			Tcl_Obj *obj = Tcl_NewListObj ( 0, NULL );
 
-			gtk_color_selection_get_current_color (
-				GTK_COLOR_SELECTION ( para->colorSel->colorsel ), &color );
+			gtk_color_selection_get_current_color (	GTK_COLOR_SELECTION ( para->colorSel->colorsel ), &color );
 
 			Tcl_ListObjAppendElement ( interp, obj, Tcl_NewIntObj ( color.red ) );
 			Tcl_ListObjAppendElement ( interp, obj, Tcl_NewIntObj ( color.green ) );
 			Tcl_ListObjAppendElement ( interp, obj, Tcl_NewIntObj ( color.blue ) );
-			Tcl_ListObjAppendElement ( interp, obj, Tcl_NewIntObj (
-										   gtk_color_selection_get_current_alpha (
-											   GTK_COLOR_SELECTION ( para->colorSel->colorsel ) ) ) );
+			Tcl_ListObjAppendElement ( interp, obj, Tcl_NewIntObj ( gtk_color_selection_get_current_alpha ( GTK_COLOR_SELECTION ( para->colorSel->colorsel ) ) ) );
 			Tcl_SetObjResult ( interp, obj );
 		}
 

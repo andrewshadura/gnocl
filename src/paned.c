@@ -14,7 +14,7 @@
 /*
    History:
    2013-04: fixed bug with -onHandleMoved option
-			added -onButtonPress, -onButtonRelease, -tooltip, 
+			added -onButtonPress, -onButtonRelease, -tooltip,
    2011-11: added -proportion, -onHandleMoved, cget, -data
    2009-12: adapted for use in glade files.
    2008-10: added parent command

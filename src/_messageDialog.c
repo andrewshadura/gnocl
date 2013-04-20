@@ -48,10 +48,10 @@ static const int typeIdx          = 4;
 static const int modalIdx         = 5;
 static const int onResponseIdx    = 6;
 static const int setSizeIdx       = 7;
-static const int xIdx           = 8;
-static const int yIdx           = 9;
-static const int widthIdx       = 10;
-static const int heightIdx      = 11;
+static const int xIdx             = 8;
+static const int yIdx             = 9;
+static const int widthIdx         = 10;
+static const int heightIdx        = 11;
 
 /* todo, organise ioptions to widget specific, followed by inherited */
 static GnoclOption dialogOptions[] =
@@ -64,14 +64,12 @@ static GnoclOption dialogOptions[] =
 	{ "-modal", GNOCL_BOOL, NULL },            /* 5 */
 	{ "-onResponse", GNOCL_STRING, NULL },     /* 6 */
 	{ "-setSize", GNOCL_DOUBLE, NULL },        /* 7 */
+	{ "-onClose", GNOCL_OBJ, "close", gnoclOptCommand },
 
 	{ "-x", GNOCL_INT, NULL },                           /* 8 */
 	{ "-y", GNOCL_INT, NULL },                           /* 9 */
 	{ "-width", GNOCL_INT, NULL },                       /* 10 */
 	{ "-height", GNOCL_INT, NULL },                      /* 11 */
-
-
-	{ "-onClose", GNOCL_OBJ, "close", gnoclOptCommand },
 
 	{ "-allowGrow", GNOCL_BOOL, "allow-grow" },
 	{ "-allowShrink", GNOCL_BOOL, "allow-shrink" },
@@ -208,44 +206,68 @@ static int getType ( Tcl_Interp *interp, GnoclOption *opt, int *type )
 **/
 static Tcl_Obj *getObjFromRet ( DialogParams *para, int ret )
 {
+
+	g_print ( "%s 1\n", __FUNCTION__ );
+
 	switch ( ret )
 	{
 		case GTK_RESPONSE_NONE:
-			return Tcl_NewStringObj ( "#NONE", -1 );
+			{
+				return Tcl_NewStringObj ( "#NONE", -1 );
+			}
 
 		case GTK_RESPONSE_DELETE_EVENT:
-			return Tcl_NewStringObj ( "#DELETE", -1 );
+			{
+				return Tcl_NewStringObj ( "#DELETE", -1 );
+			}
 
 		case GTK_RESPONSE_ACCEPT:
-			return Tcl_NewStringObj ( "#ACCEPT", -1 );
+			{
+				return Tcl_NewStringObj ( "#ACCEPT", -1 );
+			}
 
 		case GTK_RESPONSE_OK:
-			return Tcl_NewStringObj ( "#OK", -1 );
+			{
+				return Tcl_NewStringObj ( "#OK", -1 );
+			}
 
 		case GTK_RESPONSE_CANCEL:
-			return Tcl_NewStringObj ( "#CANCEL", -1 );
+			{
+				return Tcl_NewStringObj ( "#CANCEL", -1 );
+			}
 
 		case GTK_RESPONSE_CLOSE:
-			return Tcl_NewStringObj ( "#CLOSE", -1 );
+			{
+				return Tcl_NewStringObj ( "#CLOSE", -1 );
+			}
 
 		case GTK_RESPONSE_YES:
-			return Tcl_NewStringObj ( "#YES", -1 );
+			{
+				return Tcl_NewStringObj ( "#YES", -1 );
+			}
 
 		case GTK_RESPONSE_NO:
-			return Tcl_NewStringObj ( "#NO", -1 );
+			{
+				return Tcl_NewStringObj ( "#NO", -1 );
+			}
 
 		case GTK_RESPONSE_APPLY:
-			return Tcl_NewStringObj ( "#APPLY", -1 );
+			{
+				return Tcl_NewStringObj ( "#APPLY", -1 );
+			}
 
 		case GTK_RESPONSE_HELP:
-			return Tcl_NewStringObj ( "#HELP", -1 );
+			{
+				return Tcl_NewStringObj ( "#HELP", -1 );
+			}
 
-		default: ;
+		default: {} ;
 
 	}
 
+	g_print ( "%s 2\n", __FUNCTION__ );
 	assert ( ret >= 0 );
-
+	g_print ( "%s 3\n", __FUNCTION__ );
 	return Tcl_NewStringObj ( g_ptr_array_index ( para->butRes, ret ), -1 );
 }
 
@@ -266,28 +288,18 @@ static void onResponse ( GtkDialog *dialog, gint arg1, gpointer data )
 		{ 0 }
 	};
 
-	if ( para->isModal )
-	{
-		ps[0].val.str = "";
-	}
+	g_print ( "%s 1 arg1 = %d\n", __FUNCTION__, arg1 );
 
-	else
-	{
-		ps[0].val.str = gnoclGetNameFromWidget ( GTK_WIDGET ( dialog ) );
-	}
-
+	ps[0].val.str = para->name;
 	ps[1].val.obj = getObjFromRet ( para, arg1 );
 	ps[2].val.i = arg1;
 	ps[3].val.str = g_object_get_data ( G_OBJECT ( dialog ), "gnocl::data" );
 
-	/* only for tests
-	Tcl_AllowExceptions( para->interp );
-	para->ret = Tcl_EvalEx( para->interp, para->onResponse, -1,
-	      TCL_EVAL_GLOBAL|TCL_EVAL_DIRECT );
-	printf( "in onResponse: %s -> %d %s\n", para->onResponse,
-	      para->ret, Tcl_GetString( Tcl_GetObjResult( para->interp ) ) );
-	*/
+	g_print ( "%s 2\n", __FUNCTION__ );
+
 	para->ret = gnoclPercentSubstAndEval ( para->interp, ps, para->onResponse, 0 );
+
+	g_print ( "%s 3 ret = %d\n", __FUNCTION__, para->ret );
 	/*
 	   we get TCL_ERROR if break is executed in a proc
 	   we get TCL_BREAK if break is directly executed in onResponse
@@ -296,8 +308,7 @@ static void onResponse ( GtkDialog *dialog, gint arg1, gpointer data )
 	if ( para->ret == TCL_ERROR )
 	{
 		/* FIXME: this is ugly, so leave it out?
-		if( strcmp( Tcl_GetStringResult( para->interp ),
-		               "invoked \"break\" outside of a loop" ) == 0 )
+		if( strcmp( Tcl_GetStringResult( para->interp ),"invoked \"break\" outside of a loop" ) == 0 )
 		{
 		   Tcl_ResetResult( para->interp );
 		   para->ret = TCL_BREAK;
@@ -307,6 +318,8 @@ static void onResponse ( GtkDialog *dialog, gint arg1, gpointer data )
 		Tcl_BackgroundError ( para->interp );
 	}
 
+
+	g_print ( "%s 4\n", __FUNCTION__ );
 	/* dialog is destroyed if onResponse returns not TCL_OK
 	   (e.g. TCL_ERROR or TCL_BREAK).
 	   if dialog is modal we destroy the widget in gnoclMessageDialogCmd
@@ -315,8 +328,23 @@ static void onResponse ( GtkDialog *dialog, gint arg1, gpointer data )
 	/* reverted to previous code from 0.9.95, since destroying a modal
 	   dialog too early breaks the return value -ag */
 	if ( para->isModal == 0 && para->ret != TCL_OK )
-		gtk_widget_destroy ( GTK_WIDGET ( dialog ) );
+	{
+		//gtk_widget_destroy ( GTK_WIDGET ( dialog ) );
+		gtk_widget_destroy ( GTK_WIDGET ( para->dialog ) );
+	}
 
+	else
+	{
+		/* problems here, causing
+		(test-paraText-2.tcl:11093): GLib-GObject-WARNING **: invalid uninstantiatable type `<unknown>' in cast to `GObject'
+		*/
+		gtk_widget_destroy ( GTK_WIDGET ( para->dialog ) );
+		//gtk_object_destroy (GTK_OBJECT (dialog));
+	}
+
+
+
+	g_print ( "%s 5\n", __FUNCTION__ );
 }
 
 /**
@@ -324,11 +352,12 @@ static void onResponse ( GtkDialog *dialog, gint arg1, gpointer data )
 **/
 static void destroyFunc ( GtkWidget *widget, gpointer data )
 {
+
 	DialogParams *para = ( DialogParams * ) data;
 	g_ptr_array_free ( para->butRes, 1 );
 	g_free ( para->onResponse );
 
-	if ( para->name )
+	if ( para->name != NULL )
 	{
 		gnoclForgetWidgetFromName ( para->name );
 		Tcl_DeleteCommand ( para->interp, para->name );
@@ -356,9 +385,10 @@ int dialogFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const 
 		return TCL_ERROR;
 	}
 
-	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "command",
-							   TCL_EXACT, &idx ) != TCL_OK )
+	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "command",   TCL_EXACT, &idx ) != TCL_OK )
+	{
 		return TCL_ERROR;
+	}
 
 	switch ( idx )
 	{
@@ -381,13 +411,13 @@ int dialogFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const 
 		case DeleteIdx:
 			{
 				return gnoclDelete ( interp, widget, objc, objv );
-			} break;
+			}
+			break;
 		case ConfigureIdx:
 			{
 				int ret = TCL_ERROR;
 
-				if ( gnoclParseAndSetOptions ( interp, objc - 1, objv + 1,
-											   dialogOptions, G_OBJECT ( widget ) ) == TCL_OK )
+				if ( gnoclParseAndSetOptions ( interp, objc - 1, objv + 1,  dialogOptions, G_OBJECT ( widget ) ) == TCL_OK )
 				{
 					ret = configure ( interp, widget, dialogOptions );
 				}
@@ -411,8 +441,7 @@ int dialogFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const 
 /**
 \brief
 **/
-static int addButtonList ( Tcl_Interp *interp, Tcl_Obj *obj, GtkDialog *dialog,
-						   int k, GPtrArray *array )
+static int addButtonList ( Tcl_Interp *interp, Tcl_Obj *obj, GtkDialog *dialog, int k, GPtrArray *array )
 {
 	Tcl_Obj *first, *second;
 	int     n;
@@ -423,13 +452,14 @@ static int addButtonList ( Tcl_Interp *interp, Tcl_Obj *obj, GtkDialog *dialog,
 			&& Tcl_ListObjIndex ( interp, obj, 1, &second ) == TCL_OK )
 	{
 		char      *value = NULL;
-		GtkWidget *widget = gnoclGetWidgetFromName ( Tcl_GetString ( first ),
-							NULL );
+		GtkWidget *widget = gnoclGetWidgetFromName ( Tcl_GetString ( first ), NULL );
 
 		if ( widget != NULL )
 		{
 			if ( gnoclAssertNotPacked ( widget, interp, Tcl_GetString ( first ) ) )
+			{
 				return -1;
+			}
 
 			/* list of: widgetID and value */
 			value = Tcl_GetString ( second );
@@ -452,10 +482,11 @@ static int addButtonList ( Tcl_Interp *interp, Tcl_Obj *obj, GtkDialog *dialog,
 			Tcl_DecrRefCount ( objv[3] );
 
 			if ( ret != TCL_OK )
+			{
 				return -1;
+			}
 
-			widget = gnoclGetWidgetFromName ( Tcl_GetStringResult ( interp ),
-											  interp );
+			widget = gnoclGetWidgetFromName ( Tcl_GetStringResult ( interp ), interp );
 
 			assert ( widget );
 
@@ -480,8 +511,7 @@ static int addButtonList ( Tcl_Interp *interp, Tcl_Obj *obj, GtkDialog *dialog,
 /**
 \brief
 **/
-static int handleButtons ( Tcl_Interp *interp, GtkDialog *dialog,
-						   DialogParams *para, Tcl_Obj *buttons )
+static int handleButtons ( Tcl_Interp *interp, GtkDialog *dialog, DialogParams *para, Tcl_Obj *buttons )
 {
 	int k, no;
 	/* this can't fail, since buttonsIdx is a GNOCL_LIST */
@@ -507,7 +537,9 @@ static int handleButtons ( Tcl_Interp *interp, GtkDialog *dialog,
 		*/
 
 		if ( isButton < 0 )
+		{
 			return TCL_ERROR;
+		}
 
 		if ( isButton == 0 )
 		{
@@ -516,14 +548,15 @@ static int handleButtons ( Tcl_Interp *interp, GtkDialog *dialog,
 			char            *str = gnoclGetString ( tp );
 			g_ptr_array_add ( para->butRes, g_strdup ( str ) );
 
-			if ( strType & GNOCL_STR_STOCK
-					&& gnoclGetStockItem ( tp, interp, &sp ) == TCL_OK )
+			if ( strType & GNOCL_STR_STOCK 	&& gnoclGetStockItem ( tp, interp, &sp ) == TCL_OK )
 			{
 				gtk_dialog_add_button ( dialog, sp.stock_id, k );
 			}
 
 			else
+			{
 				gtk_dialog_add_button ( dialog, str, k );
+			}
 		}
 	}
 
@@ -540,16 +573,18 @@ int gnoclDialogCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * co
 	DialogParams *para;
 
 	if ( gnoclParseOptions ( interp, objc, objv, dialogOptions ) != TCL_OK )
+	{
 		goto clearError1;
+	}
 
 	if ( getType ( interp, &dialogOptions[typeIdx], &type ) != TCL_OK )
-		goto clearError1;
-
-	if ( ! ( ( dialogOptions[textIdx].status == GNOCL_STATUS_CHANGED )
-			 ^ ( dialogOptions[childIdx].status == GNOCL_STATUS_CHANGED ) ) )
 	{
-		Tcl_SetResult ( interp, "Either option -text or -child must be given.",
-						TCL_STATIC );
+		goto clearError1;
+	}
+
+	if ( ! ( ( dialogOptions[textIdx].status == GNOCL_STATUS_CHANGED ) ^ ( dialogOptions[childIdx].status == GNOCL_STATUS_CHANGED ) ) )
+	{
+		Tcl_SetResult ( interp, "Either option -text or -child must be given.", TCL_STATIC );
 		goto clearError1;
 	}
 
@@ -557,18 +592,17 @@ int gnoclDialogCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * co
 
 	if ( dialogOptions[textIdx].status == GNOCL_STATUS_CHANGED )
 	{
-		para->dialog = GTK_DIALOG ( gtk_message_dialog_new ( NULL,
-									0, type, GTK_BUTTONS_NONE, "%s",
-									dialogOptions[textIdx].val.str ) );
+		para->dialog = GTK_DIALOG ( gtk_message_dialog_new ( NULL, 0, type, GTK_BUTTONS_NONE, "%s", dialogOptions[textIdx].val.str ) );
 	}
 
 	else
 	{
-		GtkWidget *child = gnoclChildNotPacked ( dialogOptions[childIdx].val.str,
-						   interp );
+		GtkWidget *child = gnoclChildNotPacked ( dialogOptions[childIdx].val.str, interp );
 
 		if ( child == NULL )
+		{
 			goto clearError1;
+		}
 
 		para->dialog = GTK_DIALOG ( gtk_dialog_new( ) );
 
@@ -630,65 +664,74 @@ int gnoclDialogCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * co
 
 
 	// set width and height
-	if ( dialogOptions[widthIdx].status == GNOCL_STATUS_CHANGED
-			&& dialogOptions[heightIdx].status == GNOCL_STATUS_CHANGED )
+	if ( dialogOptions[widthIdx].status == GNOCL_STATUS_CHANGED && dialogOptions[heightIdx].status == GNOCL_STATUS_CHANGED )
 	{
-		gtk_window_resize ( GTK_WINDOW ( para->dialog ), dialogOptions[widthIdx].val.i,
-							dialogOptions[heightIdx].val.i );
+		gtk_window_resize ( GTK_WINDOW ( para->dialog ), dialogOptions[widthIdx].val.i, dialogOptions[heightIdx].val.i );
 	}
 
-	else if ( dialogOptions[widthIdx].status == GNOCL_STATUS_CHANGED
-			  || dialogOptions[heightIdx].status == GNOCL_STATUS_CHANGED )
+	else if ( dialogOptions[widthIdx].status == GNOCL_STATUS_CHANGED  || dialogOptions[heightIdx].status == GNOCL_STATUS_CHANGED )
 	{
 		int width, height;
 		gtk_window_get_size ( GTK_WINDOW ( para->dialog ), &width, &height );
 
 		if ( dialogOptions[widthIdx].status == GNOCL_STATUS_CHANGED )
+		{
 			width = dialogOptions[widthIdx].val.i;
+		}
+
 		else
+		{
 			height = dialogOptions[heightIdx].val.i;
+		}
 
 		gtk_window_resize ( GTK_WINDOW ( para->dialog ), width, height );
 	}
 
 
-
 	// make only one move if x and y are set
-	if ( dialogOptions[xIdx].status == GNOCL_STATUS_CHANGED
-			&& dialogOptions[xIdx].status == GNOCL_STATUS_CHANGED )
+	if ( dialogOptions[xIdx].status == GNOCL_STATUS_CHANGED && dialogOptions[xIdx].status == GNOCL_STATUS_CHANGED )
 	{
 		gtk_window_move ( GTK_WINDOW ( para->dialog ), dialogOptions[xIdx].val.i, dialogOptions[yIdx].val.i );
 	}
 
-	else if ( dialogOptions[xIdx].status == GNOCL_STATUS_CHANGED
-			  || dialogOptions[yIdx].status == GNOCL_STATUS_CHANGED )
+	else if ( dialogOptions[xIdx].status == GNOCL_STATUS_CHANGED || dialogOptions[yIdx].status == GNOCL_STATUS_CHANGED )
 	{
 		int x, y;
 		gtk_window_get_position ( GTK_WINDOW ( para->dialog ), &x, &y );
 
 		if ( dialogOptions[xIdx].status == GNOCL_STATUS_CHANGED )
+		{
 			x = dialogOptions[xIdx].val.i;
+		}
+
 		else
+		{
 			y = dialogOptions[yIdx].val.i;
+		}
 
 		gtk_window_move ( GTK_WINDOW ( para->dialog ), x, y );
 	}
 
 
-
 	para->interp = interp;
-
 	para->name = NULL;
 	para->butRes = g_ptr_array_new();
 	para->isModal = 1;
 
 	if ( dialogOptions[modalIdx].status == GNOCL_STATUS_CHANGED )
+	{
 		para->isModal = dialogOptions[modalIdx].val.b;
+	}
 
 	if ( dialogOptions[onResponseIdx].status == GNOCL_STATUS_CHANGED )
+	{
 		para->onResponse = g_strdup ( dialogOptions[onResponseIdx].val.str );
+	}
+
 	else
+	{
 		para->onResponse = g_strdup ( "break" );
+	}
 
 	g_signal_connect ( G_OBJECT ( para->dialog ), "response", G_CALLBACK ( onResponse ), para );
 
@@ -735,12 +778,15 @@ int gnoclDialogCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * co
 	*/
 
 	gtk_widget_show ( GTK_WIDGET ( para->dialog ) );
+
 	/* gnoclClearOptions must be called before we enter the
 	   gtk event loop: we can't be called recursively! */
 	gnoclClearOptions ( dialogOptions );
 
 	if ( ret != TCL_OK )
+	{
 		goto clearError2;
+	}
 
 	g_signal_connect ( G_OBJECT ( para->dialog ), "destroy", G_CALLBACK ( destroyFunc ), para );
 
@@ -753,23 +799,40 @@ int gnoclDialogCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * co
 			ret = gtk_dialog_run ( GTK_WINDOW ( para->dialog ) );
 			/* exit if no button exit, or onResponse returned break */
 		}
-
 		while ( ret >= 0 && para->ret == TCL_OK );
 
+		g_print ( "%s 1\n", __FUNCTION__ );
 		Tcl_SetObjResult ( interp, getObjFromRet ( para, ret ) );
+
+		g_print ( "%s 2\n", __FUNCTION__ );
+
+		//GLib-GObject-WARNING **: invalid uninstantiatable type `<unknown>' in cast to `GObject'
 
 		/* removed, because it causes warnings when the dialog is closed */
 		/* reenabled to make return value work -ag */
-		gtk_widget_destroy ( GTK_WIDGET ( GTK_WINDOW ( para->dialog ) ) );
+
+		gtk_widget_destroy ( para->dialog );
+
+		g_print ( "%s 3\n", __FUNCTION__ );
+
 	}
 
 	else
 	{
+		//gtk_widget_show ( GTK_WIDGET ( para->dialog ) );
 		para->name = gnoclGetAutoWidgetId();
+
+		g_print ( "%s 4\n", __FUNCTION__ );
 		gnoclMemNameAndWidget ( para->name, GTK_WIDGET ( para->dialog ) );
+
+		g_print ( "%s 5\n", __FUNCTION__ );
 		Tcl_CreateObjCommand ( interp, para->name, dialogFunc, para, NULL );
+
+		g_print ( "%s 6\n", __FUNCTION__ );
 		Tcl_SetObjResult ( interp, Tcl_NewStringObj ( para->name, -1 ) );
 	}
+
+	g_print ( "%s 7\n", __FUNCTION__ );
 
 	return TCL_OK;
 

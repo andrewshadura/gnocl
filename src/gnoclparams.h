@@ -166,7 +166,7 @@ typedef struct
 {
 	char       *onResponse;
 	char       *name;
-	GtkDialog  *dialog;
+	GtkWidget  *dialog;
 	Tcl_Interp *interp;
 	GPtrArray  *butRes;
 	int        isModal;

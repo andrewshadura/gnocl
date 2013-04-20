@@ -37,9 +37,6 @@ static GnoclOption colorButtonOptions[] =
 	{ "-data", GNOCL_OBJ, "", gnoclOptData },
 	{ "-hasFocus", GNOCL_BOOL, "has-focus" },
 	{ "-name", GNOCL_STRING, "name" },
-	{ "-onButtonPress", GNOCL_OBJ, "P", gnoclOptOnButton },
-	{ "-onButtonRelease", GNOCL_OBJ, "R", gnoclOptOnButton },
-	{ "-onClicked", GNOCL_OBJ, "clicked", gnoclOptCommand },
 	{ "-onColorSet", GNOCL_OBJ, "color-set", gnoclOptOnColorSet },
 	{ "-onPopupMenu", GNOCL_OBJ, "popup-menu", gnoclOptCommand },
 	{ "-onRealize", GNOCL_OBJ, "realize", gnoclOptCommand },
@@ -54,7 +51,12 @@ static GnoclOption colorButtonOptions[] =
 	{ "-heightGroup", GNOCL_OBJ, "h", gnoclOptSizeGroup },
 	{ "-widthGroup", GNOCL_OBJ, "w", gnoclOptSizeGroup },
 	{ "-widthRequest", GNOCL_INT, "width-request" },
-	{ "-heightRequest", GNOCL_INT, "height-request" },	
+	{ "-heightRequest", GNOCL_INT, "height-request" },
+
+	{ "-onButtonPress", GNOCL_OBJ, "P", gnoclOptOnButton }, // deprecated 16/04/13
+	{ "-onButtonRelease", GNOCL_OBJ, "R", gnoclOptOnButton }, // deprecated 16/04/13
+	{ "-onClicked", GNOCL_OBJ, "clicked", gnoclOptCommand }, // deprecated 16/04/13
+
 	{ NULL },
 };
 

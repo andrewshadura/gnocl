@@ -10,6 +10,8 @@
 static GnoclOption colorSelectionOptions[] =
 {
 	{ "-tooltip", GNOCL_OBJ, "", gnoclOptTooltip },
+	{ "-palette", GNOCL_BOOL, "has-palette" },
+	{ "-opacity", GNOCL_BOOL, "has-opacity-control"  },
 	{ NULL },
 };
 
@@ -131,7 +133,7 @@ int gnoclColorSelectionCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_
 	int            ret = TCL_OK;
 	GtkWidget      *widget;
 
-	if ( 0 )
+	if ( 1 )
 	{
 		if ( gnoclParseOptions ( interp, objc, objv, colorSelectionOptions ) != TCL_OK )
 		{
@@ -140,17 +142,7 @@ int gnoclColorSelectionCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_
 		}
 	}
 
-	/*
-	typedef enum
-	{
-	  GTK_FILE_CHOOSER_ACTION_OPEN,
-	  GTK_FILE_CHOOSER_ACTION_SAVE,
-	  GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
-	  GTK_FILE_CHOOSER_ACTION_CREATE_FOLDER
-	} GtkFileChooserAction;
-	*/
-
-	widget = gtk_file_chooser_widget_new ( GTK_FILE_CHOOSER_ACTION_SAVE ) ;
+	widget = gtk_color_selection_new   ( ) ;
 
 	gtk_widget_show ( GTK_WIDGET ( widget ) );
 

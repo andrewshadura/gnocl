@@ -11,6 +11,7 @@ date 	2001-03:
 /**
  \par Modification History
  \verbatim
+ 2013-04: added -baseFont
  2012-11: added -align
  2012-09: switched to the use of ButtonParams
  2009-02: added -widthReuest, -heightRequest
@@ -41,6 +42,8 @@ date 	2001-03:
 static const int textIdx 	= 0;
 static const int iconIdx 	= 1;
 static const int alignIdx 	= 2;
+static const int baseFontIdx = 3;
+
 //static const int dataIdx 	= 3;
 
 static GnoclOption buttonOptions[] =
@@ -49,7 +52,11 @@ static GnoclOption buttonOptions[] =
 	{ "-text", GNOCL_OBJ, NULL },    /* 0 */
 	{ "-icon", GNOCL_OBJ, NULL },    /* 1 */
 	{ "-align", GNOCL_OBJ, NULL },   /* 2 */
+	{ "-baseFont", GNOCL_OBJ, NULL }, /* 4 */
+
 	//{ "-data", GNOCL_STRING, NULL }, /* 3 */
+
+
 
 	{ "-activeBackgroundColor", GNOCL_OBJ, "active", gnoclOptGdkColorBg }, // 2
 
@@ -163,6 +170,22 @@ static int configure (  Tcl_Interp *interp, ButtonParams *para,  GnoclOption opt
 		para->align = Tcl_GetString ( options[alignIdx].val.obj );
 
 		buttonAlign ( para );
+
+	}
+
+	if ( options[baseFontIdx].status == GNOCL_STATUS_CHANGED )
+	{
+
+		char *fnt;
+		GtkWidget *label;
+
+		fnt = Tcl_GetString ( options[baseFontIdx].val.obj );
+		label = gnoclFindChild ( GTK_WIDGET ( para->button ), GTK_TYPE_LABEL );
+
+		PangoFontDescription *font_desc = pango_font_description_from_string ( fnt );
+
+		gtk_widget_modify_font ( GTK_WIDGET ( label ), font_desc );
+		pango_font_description_free ( font_desc );
 
 	}
 

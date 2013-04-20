@@ -247,8 +247,7 @@ int inputDialogFunc ( ClientData data, Tcl_Interp *interp,
 /**
 \brief
 **/
-int gnoclinputDialogCmd ( ClientData data, Tcl_Interp *interp,
-						  int objc, Tcl_Obj * const objv[] )
+int gnoclinputDialogCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
 	int            ret;
 	GtkInputDialog *dialog;
