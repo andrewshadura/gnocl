@@ -18,6 +18,7 @@
 
 /*
    History:
+   2013-05: added -foreground, -background
    2013-01: added -onDestroy
    2012-08: added -resizable
    2011-06: added -cursorPos, -singleLine, -trackVisitedLinks, -useUnderline
@@ -47,6 +48,8 @@
 \page page_label gnocl::label
 \htmlinclude label.html
 **/
+
+static gnoclOptAttributes ( Tcl_Interp * interp, GnoclOption * opt, GObject * obj, Tcl_Obj **ret );
 
 /*
 typedef enum {
@@ -114,14 +117,23 @@ static GnoclOption labelOptions[] =
 
 	{ "-xPad", GNOCL_INT, "xpad" },
 	{ "-yPad", GNOCL_INT, "ypad" },
+
+	/* set using pango */
 	{ "-baseFont", GNOCL_OBJ, "", gnoclOptGdkBaseFont },
-	{ "-baseColor", GNOCL_OBJ, "normal", gnoclOptGdkColorBase },
-	{ "-background", GNOCL_OBJ, "normal", gnoclOptGdkColorBg },
+	{ "-foreground", GNOCL_OBJ, "f", gnoclOptAttributes },
+	{ "-background", GNOCL_OBJ, "b", gnoclOptAttributes },
+
+	/* these don't work */
+	//{ "-background", GNOCL_OBJ, "background-gdk", gnoclOptGdkColor },
+	//{ "-foreground", GNOCL_OBJ, "foreground-gdk", gnoclOptGdkColor },
 
 	{ "-tooltip", GNOCL_OBJ, "", gnoclOptTooltip },
 
 	/* respond to widget destruction */
 	{ "-onDestroy", GNOCL_OBJ, "destroy", gnoclOptCommand },
+
+	/* set base attributes */
+	//{ "-atrributes", GNOCL_OBJ, "", gnoclOptAttributes },
 
 	{ NULL }
 };
@@ -143,6 +155,83 @@ typedef struct
 static int setVal ( GtkLabel *label, const char *txt );
 static void changedFunc ( GtkWidget *widget, gpointer data );
 
+/**
+\brief Set foreground attribute
+**/
+static setFg ( GtkLabel *label, GdkColor color )
+{
+	PangoAttrList *list;
+	PangoAttribute *attr;
+
+	list = gtk_label_get_attributes ( label );
+	attr = pango_attr_foreground_new ( color.red, color.green, color.blue );
+	pango_attr_list_insert ( list, attr );
+	gtk_label_set_attributes ( label, list );
+	//pango_attr_list_unref ( list );
+}
+
+/**
+\brief Set background attribute
+**/
+static setBg ( GtkLabel *label, GdkColor color )
+{
+	PangoAttrList *list;
+	PangoAttribute *attr;
+
+	list =  gtk_label_get_attributes ( label );
+	attr = pango_attr_background_new ( color.red, color.green, color.blue );
+	pango_attr_list_insert ( list, attr );
+	gtk_label_set_attributes ( label, list );
+	//pango_attr_list_unref ( list );
+}
+
+/**
+\brief	Set Pango attributes for entire label contents.
+		Useful for setting markup for variables entries.
+**/
+static gnoclOptAttributes ( Tcl_Interp * interp, GnoclOption * opt, GObject * obj, Tcl_Obj **ret )
+{
+
+	const char *clr;
+	GdkColor color;
+
+	clr = Tcl_GetString ( opt->val.obj );
+	gdk_color_parse ( clr, &color );
+
+	/*
+		switch ( opt->optName[1] )
+		{
+			case 'f':   mode = GTK_SIZE_GROUP_HORIZONTAL; break;
+			case 'b':   mode = GTK_SIZE_GROUP_VERTICAL;   break;
+			default: assert ( opt->optName[1] == 's' );
+		}
+	*/
+
+//g_print ("%s\n", opt->optName[0]);
+
+
+	switch ( opt->optName[1] )
+	{
+		case 'f':
+			{
+				setFg ( GTK_WIDGET ( obj ), color );
+			}
+			break;
+		case 'b':
+			{
+				setBg ( GTK_WIDGET ( obj ), color );
+			}
+			break;
+	}
+
+
+	//setFg ( GTK_WIDGET ( obj ), color);
+
+	g_print ( "OK, clr = %s ; r %d g %d b %d\n", clr, color.red, color.green, color.blue );
+
+	return TCL_OK;
+
+}
 
 /**
 \brief
@@ -269,6 +358,11 @@ static void destroyFunc ( GtkWidget *widget, gpointer data )
 
 	gnoclForgetWidgetFromName ( para->name );
 	Tcl_DeleteCommand ( para->interp, para->name );
+
+	/* free up pango attributes list */
+	PangoAttrList *list;
+	list = gtk_label_get_attributes ( para->label );
+	pango_attr_list_unref ( list );
 
 	gnoclAttachOptCmdAndVar (
 		NULL, &para->onChanged,
@@ -542,6 +636,10 @@ int gnoclLabelCmd (	ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * con
 	para->textVariable = NULL;
 	para->onChanged = NULL;
 	para->inSetVar = 0;
+
+	/* add default attributes list */
+	PangoAttrList *list = pango_attr_list_new ();
+	gtk_label_set_attributes ( para->label, list );
 
 	gtk_widget_show ( GTK_WIDGET ( para->label ) );
 

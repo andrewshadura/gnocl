@@ -734,6 +734,36 @@ int gnoclToolTip ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * con
 }
 
 /**
+\brief      Convert HSV values to RGB
+\note
+**/
+int gnoclHsv2RgbCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * const objv[] )
+{
+
+#ifdef DEBUG_COMMANDS
+	g_print ( "%s %s\n", __FUNCTION__, Tcl_GetString ( objv[1] ) );
+#endif
+	g_print ( "%s %s\n", __FUNCTION__, Tcl_GetString ( objv[1] ) );
+
+	gdouble h, s, v;
+	gdouble r , g, b;
+
+	gchar str[32];
+
+	sscanf ( Tcl_GetString ( objv[1] ), "%f %f %f", &h, &s, &v );
+
+	printf ( "h %f s %f v %f\n", h, s, v );
+
+	gtk_hsv_to_rgb ( h, s, v, &r, &g, &b );
+
+	sprintf ( str, "%d %d %d", ( int ) r * 255, ( int ) g * 255, ( int ) b * 255 ) ;
+
+	Tcl_SetObjResult ( interp, Tcl_NewStringObj ( str, -1 ) );
+
+	return TCL_OK;
+}
+
+/**
 \brief      Emits a short beep.
 \note       Gdk Documentation for the implemented features.
             http://library.gnome.org/devel/gdk/stable/gdk-General.html

@@ -69,6 +69,7 @@ typedef struct
 	char		*data; /* no longer used */
 	char		*align;
 	GtkAlignment *alignment;
+	char		*baseFont;
 } ButtonParams;
 
 

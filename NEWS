@@ -1,3 +1,12 @@
+2013-05:
+	gnocl::label
+		o new options
+			-foreground
+			-background
+	gnocl::text
+		o new option
+			-onDragEnd
+			-onDragBegin
 2013-04: 
 	gnocl::button
 		o new option

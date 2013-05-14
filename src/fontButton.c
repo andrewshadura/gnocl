@@ -24,8 +24,12 @@
 
 #include "gnocl.h"
 
+static const int baseFontIdx = 0;
+
 static GnoclOption fontButtonOptions[] =
 {
+
+	{ "-baseFont", GNOCL_OBJ, NULL }, /* 4 */
 
 	/* GtkFontButton properties */
 	{ "-fontName", GNOCL_STRING, "font-name" },
@@ -54,6 +58,23 @@ static int configure (  Tcl_Interp *interp, GtkButton *button,  GnoclOption opti
 #ifdef DEBUG
 	printf ( "fontButton configure - no special requirements.\n" );
 #endif
+
+	if ( options[baseFontIdx].status == GNOCL_STATUS_CHANGED )
+	{
+
+		char *fnt;
+		GtkWidget *label;
+
+		fnt = Tcl_GetString ( options[baseFontIdx].val.obj );
+		label = gnoclFindChild ( GTK_WIDGET ( button ), GTK_TYPE_LABEL );
+
+		PangoFontDescription *font_desc = pango_font_description_from_string ( fnt );
+
+		gtk_widget_modify_font ( GTK_WIDGET ( label ), font_desc );
+		pango_font_description_free ( font_desc );
+
+	}
+
 
 	return TCL_OK;
 

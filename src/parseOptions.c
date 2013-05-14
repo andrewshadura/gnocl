@@ -1629,11 +1629,19 @@ static int optAlign ( Tcl_Interp *interp, Tcl_Obj *obj, int isHor,  gfloat *f )
 		char *txt = Tcl_GetString ( obj );
 
 		if ( strcmp ( txt, isHor ? "left" : "top" ) == 0 )
+		{
 			d = .0;
+		}
+
 		else if ( strcmp ( txt, "center" ) == 0 )
+		{
 			d = 0.5;
+		}
+
 		else if ( strcmp ( txt, isHor ? "right" : "bottom" ) == 0 )
+		{
 			d = 1.;
+		}
 	}
 
 	if ( d < .0 || d > 1. )
@@ -5317,6 +5325,36 @@ int gnoclOptOnDeleteRange ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, 
 \date
 \note
 **/
+static void onDragEnd ( GtkWidget *widget, GdkDragContext *context, gpointer data )
+{
+	GnoclCommandData *cs = ( GnoclCommandData * ) data;
+
+	/* if we have set the result, we are in the middle of
+	   error handling. In this case don't call any callbacks
+	   (especially onDestroy!) because this overrides the result. */
+
+	//if ( *cs->interp->result == '\0' )
+	//if ( *Tcl_GetStringResult(cs->interp) == '\0' )
+	//{
+	GnoclPercSubst ps[] =
+	{
+		{ 'w', GNOCL_STRING },  /* widget */
+		{ 'g', GNOCL_STRING },  /* gladeName */
+		{ 0 }
+	};
+
+	ps[0].val.str = gnoclGetNameFromWidget ( widget );
+	ps[1].val.str = gtk_widget_get_name ( GTK_WIDGET ( widget ) );
+	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
+}
+
+
+/**
+\brief
+\author
+\date
+\note
+**/
 static void onDragBegin ( GtkWidget *widget, GdkDragContext *context, gpointer data )
 {
 	/* TODO: set custom icon */
@@ -5438,19 +5476,32 @@ static void onDragDataReceived ( GtkWidget *widget, GdkDragContext *context,
 **/
 int gnoclOptOnDragData ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
-	int err = gnoclConnectOptCmd ( interp, obj, "drag_begin",
-								   G_CALLBACK ( onDragBegin ), opt, NULL, ret );
+	int err = gnoclConnectOptCmd ( interp, obj, "drag_begin", G_CALLBACK ( onDragBegin ), opt, NULL, ret );
 	/*
-	g_signal_connect( G_OBJECT( widget ), "drag_end",
-	      G_CALLBACK( dragEnd ), para );
+	g_signal_connect( G_OBJECT( widget ), "drag_end", G_CALLBACK( dragEnd ), para );
 	*/
 
 	if ( err == TCL_OK )
-		err = gnoclConnectOptCmd ( interp, obj, "drag_data_get",
-								   G_CALLBACK ( onDragDataGet ), opt, NULL, ret );
+	{
+		err = gnoclConnectOptCmd ( interp, obj, "drag_data_get", G_CALLBACK ( onDragDataGet ), opt, NULL, ret );
+	}
 
 	return err;
 }
+
+/**
+\brief
+\author
+\date
+\note
+**/
+int gnoclOptOnDragEnd ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
+{
+	int err = gnoclConnectOptCmd ( interp, obj, "drag_end", G_CALLBACK ( onDragEnd ), opt, NULL, ret );
+
+	return err;
+}
+
 
 /**
 \brief

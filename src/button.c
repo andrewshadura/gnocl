@@ -155,6 +155,8 @@ static int configure (  Tcl_Interp *interp, ButtonParams *para,  GnoclOption opt
 {
 	if ( options[textIdx].status == GNOCL_STATUS_CHANGED && gnoclConfigButtonText ( interp, GTK_BUTTON ( para->button ), options[textIdx].val.obj ) != TCL_OK )
 	{
+
+
 		return TCL_ERROR;
 	}
 
@@ -176,13 +178,12 @@ static int configure (  Tcl_Interp *interp, ButtonParams *para,  GnoclOption opt
 	if ( options[baseFontIdx].status == GNOCL_STATUS_CHANGED )
 	{
 
-		char *fnt;
 		GtkWidget *label;
 
-		fnt = Tcl_GetString ( options[baseFontIdx].val.obj );
+		para->baseFont = Tcl_GetString ( options[baseFontIdx].val.obj );
 		label = gnoclFindChild ( GTK_WIDGET ( para->button ), GTK_TYPE_LABEL );
 
-		PangoFontDescription *font_desc = pango_font_description_from_string ( fnt );
+		PangoFontDescription *font_desc = pango_font_description_from_string ( para->baseFont );
 
 		gtk_widget_modify_font ( GTK_WIDGET ( label ), font_desc );
 		pango_font_description_free ( font_desc );
@@ -413,6 +414,11 @@ static int cget (   Tcl_Interp *interp,  ButtonParams *para,  GnoclOption option
 			gnoclOptParaData ( interp, para->data, &obj);
 		}
 	*/
+	if ( idx == baseFontIdx )
+	{
+		obj = Tcl_NewStringObj ( para->baseFont, -1 );
+	}
+
 	if ( idx == alignIdx )
 	{
 		obj = Tcl_NewStringObj ( para->align, -1 );

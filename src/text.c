@@ -19,6 +19,7 @@
 */
 /*
    History:
+   2013-05: added -onDragEnd
    2013-04: resolved problem with tag sub-command "ranges"
    2013-02: serialize command now returns buffer data as string
    2013-01: added subcommands isToplevelFocus and hasGlobalFocus
@@ -1355,6 +1356,8 @@ static GnoclOption textOptions[] =
 	{ "-dropTargets", GNOCL_LIST, "t", gnoclOptDnDTargets },
 	{ "-dragTargets", GNOCL_LIST, "s", gnoclOptDnDTargets },
 	{ "-onDropData", GNOCL_OBJ, "", gnoclOptOnDropData },
+	{ "-onDragBegin", GNOCL_OBJ, "", gnoclOptOnDragEnd },
+	{ "-onDragEnd", GNOCL_OBJ, "", gnoclOptOnDragEnd },
 	{ "-onDragData", GNOCL_OBJ, "", gnoclOptOnDragData },
 	{ "-hasTooltip", GNOCL_BOOL, "has-tooltip" },
 	{ "-onQueryTooltip", GNOCL_OBJ, "", gnoclOptOnQueryToolTip },
@@ -3521,8 +3524,6 @@ int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl
 		"parent",
 		"getIndex", "getCoords", "getRect",
 		"undo", "redo", "grabFocus", "resetUndo", "getPos",
-
-
 
 		"set", "erase", "select", "get", "cut", "copy", "paste",
 		"cget", "getLineCount", "getWordLength", "getLength",
