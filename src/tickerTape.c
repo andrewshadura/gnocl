@@ -9,7 +9,7 @@
 /**
 \brief
 **/
-static void  doOnCurveChanged ( GtkIconView *iconview, GtkTreePath *path, gpointer user_data )
+static void  doOnCurveChanged ( GtkWidget *widget, GtkTreePath *path, gpointer user_data )
 {
 	GnoclCommandData *cs = ( GnoclCommandData * ) user_data;
 
@@ -22,8 +22,8 @@ static void  doOnCurveChanged ( GtkIconView *iconview, GtkTreePath *path, gpoint
 		{ 0 }
 	};
 
-	ps[0].val.str = gnoclGetNameFromWidget ( iconview );
-	ps[1].val.str = gtk_widget_get_name ( GTK_WIDGET ( iconview ) );
+	ps[0].val.str = gnoclGetNameFromWidget ( widget );
+	ps[1].val.str = gtk_widget_get_name ( GTK_WIDGET ( widget ) );
 	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
 	//}
 }
@@ -67,7 +67,7 @@ static GnoclOption tickerTapeOptions[] =
 \date       12-Feb-09
 \since      0.9.94
 **/
-static int configure ( Tcl_Interp *interp, GtkCurve *widget, GnoclOption options[] )
+static int configure ( Tcl_Interp *interp, GtkWidget *widget, GnoclOption options[] )
 {
 #ifdef DEBUG_TICKERTAPE
 	g_print ( "%s\n", __FUNCTION__ );
@@ -76,7 +76,7 @@ static int configure ( Tcl_Interp *interp, GtkCurve *widget, GnoclOption options
 	if ( options[textIdx].status == GNOCL_STATUS_CHANGED )
 	{
 		char *str = options[textIdx].val.str;
-		gtk_label_set_markup ( widget, str );
+		gtk_label_set_markup ( GTK_LABEL (widget) , str );
 	}
 
 	return TCL_OK;

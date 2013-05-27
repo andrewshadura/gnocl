@@ -1,4 +1,6 @@
 /*
+ *    2013-05: added command parent
+ * 			   -visible
  *    2008-10: added command, class
  */
 
@@ -20,6 +22,7 @@ static GnoclOption handleBoxOptions[] =
 	{ "-onAttached", GNOCL_OBJ, "", gnoclOptOnChildAttached },              /* 4 */
 	{ "-onDetached", GNOCL_OBJ, "", gnoclOptOnChildDetached },              /* 5 */
 	{ "-tooltip", GNOCL_OBJ, "", gnoclOptTooltip },                         /* 6 */
+	{ "-visible", GNOCL_BOOL, "visible" },
 	{ NULL }
 };
 
@@ -67,13 +70,13 @@ int handleBoxFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * con
 	static const char *cmds[] =
 	{
 		"delete", "configure", "cget",
-		"class", "size",
+		"class", "size", "paren",
 		NULL
 	};
 	enum cmdIdx
 	{
 		DeleteIdx, ConfigureIdx, CgetIdx,
-		ClassIdx, SizeIdx
+		ClassIdx, SizeIdx, ParentIdx
 	};
 	int idx;
 
@@ -100,6 +103,21 @@ int handleBoxFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * con
 
 	switch ( idx )
 	{
+				case ParentIdx:
+			{
+
+				GtkWidget * parent;
+				Tcl_Obj *obj = NULL;
+				parent = gtk_widget_get_parent ( GTK_WIDGET ( widget ) );
+				obj = Tcl_NewStringObj ( gnoclGetNameFromWidget ( parent ), -1 );
+				Tcl_SetObjResult ( interp, obj );
+
+				/* this function not working too well! */
+				/* return gnoclGetParent ( interp, data ); */
+				return TCL_OK;
+			}
+
+			break;
 		case SizeIdx:
 			{
 

@@ -564,7 +564,7 @@ static int configure ( Tcl_Interp *interp, LabelEntryParams *para, GnoclOption o
 
 	if ( options[useMarkupIdx].status == GNOCL_STATUS_CHANGED )
 	{
-		gtk_label_set_use_markup ( para->label, options[useMarkupIdx].val.i );
+		gtk_label_set_use_markup ( GTK_LABEL (para->label), options[useMarkupIdx].val.i );
 	}
 
 
@@ -587,7 +587,7 @@ static int configure ( Tcl_Interp *interp, LabelEntryParams *para, GnoclOption o
 		g_print ( "%s textIdx\n", __FUNCTION__ );
 #endif
 		char *str = options[textIdx].val.str;
-		gtk_label_set_text ( para->label, str );
+		gtk_label_set_text ( GTK_LABEL (para->label), str );
 	}
 
 	if ( options[valueIdx].status == GNOCL_STATUS_CHANGED )
@@ -631,7 +631,7 @@ static int configure ( Tcl_Interp *interp, LabelEntryParams *para, GnoclOption o
 		g_print ( "%s widthCharsIdx\n", __FUNCTION__ );
 #endif
 		gint n_chars = options[widthCharsIdx].val.i;
-		gtk_label_set_width_chars ( para->label, n_chars );
+		gtk_label_set_width_chars ( GTK_LABEL (para->label), n_chars );
 	}
 
 	if ( options[entryWidthCharsIdx].status == GNOCL_STATUS_CHANGED )
@@ -957,7 +957,7 @@ int gnoclLabelEntryCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj 
 	/* 2) the label */
 	const gchar *str = "";
 	para->label = gtk_label_new ( str );
-	gtk_label_set_justify ( para->label, GTK_JUSTIFY_LEFT );
+	gtk_label_set_justify ( GTK_LABEL (para->label), GTK_JUSTIFY_LEFT );
 	para->entry = gtk_entry_new ();
 	gtk_entry_set_text ( para->entry, "" );
 

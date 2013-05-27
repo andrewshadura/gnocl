@@ -14,6 +14,7 @@
 
 /*
    History:
+   2013-05: debugged the remove command 
    2012-04: added commands, reorder, addStart
 			corrected bugs in addBegin command
    2013-02: added gnocl::hBox and gnocl::vBox commands
@@ -317,7 +318,7 @@ static int needFrame ( const GnoclOption options[] )
 
 /**
 \brief
-\note
+\note	Not used?.
 **/
 static void removeChild ( GtkWidget *widget, gpointer data )
 {
@@ -463,10 +464,26 @@ int boxFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const obj
 
 	switch ( idx )
 	{
-			/* may require implementation of error checking */
+		/* may require implementation of error checking */
 		case RemoveIdx:
 			{
-				gtk_container_remove ( widget, gnoclGetWidgetFromName ( Tcl_GetString ( objv[2] ), interp ) );
+			
+				GtkWidget *child = gnoclGetWidgetFromName ( Tcl_GetString ( objv[2] ), interp );
+			
+				if (child==NULL) {
+					
+					char msg[125];
+					sprintf(msg,"WARNING: No such widget %s.", Tcl_GetString ( objv[2] ));
+					Tcl_SetResult ( interp, msg, TCL_STATIC );					
+					break;
+				}
+			
+				g_object_ref ( child );
+				
+				/* possible error checking using */
+				// GList * gtk_container_get_children (GtkContainer *container);
+				
+				gtk_container_remove ( box, child ) ;
 			}
 			break;
 		case CgetIdx:
@@ -475,12 +492,12 @@ int boxFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const obj
 
 				switch ( gnoclCget ( interp, objc, objv,  widget, boxOptions, &idx ) )
 				{
-					case GNOCL_CGET_ERROR:
-						return TCL_ERROR;
-					case GNOCL_CGET_HANDLED:
-						return TCL_OK;
-					case GNOCL_CGET_NOTHANDLED:
-						return cget ( interp, widget, boxOptions, idx );
+					case GNOCL_CGET_ERROR: {
+						return TCL_ERROR; }
+					case GNOCL_CGET_HANDLED: {
+						return TCL_OK; }
+					case GNOCL_CGET_NOTHANDLED: {
+						return cget ( interp, widget, boxOptions, idx );}
 				}
 			}
 			break;

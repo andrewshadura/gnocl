@@ -10,15 +10,11 @@
  *
  */
 
-/* KNOWN ISSUES
- *
- *  Gtk-CRITICAL **: IA__gtk_label_get_text: assertion `GTK_IS_LABEL (label)' failed
- *
- */
 
 /*
    History:
    2013-05: added -foreground, -background
+			bugfix in cget
    2013-01: added -onDestroy
    2012-08: added -resizable
    2011-06: added -cursorPos, -singleLine, -trackVisitedLinks, -useUnderline
@@ -227,7 +223,7 @@ static gnoclOptAttributes ( Tcl_Interp * interp, GnoclOption * opt, GObject * ob
 
 	//setFg ( GTK_WIDGET ( obj ), color);
 
-	g_print ( "OK, clr = %s ; r %d g %d b %d\n", clr, color.red, color.green, color.blue );
+	//g_print ( "OK, clr = %s ; r %d g %d b %d\n", clr, color.red, color.green, color.blue );
 
 	return TCL_OK;
 
@@ -479,11 +475,8 @@ static int cget ( Tcl_Interp *interp, LabelParams *para, GnoclOption options[], 
 
 	if ( idx == dataIdx )
 	{
-		g_print ( "dataIdx\n" );
 		obj = Tcl_NewStringObj ( g_object_get_data ( G_OBJECT ( para->label ), "gnocl::data" ), -1 );
 	}
-
-
 
 	if ( idx == textVariableIdx )
 	{
@@ -497,7 +490,11 @@ static int cget ( Tcl_Interp *interp, LabelParams *para, GnoclOption options[], 
 
 	if ( idx == textIdx )
 	{
-		obj = Tcl_NewStringObj ( gtk_label_get_text ( GTK_LABEL ( para->label ) ), -1 );
+
+		obj = Tcl_NewStringObj ( gtk_label_get_text ( para->label ) , -1 );
+		/* test for use markup */
+		//obj = Tcl_NewStringObj ( gtk_label_get_label ( para->label ) , -1 );
+
 	}
 
 	if ( obj != NULL )
@@ -562,6 +559,7 @@ int labelFunc (	ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const o
 
 		case CgetIdx:
 			{
+
 				int     idx;
 
 				switch ( gnoclCget ( interp, objc, objv, G_OBJECT ( para->label ), labelOptions, &idx ) )
@@ -576,13 +574,14 @@ int labelFunc (	ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const o
 						}
 					case GNOCL_CGET_NOTHANDLED:
 						{
-							return cget ( interp, para->label, labelOptions, idx );
+							return cget ( interp, para, labelOptions, idx );
 						}
 				}
 			}
 
 		case OnChangedIdx:
 			{
+
 				const char *txt = gtk_label_get_text ( GTK_LABEL ( para->label ) );
 
 				if ( objc != 2 )

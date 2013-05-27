@@ -1,8 +1,17 @@
 2013-05:
+	gnocl::toolBar
+		o new command parent
+	gnocl::handleBox
+		o new command parent
+		o new option -visible
+    gnocl::box
+		o debugged the remove command 
 	gnocl::label
 		o new options
 			-foreground
 			-background
+		o bugfix
+			cget now working properly again
 	gnocl::text
 		o new option
 			-onDragEnd

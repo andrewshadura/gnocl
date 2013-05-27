@@ -12,6 +12,7 @@
 
 /*
    History:
+   2013-05: added parent
    2012-05: toolbar cget -data now works
    2011-04: added -tooltips
    			nItems
@@ -1833,6 +1834,7 @@ int toolBarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const
 		"add", "addBegin", "addEnd",
 		"class", "configure", "delete",
 		"insert", "nItems", "cget",
+		"parent",
 		NULL
 	};
 
@@ -1840,7 +1842,8 @@ int toolBarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const
 	{
 		AddIdx, BeginIdx, EndIdx,
 		ClassIdx, ConfigureIdx, DeleteIdx,
-		InsertIdx, NitemsIdx, CgetIdx
+		InsertIdx, NitemsIdx, CgetIdx,
+		ParentIdx
 	};
 
 	GtkToolbar *toolBar = GTK_TOOLBAR ( data );
@@ -1859,6 +1862,21 @@ int toolBarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const
 
 	switch ( idx )
 	{
+				case ParentIdx:
+			{
+
+				GtkWidget * parent;
+				Tcl_Obj *obj = NULL;
+				parent = gtk_widget_get_parent ( GTK_WIDGET ( toolBar ) );
+				obj = Tcl_NewStringObj ( gnoclGetNameFromWidget ( parent ), -1 );
+				Tcl_SetObjResult ( interp, obj );
+
+				/* this function not working too well! */
+				/* return gnoclGetParent ( interp, data ); */
+				return TCL_OK;
+			}
+
+			break;
 		case CgetIdx:
 			{
 				int idx;

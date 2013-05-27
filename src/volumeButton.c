@@ -167,8 +167,7 @@ int gnoclConfigVolumeButtonText ( Tcl_Interp *interp, GtkWidget *widget,
 		assert ( label );
 		/* TODO? pango_parse_markup for error message */
 		gtk_label_set_use_markup ( label, ( type & GNOCL_STR_MARKUP ) != 0 );
-		gtk_label_set_use_underline ( label,
-									  ( type & GNOCL_STR_UNDERLINE ) != 0 );
+		gtk_label_set_use_underline ( label, ( type & GNOCL_STR_UNDERLINE ) != 0 );
 	}
 
 	return TCL_OK;
