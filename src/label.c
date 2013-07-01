@@ -15,6 +15,7 @@
    History:
    2013-05: added -foreground, -background
 			bugfix in cget
+			-useMarkup now working properly, default = 0
    2013-01: added -onDestroy
    2012-08: added -resizable
    2011-06: added -cursorPos, -singleLine, -trackVisitedLinks, -useUnderline
@@ -64,7 +65,8 @@ static const int cursorIdx = 4;
 static const int widgetIdx = 5;
 static const int mnemonicIdx = 6;
 static const int resizableIdx = 7;
-static const int dataIdx = 9;
+static const int dataIdx = 8;
+// static const int useMarkupIdx = 9;
 
 static GnoclOption labelOptions[] =
 {
@@ -74,10 +76,12 @@ static GnoclOption labelOptions[] =
 	{ "-value", GNOCL_STRING, NULL},                    /* 2 */
 	{ "-text", GNOCL_STRING, NULL},                     /* 3 */
 	{ "-showCursor", GNOCL_BOOL, NULL},					/* 4 */
-	{ "-mnemonicWidget", GNOCL_STRING, NULL }, //6
-	{ "-mnemonicText", GNOCL_STRING, NULL }, //7
-	{ "-resizable", GNOCL_BOOL, NULL }, //8
-	{ "-data", GNOCL_OBJ, "", gnoclOptData }, //9
+	{ "-mnemonicWidget", GNOCL_STRING, NULL }, //5
+	{ "-mnemonicText", GNOCL_STRING, NULL }, //6
+	{ "-resizable", GNOCL_BOOL, NULL }, //7
+	{ "-data", GNOCL_OBJ, "", gnoclOptData }, //8
+	//{ "-useMarkup", GNOCL_BOOL, NULL }, //9
+
 
 	/* gtklabel specific properties */
 	{ "-angle", GNOCL_DOUBLE, "angle" },
@@ -93,7 +97,9 @@ static GnoclOption labelOptions[] =
 	//{ "-selectionBound", GNOCL_INT,"selection-bound" },
 	{ "-singleLine", GNOCL_BOOL, "single-line-mode" },
 	{ "-trackVisitedLinks", GNOCL_BOOL, "track-visited-links" },
+
 	{ "-useMarkup", GNOCL_BOOL, "use-markup" },
+
 	{ "-useUnderline", GNOCL_BOOL, "use-underline" },
 	{ "-widthChars", GNOCL_INT, "width-chars" },
 	{ "-wrap", GNOCL_BOOL, "wrap" },
@@ -421,8 +427,18 @@ static int configure ( Tcl_Interp *interp, LabelParams *para, GnoclOption option
 	if ( options[textIdx].status == GNOCL_STATUS_CHANGED )
 	{
 		char *str = options[textIdx].val.str;
-		gtk_label_set_markup ( para->label, str );
 
+
+		if ( gtk_label_get_use_markup ( para->label ) )
+		{
+			gtk_label_set_markup ( para->label, str );
+
+		}
+
+		else
+		{
+			gtk_label_set_text ( para->label, str );
+		}
 	}
 
 
@@ -452,8 +468,6 @@ static int configure ( Tcl_Interp *interp, LabelParams *para, GnoclOption option
 		{
 			g_signal_connect ( G_OBJECT ( para->label ), "size-allocate", NULL, NULL );
 		}
-
-
 
 	}
 
@@ -491,8 +505,21 @@ static int cget ( Tcl_Interp *interp, LabelParams *para, GnoclOption options[], 
 	if ( idx == textIdx )
 	{
 
-		obj = Tcl_NewStringObj ( gtk_label_get_text ( para->label ) , -1 );
+		if ( gtk_label_get_use_markup ( para->label ) )
+		{
+			obj = Tcl_NewStringObj ( gtk_label_get_label ( para->label ) , -1 );
+		}
+
+		else
+		{
+			obj = Tcl_NewStringObj ( gtk_label_get_text ( para->label ) , -1 );
+		}
+
+
+
 		/* test for use markup */
+
+
 		//obj = Tcl_NewStringObj ( gtk_label_get_label ( para->label ) , -1 );
 
 	}
@@ -620,14 +647,11 @@ int gnoclLabelCmd (	ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * con
 
 	if ( labelOptions[mnemonicIdx].status == GNOCL_STATUS_CHANGED )
 	{
-
 		para->label = GTK_LABEL ( gtk_label_new_with_mnemonic ( NULL ) );
-
 	}
 
 	else
 	{
-
 		para->label = GTK_LABEL ( gtk_label_new ( NULL ) );
 	}
 
@@ -641,10 +665,6 @@ int gnoclLabelCmd (	ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * con
 	gtk_label_set_attributes ( para->label, list );
 
 	gtk_widget_show ( GTK_WIDGET ( para->label ) );
-
-	/* added 14/Jan/2010 */
-	gtk_label_set_use_markup ( para->label, TRUE );
-
 
 	ret = gnoclSetOptions ( interp, labelOptions, G_OBJECT ( para->label ), -1 );
 

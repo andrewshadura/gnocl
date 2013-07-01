@@ -23,7 +23,7 @@
 
 */
 
-#include "gnocl.h"
+#include "gnocl.h"exist
 
 /* list to hold names of applied tags */
 static GSList *tagList = NULL;
@@ -325,6 +325,7 @@ static int getTag ( char *str, char *tag, int i )
 	return ++i;
 }
 
+
 /**
 \brief
 **/
@@ -407,10 +408,12 @@ void removeTag ( const char *tag )
 }
 
 
+
+
 /**
 \brief
 **/
-int gnoclInsertMarkup ( GtkTextBuffer *buffer, GtkTextIter *iter, char *markup_text )
+int _gnoclInsertMarkup ( GtkTextBuffer *buffer, GtkTextIter *iter, char *markup_text )
 {
 #ifdef DEBUG_PANGO_MARKUP
 	g_print ( "FUNC: %s\n", __FUNCTION__ );
@@ -428,14 +431,70 @@ int gnoclInsertMarkup ( GtkTextBuffer *buffer, GtkTextIter *iter, char *markup_t
 
 	i = start;
 
+	while ( *markup_text != '\0' )
+	{
+		g_print ( "========== %c\n" , *markup_text );
+
+		if ( *markup_text == '<' )
+		{
+			g_print ( "tag <\n" , *markup_text );
+			//getTag ( char *str, char *tag, int i )
+		}
+
+		if ( *markup_text == '>' )
+		{
+			g_print ( "tag >\n" , *markup_text );
+		}
+
+		++markup_text;
+	}
+
+	g_print ( "==========\n" );
+	return 0;
+}
+
+
+
+/**
+\brief
+\todo	test the legality of the markup string.
+		swap &gtl; for ">" etc..
+**/
+int gnoclInsertMarkup ( GtkTextBuffer *buffer, GtkTextIter *iter, char *markup_text )
+{
+#ifdef DEBUG_PANGO_MARKUP
+	g_print ( "FUNC: %s\n", __FUNCTION__ );
+#endif
+
+	/* interate through pango string, determine, text or markup */
+	int i, j, start, end;
+	start = 0;
+
+
+	end = strlen ( markup_text );
+
+
+	const char tag[256];
+	char txt[end];
+
+	const char *tags = " ";
+
+	i = start;
+
 	while ( i < end )
 	{
 		i = getTag ( markup_text, tag, i );
+
+		g_print ( "i = %d ; onTag = %s\n", i, tag );
+
+
+#if 1
 
 		/* add or remove tag from taglist */
 		if ( strstr ( tag, "/" ) != NULL  )
 		{
 			g_print ( "\ttagOff %s\n", tag );
+
 
 			/* remove matching tag from the list */
 			//strip_chars ( tags, tag );
@@ -452,10 +511,21 @@ int gnoclInsertMarkup ( GtkTextBuffer *buffer, GtkTextIter *iter, char *markup_t
 
 			/* Notice that these are initialized to the empty list. */
 
-			/* This is a list of strings. */
-			tagList = g_slist_append ( tagList, tag );
+			if ( g_slist_find ( tagList, tag ) != NULL )
+			{
+				g_print ( "tag %s already exists!\n", tag );
+			}
+
+			else
+			{
+				g_print ( "adding tag %sn", tag );
+				/* This is a list of strings. */
+				tagList = g_slist_prepend ( tagList, tag );
+			}
 
 		}
+
+#endif
 
 		if ( i == end )
 			break; /* prevent error */
@@ -500,6 +570,10 @@ void applyTags ( GtkTextBuffer *buffer, GtkTextMark *tagStart, GtkTextMark *tagE
 	GSList *p = NULL;
 	gint i;
 
+	GtkTextTagTable *table;
+
+	table = gtk_text_buffer_get_tag_table ( buffer );
+
 	i = 1;
 
 	gtk_text_buffer_get_iter_at_mark ( buffer, &start, tagStart );
@@ -510,7 +584,11 @@ void applyTags ( GtkTextBuffer *buffer, GtkTextMark *tagStart, GtkTextMark *tagE
 	for ( p = ( GSList * ) tagList; p != NULL; p = p->next )
 	{
 		g_print ( "\ttag = %s (%d)\n", p->data, i++ );
-		gtk_text_buffer_apply_tag_by_name  ( buffer, p->data, &start, &end );
+
+		if ( gtk_text_tag_table_lookup ( table, p->data ) != NULL )
+		{
+			gtk_text_buffer_apply_tag_by_name  ( buffer, p->data, &start, &end );
+		}
 	}
 
 	g_print ( "----------\n" );

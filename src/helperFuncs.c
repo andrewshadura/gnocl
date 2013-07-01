@@ -12,6 +12,7 @@
 
 /*
    History:
+   2013-06: added str_replace
    2012-03: added trim
    2010-10: added stringtype
    2010-07: added cmds2list
@@ -319,6 +320,68 @@ gchar *stringtype ( int type )
 
 }
 
+/**
+\brief append to string
+**/
+char *str_append ( const char *s1, const char *s2 )
+{
+	char *s0 = malloc ( strlen ( s1 ) + strlen ( s2 ) + 1 );
+	strcpy ( s0, s1 );
+	strcat ( s0, s2 );
+	return s0;
+}
+
+/**
+\brief	prepend to string
+**/
+char *str_prepend ( const char *s1, const char *s2 )
+{
+	char *s0 = malloc ( strlen ( s1 ) + strlen ( s2 ) + 1 );
+	strcpy ( s0, s2 );
+	strcat ( s0, s1 );
+	return s0;
+}
+
+
+/**
+\brief	replace all occurances of substring.
+**/
+char *str_replace ( const char *string, const char *substr, const char *replacement )
+{
+	char *tok = NULL;
+	char *newstr = NULL;
+	char *oldstr = NULL;
+	char *head = NULL;
+
+	/* if either substr or replacement is NULL, duplicate string a let caller handle it */
+	if ( substr == NULL || replacement == NULL ) return strdup ( string );
+
+	newstr = strdup ( string );
+	head = newstr;
+
+	while ( ( tok = strstr ( head, substr ) ) )
+	{
+		oldstr = newstr;
+		newstr = malloc ( strlen ( oldstr ) - strlen ( substr ) + strlen ( replacement ) + 1 );
+
+		/*failed to alloc mem, free old string and return NULL */
+		if ( newstr == NULL )
+		{
+			free ( oldstr );
+			return NULL;
+		}
+
+		memcpy ( newstr, oldstr, tok - oldstr );
+		memcpy ( newstr + ( tok - oldstr ), replacement, strlen ( replacement ) );
+		memcpy ( newstr + ( tok - oldstr ) + strlen ( replacement ), tok + strlen ( substr ), strlen ( oldstr ) - strlen ( substr ) - ( tok - oldstr ) );
+		memset ( newstr + strlen ( oldstr ) - strlen ( substr ) + strlen ( replacement ) , 0, 1 );
+		/* move back head right after the last replacement */
+		head = newstr + ( tok - oldstr ) + strlen ( replacement );
+		free ( oldstr );
+	}
+
+	return newstr;
+}
 
 /**
 \brief      Get index of matched string in an NULL terminated array of strings.

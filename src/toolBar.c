@@ -12,6 +12,8 @@
 
 /*
    History:
+   2013-06: configure/cget -orientation now works
+			added flip -an expiremental feature
    2013-05: added parent
    2012-05: toolbar cget -data now works
    2011-04: added -tooltips
@@ -79,16 +81,17 @@ static const int ButtonIdx     	= 7;
 static const int MenuIdx      	= 8;
 static const int RadioIdx      	= 9;
 
+
 /* */
 static const int dataIdx = 0;
+static const int orientationIdx = 1;
 
 /* toolBar options */
 static GnoclOption toolBarOptions[] =
 {
 	{ "-data", GNOCL_OBJ, "", gnoclOptData }, /* 0 */
-
-	//{ "-orientation", GNOCL_OBJ, "orientation", optOrientation },
-	{ "-orientation", GNOCL_OBJ, "orientation", gnoclOptOrientation },
+	//{ "-orientation", GNOCL_OBJ, "orientation", gnoclOptOrientation },
+	{ "-orientation", GNOCL_STRING, NULL},
 
 	/* widget specific options */
 	{ "-iconSize", GNOCL_INT, "icon-size"},
@@ -128,10 +131,8 @@ GnoclOption menuButtonOptions[] =
 {
 	{ "-text", GNOCL_OBJ, NULL },
 	{ "-icon", GNOCL_OBJ, NULL},
-
 	{ "-iconWidget", GNOCL_STRING, NULL },
 	{ "-menu", GNOCL_OBJ, "", gnoclOptMenu },
-
 
 	// { "-onArrowClicked", GNOCL_STRING, NULL },	/* 4 */
 
@@ -473,11 +474,38 @@ static void setUnderline ( GtkWidget *item )
 }
 
 
+
+
+
 /**
 \brief
 **/
 static int configure ( Tcl_Interp *interp, GtkWidget *widget, GnoclOption options[] )
 {
+
+	if ( options[orientationIdx].status == GNOCL_STATUS_CHANGED )
+	{
+		if ( strcmp ( options[orientationIdx].val.str, "horizontal" ) == 0 )
+		{
+
+			gtk_orientable_set_orientation ( GTK_ORIENTABLE ( widget ), GTK_ORIENTATION_HORIZONTAL );
+
+		}
+
+		else if ( strcmp ( options[orientationIdx].val.str, "vertical" ) == 0 )
+		{
+
+			gtk_orientable_set_orientation ( GTK_ORIENTABLE ( widget ), GTK_ORIENTATION_VERTICAL );
+		}
+
+		else
+		{
+			return TCL_ERROR;
+		}
+
+
+	}
+
 	return TCL_OK;
 }
 
@@ -485,14 +513,35 @@ static int configure ( Tcl_Interp *interp, GtkWidget *widget, GnoclOption option
 /**
 \brief  Obtain current -option values.
 **/
-static int cget (   Tcl_Interp *interp, GtkWidget *widget,  GnoclOption options[],  int idx )
+static int toolBarCget (  Tcl_Interp *interp, GtkWidget *widget,  GnoclOption options[],  int idx )
 {
+
 
 	Tcl_Obj *obj = NULL;
 
 	if ( idx == dataIdx )
 	{
 		obj = Tcl_NewStringObj ( g_object_get_data ( widget, "gnocl::data" ), -1 );
+	}
+
+	if ( idx == orientationIdx )
+	{
+
+		switch ( gtk_toolbar_get_orientation ( widget ) )
+		{
+			case GTK_ORIENTATION_HORIZONTAL:
+				{
+					obj = Tcl_NewStringObj ( "horizontal", -1 );
+				} break;
+			case  GTK_ORIENTATION_VERTICAL:
+				{
+					obj = Tcl_NewStringObj ( "vertical", -1 );
+				} break;
+			default:
+				{
+					return TCL_ERROR;
+				}
+		}
 	}
 
 
@@ -512,6 +561,7 @@ static int cget (   Tcl_Interp *interp, GtkWidget *widget,  GnoclOption options[
 **/
 static Tcl_Obj *cgetText ( GtkWidget *item )
 {
+
 	/* FIXME: is there really only one label? */
 	GtkWidget *label = gnoclFindChild ( item, GTK_TYPE_LABEL );
 
@@ -616,9 +666,10 @@ static int checkConfigure ( Tcl_Interp *interp, GnoclToolBarCheckParams *para,
 /**
 \brief
 **/
-static int checkCget ( Tcl_Interp *interp, GnoclToolBarCheckParams *para,
-					   GnoclOption options[], int idx )
+static int checkCget ( Tcl_Interp *interp, GnoclToolBarCheckParams *para, GnoclOption options[], int idx )
 {
+
+
 	Tcl_Obj *obj = NULL;
 
 	if ( idx == checkTextIdx )
@@ -823,9 +874,10 @@ static int radioConfigure ( Tcl_Interp *interp, GnoclRadioParams *para, GnoclOpt
 /**
 \brief
 **/
-static int radioCget ( Tcl_Interp *interp, GnoclRadioParams *para,
-					   GnoclOption options[], int idx )
+static int radioCget ( Tcl_Interp *interp, GnoclRadioParams *para, GnoclOption options[], int idx )
 {
+
+
 	Tcl_Obj *obj = NULL;
 
 	if ( idx == radioTextIdx )
@@ -939,8 +991,7 @@ static int radiotoolButtonFunc ( ClientData data, Tcl_Interp *interp, int objc, 
 			{
 				int     idx;
 
-				switch ( gnoclCget ( interp, objc, objv, G_OBJECT ( para->widget ),
-									 radioOptions, &idx ) )
+				switch ( gnoclCget ( interp, objc, objv, G_OBJECT ( para->widget ), radioOptions, &idx ) )
 				{
 					case GNOCL_CGET_ERROR:
 						return TCL_ERROR;
@@ -1197,6 +1248,7 @@ int toolButtonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * co
 	{
 		case CgetIdx:
 			{
+
 			}
 		case ClassIdx:
 			{
@@ -1831,7 +1883,7 @@ int toolBarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const
 {
 	static const char *cmds[] =
 	{
-		"add", "addBegin", "addEnd",
+		"flip", "add", "addBegin", "addEnd",
 		"class", "configure", "delete",
 		"insert", "nItems", "cget",
 		"parent",
@@ -1840,7 +1892,7 @@ int toolBarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const
 
 	enum cmdIdx
 	{
-		AddIdx, BeginIdx, EndIdx,
+		FlipIdx, AddIdx, BeginIdx, EndIdx,
 		ClassIdx, ConfigureIdx, DeleteIdx,
 		InsertIdx, NitemsIdx, CgetIdx,
 		ParentIdx
@@ -1862,7 +1914,21 @@ int toolBarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const
 
 	switch ( idx )
 	{
-				case ParentIdx:
+		case FlipIdx:
+			{
+
+				if ( gtk_toolbar_get_orientation ( toolBar ) == GTK_ORIENTATION_HORIZONTAL )
+				{
+					gtk_orientable_set_orientation ( GTK_ORIENTABLE ( toolBar ), GTK_ORIENTATION_VERTICAL );
+				}
+
+				else
+				{
+					gtk_orientable_set_orientation ( GTK_ORIENTABLE ( toolBar ), GTK_ORIENTATION_HORIZONTAL );
+				}
+			}
+			break;
+		case ParentIdx:
 			{
 
 				GtkWidget * parent;
@@ -1893,7 +1959,7 @@ int toolBarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const
 						}
 					case GNOCL_CGET_NOTHANDLED:
 						{
-							return cget ( interp, toolBar, toolBarOptions, idx );
+							return toolBarCget ( interp, toolBar, toolBarOptions, idx );
 						}
 				}
 			}
@@ -1925,7 +1991,6 @@ int toolBarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const
 				//int ret = gnoclParseAndSetOptions ( interp, objc - 1, objv + 1, toolBarOptions, G_OBJECT ( toolBar ) );
 				//gnoclClearOptions ( toolBarOptions );
 				//return ret;
-
 				int ret = TCL_ERROR;
 
 				if ( gnoclParseAndSetOptions ( interp, objc - 1, objv + 1, toolBarOptions, G_OBJECT ( toolBar ) ) == TCL_OK )
@@ -1976,6 +2041,11 @@ int gnoclToolBarCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * c
 	gtk_widget_show ( GTK_WIDGET ( toolBar ) );
 
 	ret = gnoclSetOptions ( interp, toolBarOptions, G_OBJECT ( toolBar ), -1 );
+
+	if ( ret == TCL_OK )
+	{
+		ret = configure ( interp, toolBar, toolBarOptions );
+	}
 
 	gnoclClearOptions ( toolBarOptions );
 

@@ -103,7 +103,7 @@ int handleBoxFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * con
 
 	switch ( idx )
 	{
-				case ParentIdx:
+		case ParentIdx:
 			{
 
 				GtkWidget * parent;

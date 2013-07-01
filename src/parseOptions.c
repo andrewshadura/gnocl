@@ -731,6 +731,7 @@ int gnoclOptPadding ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Ob
 
 /**
 \brief	Set orientation of widget based upon new API
+\notes  Called by toolbar and ??
 **/
 int gnoclOptOrientation ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {

@@ -76,7 +76,7 @@ static int configure ( Tcl_Interp *interp, GtkWidget *widget, GnoclOption option
 	if ( options[textIdx].status == GNOCL_STATUS_CHANGED )
 	{
 		char *str = options[textIdx].val.str;
-		gtk_label_set_markup ( GTK_LABEL (widget) , str );
+		gtk_label_set_markup ( GTK_LABEL ( widget ) , str );
 	}
 
 	return TCL_OK;

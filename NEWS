@@ -1,3 +1,16 @@
+2013-07:
+   gnocl::notebook
+		o new options
+			-data
+		o added extra percentage subtitution strings to -onPageAdded, -onPageRemoved
+			%c child
+			%n page number
+			%d data
+
+2013-06: 
+	gnocl::toolBar
+		o configure/cget -orientation now works
+		
 2013-05:
 	gnocl::toolBar
 		o new command parent
@@ -12,6 +25,7 @@
 			-background
 		o bugfix
 			cget now working properly again
+			-useMarkup now working properly, default = 0
 	gnocl::text
 		o new option
 			-onDragEnd

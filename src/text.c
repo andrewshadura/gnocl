@@ -11,6 +11,13 @@
  *  Modification of the the GtkSourceView undo/redo provided by Ross Burton (ross@burtonini.com)
  */
 
+/**
+ * CURRENTLY ACCEPTS :
+ * 		$w get markup start end
+ * 		$w get start end -markup 1
+ **/
+
+
 /*
 	to do
 		document
@@ -274,9 +281,39 @@ static int doCommand ( TextParams *para, const char *val, int background )
 
 
 /***********************************************************************/
+gchar *stripMarkup ( GtkTextBuffer *buffer, GtkTextIter *start, GtkTextIter *end )
+{
+	GtkTextIter *iter;
+
+	iter = gtk_text_iter_copy ( start );
+
+	gchar *str = NULL;
+	gunichar ch;
+
+	/* parse each position in the selection */
+	while ( gtk_text_iter_equal ( iter, end ) == 0 )
+	{
+		ch = gtk_text_iter_get_char ( iter );
+		str = str_append ( str, ch );
+		gtk_text_iter_forward_cursor_position ( iter ); //OK
+	}
+
+	return str;
+}
 
 /**
 \brief	Return text with Pango markup
+\notes	Pango has a weight markup format compared to HTML or the textBuff
+		Basically, it means there are problems when overlapping markup tags.
+		Whatever is opened has to be closed, and then the overlap re-opened.
+
+		eg: this will work
+		The buffer will return this..
+		<b>aaa<i> bbb</b> <u>ccc</u></i> ddd</u>
+		But this is pango!
+		<b>aaa<i> bbb</i></b><i> <u>ccc</u></i><u> ddd</u>
+
+\date	23/06/13
 **/
 Tcl_Obj *getMarkUpString ( Tcl_Interp *interp, GtkTextBuffer *buffer, GtkTextIter *start, GtkTextIter *end )
 {
@@ -284,24 +321,186 @@ Tcl_Obj *getMarkUpString ( Tcl_Interp *interp, GtkTextBuffer *buffer, GtkTextIte
 	g_print ( "%s usemarkup = %d\n", __FUNCTION__, usemarkup );
 #endif
 
-	g_print ( "%s\n", __FUNCTION__ );
-
-
 	Tcl_Obj *res;
-	//gchar *txt = NULL;
 
 	GtkTextIter *iter;
 	gunichar ch;
-	GSList *p, *onList, *offList;
+	GList *q;
+	GList *onList = NULL, *offList = NULL, *revList = NULL;
+	gchar *tagName = NULL;
+
+	res = Tcl_NewStringObj ( "", 0 );
+	iter = gtk_text_iter_copy ( start );
+
+	/* parse each position in the selection */
+	while ( gtk_text_iter_equal ( iter, end ) == 0 )
+	{
+
+		/* process tagOff before any subsequent tagOn */
+		offList = gtk_text_iter_get_toggled_tags ( iter, 0 );
+		onList = gtk_text_iter_get_toggled_tags ( iter, 1 );
+
+		if ( onList != NULL )
+		{
+			/* get a reverse list */
+			for ( q = onList ; q != NULL; q = q->next )
+			{
+				tagName = ( GTK_TEXT_TAG ( q->data )->name );
+				Tcl_AppendStringsToObj ( res, tagName, ( char * ) NULL );
+			}
+		}
+
+		if ( offList != NULL )
+		{
+			/* get off tags */
+			onList = gtk_text_iter_get_tags ( iter );
+
+			for ( q = onList ; q != NULL; q = q->next )
+			{
+				tagName = ( GTK_TEXT_TAG ( q->data )->name );
+				revList = g_slist_prepend ( revList, tagName );
+			}
+
+			/* turn off tags in order of priority, ie reverse the list */
+			for ( q = revList ; q != NULL; q = q->next )
+			{
+				tagName = q->data ;
+
+				if ( strncmp ( tagName, "<span", 5 ) == 0 )
+				{
+					tagName = "<span>";
+				}
+
+				Tcl_AppendStringsToObj ( res, str_replace ( tagName, "<", "</" ), ( char * ) NULL );
+			}
+
+			for ( q = offList ; q != NULL; q = q->next )
+			{
+				tagName = ( GTK_TEXT_TAG ( q->data )->name );
+
+				if ( strncmp ( tagName, "<span", 5 ) == 0 )
+				{
+					tagName = "<span>";
+				}
+
+				Tcl_AppendStringsToObj ( res, str_replace ( tagName, "<", "</" ), ( char * ) NULL );
+			}
+
+			for ( q = onList ; q != NULL; q = q->next )
+			{
+				tagName = ( GTK_TEXT_TAG ( q->data )->name );
+				Tcl_AppendStringsToObj ( res, tagName, ( char * ) NULL );
+			}
+
+			g_slist_free ( onList );  onList = NULL;
+			g_slist_free ( revList ); revList = NULL;
+			g_slist_free ( offList ); offList = NULL;
+
+		}
+
+		/* end of markup block */
+
+		/* get character */
+		ch = gtk_text_iter_get_char ( iter );
+		Tcl_AppendStringsToObj ( res, &ch, ( char * ) NULL );
+
+		/* turnOff span? */
+		gtk_text_iter_forward_cursor_position ( iter ); //OK
+	}
+
+	/* terminate tags at end of line */
+	if ( gtk_text_iter_backward_to_tag_toggle ( iter, NULL ) )
+	{
+		offList = gtk_text_iter_get_tags ( iter );
+
+		if ( 1 )
+		{
+			for ( q = offList ; q != NULL; q = q->next )
+			{
+				tagName = ( GTK_TEXT_TAG ( q->data )->name );
+				revList = g_slist_prepend ( revList, tagName );
+			}
+
+
+			for ( q = revList ; q != NULL; q = q->next )
+			{
+				tagName = q->data ;
+
+				if ( strncmp ( tagName, "<span", 5 ) == 0 )
+				{
+					tagName = "<span>";
+				}
+
+				Tcl_AppendStringsToObj ( res, str_replace ( tagName, "<", "</" ), ( char * ) NULL );
+			}
+		}
+
+		else
+		{
+			for ( q = offList ; q != NULL; q = q->next )
+			{
+				tagName = ( GTK_TEXT_TAG ( q->data )->name );
+
+				if ( strncmp ( tagName, "<span", 5 ) == 0 )
+				{
+					tagName = "<span>";
+				}
+
+				Tcl_AppendStringsToObj ( res, str_replace ( tagName, "<", "</" ), ( char * ) NULL );
+			}
+		}
+	}
+
+	gtk_text_iter_free ( iter );
+
+	g_slist_free ( onList );  onList = NULL;
+	g_slist_free ( revList ); revList = NULL;
+	g_slist_free ( offList ); offList = NULL;
+
+#ifdef DEBUG_TEXT
+	g_print ( "done!\n" );
+#endif
+
+	//g_print ( "TEXT = %s\n", Tcl_GetStringFromObj ( res, NULL ) );
+
+	gchar *text = NULL;
+
+	if (  pango_parse_markup ( Tcl_GetStringFromObj ( res, NULL ), -1 , NULL, NULL, &text, NULL, NULL ) == 0 )
+	{
+		g_print ( "WARNING! Malformed Pango Strings: %s\n", text );
+		Tcl_SetStringObj ( res, "", 0 );
+		Tcl_AppendStringsToObj ( res, gtk_text_buffer_get_text ( buffer, start, end, 0 ), ( char * ) NULL );
+
+	}
+
+	return res;
+}
+
+
+
+/**
+\brief	Return text with Pango markup -WORKING VERSION
+**/
+Tcl_Obj *getMarkUpString_ ( Tcl_Interp *interp, GtkTextBuffer *buffer, GtkTextIter *start, GtkTextIter *end )
+{
+#ifdef DEBUG_TEXT
+	g_print ( "%s usemarkup = %d\n", __FUNCTION__, usemarkup );
+#endif
+
+	Tcl_Obj *res;
+
+	GtkTextIter *iter;
+	gunichar ch;
+	GList *p, *q, *list;
+
+	GList *onList = NULL, *offList = NULL, *revList = NULL;
 
 	gchar *tagName = NULL;
 	gchar *onTag = NULL;
 	gchar *offTag = NULL;
 
-	//txt = gtk_text_buffer_get_text ( buffer, start, end, 1 );
-
-	//res = Tcl_NewStringObj ( txt, -1 );
-	//g_free ( txt );
+	gchar openList[128] = "";
+	gchar closeList[128] = "";
 
 	res = Tcl_NewStringObj ( "", 0 );
 
@@ -313,79 +512,92 @@ Tcl_Obj *getMarkUpString ( Tcl_Interp *interp, GtkTextBuffer *buffer, GtkTextIte
 
 		/* process tagOff before any subsequent tagOn */
 		offList = gtk_text_iter_get_toggled_tags ( iter, 0 );
-
-		for ( p = offList; p != NULL; p = p->next )
-		{
-			tagName = ( GTK_TEXT_TAG ( p->data )->name );
-
-			/* handle overlapping tags, pango only allows nesting -WORKING HERE*/
-			if ( onTag != tagName  )
-			{
-				Tcl_AppendStringsToObj ( res, "</", onTag, ">", "</", tagName, ">", "<", onTag, ">", ( char * ) NULL );
-			}
-
-			else
-			{
-				Tcl_AppendStringsToObj ( res, "</", tagName, ">", ( char * ) NULL );
-				onTag = NULL;
-				offTag = NULL;
-			}
-
-			//offTag = tagName;
-
-		}
-
-		/* process tagOn */
 		onList = gtk_text_iter_get_toggled_tags ( iter, 1 );
 
-		for ( p = onList; p != NULL; p = p->next )
+		if ( onList != NULL )
 		{
-			tagName = ( GTK_TEXT_TAG ( p->data )->name );
 
-			/* handle overlapping tags, pango only allows nesting -OK*/
-			if ( onTag != NULL && strcmp ( onTag, tagName ) == 0 )
+			/* get a reverse list */
+			for ( q = onList ; q != NULL; q = q->next )
 			{
-				Tcl_AppendStringsToObj ( res, "</", onTag, ">", "<", onTag, ">", "<", tagName, ">", ( char * ) NULL );
+				tagName = ( GTK_TEXT_TAG ( q->data )->name );
+				revList = g_slist_prepend ( revList, tagName );
+				Tcl_AppendStringsToObj ( res, tagName, ( char * ) NULL );
 			}
 
-			onTag = tagName;
+
+			for ( q = revList ; q != NULL; q = q->next )
+			{
+				tagName = q->data ;
+			}
+
+			g_slist_free ( revList );
+			revList = NULL;
+
 		}
+
+		if ( offList != NULL )
+		{
+			/* turn off tags */
+			onList = gtk_text_iter_get_tags ( iter );
+
+			for ( q = onList ; q != NULL; q = q->next )
+			{
+				tagName = ( GTK_TEXT_TAG ( q->data )->name );
+				revList = g_slist_prepend ( revList, tagName );
+			}
+
+			for ( q = revList ; q != NULL; q = q->next )
+			{
+				Tcl_AppendStringsToObj ( res, str_replace ( q->data, "<", "</" ), ( char * ) NULL );
+			}
+
+			for ( q = offList ; q != NULL; q = q->next )
+			{
+				tagName = ( GTK_TEXT_TAG ( q->data )->name );
+				Tcl_AppendStringsToObj ( res, str_replace ( tagName, "<", "</" ), ( char * ) NULL );
+			}
+
+			for ( q = onList ; q != NULL; q = q->next )
+			{
+				tagName = ( GTK_TEXT_TAG ( q->data )->name );
+				Tcl_AppendStringsToObj ( res, tagName, ( char * ) NULL );
+			}
+
+			g_slist_free ( onList );  onList = NULL;
+			g_slist_free ( revList ); revList = NULL;
+			g_slist_free ( offList ); offList = NULL;
+
+		}
+
+		/* end of markup block */
 
 		/* get character */
 		ch = gtk_text_iter_get_char ( iter );
 		Tcl_AppendStringsToObj ( res, &ch, ( char * ) NULL );
 
 		/* turnOff span? */
-		gtk_text_iter_forward_char ( iter );
+		gtk_text_iter_forward_cursor_position ( iter ); //OK
+	}
 
-		/* ensure all open markup tags are properly closed */
-		if  ( gtk_text_iter_equal ( iter, end ) )
+	/* terminate tags at end of line */
+	if ( gtk_text_iter_backward_to_tag_toggle ( iter, NULL ) )
+	{
+		offList = gtk_text_iter_get_tags ( iter );
+
+		for ( q = offList ; q != NULL; q = q->next )
 		{
-			offList = gtk_text_iter_get_toggled_tags ( iter, 0 );
+			tagName = ( GTK_TEXT_TAG ( q->data )->name );
 
-			for ( p = offList; p != NULL; p = p->next )
-			{
-				tagName = ( GTK_TEXT_TAG ( p->data )->name );
-
-				if ( strstr ( tagName, "=" ) )
-				{
-					Tcl_AppendStringsToObj ( res, "</span>", ( char * ) NULL );
-				}
-
-				else
-				{
-					Tcl_AppendStringsToObj ( res, "</", tagName, ">", ( char * ) NULL );
-				}
-
-
-			}
-
+			Tcl_AppendStringsToObj ( res, str_replace ( tagName, "<", "</" ), ( char * ) NULL );
 		}
-
 	}
 
 	gtk_text_iter_free ( iter );
 
+	g_slist_free ( onList );  onList = NULL;
+	g_slist_free ( revList ); revList = NULL;
+	g_slist_free ( offList ); offList = NULL;
 
 #ifdef DEBUG_TEXT
 	g_print ( "done!\n" );
@@ -393,7 +605,6 @@ Tcl_Obj *getMarkUpString ( Tcl_Interp *interp, GtkTextBuffer *buffer, GtkTextIte
 
 	return res;
 }
-
 
 /**
 \brief  Serialize the content of the textbuffer in an ascii format
@@ -3520,6 +3731,9 @@ int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl
 
 	const char *cmds[] =
 	{
+		"getMarkup", "getAttributes",
+		"insertMarkup",
+
 		"delete", "configure", "scrollToPosition", "scrollToMark",
 		"parent",
 		"getIndex", "getCoords", "getRect",
@@ -3533,11 +3747,16 @@ int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl
 		"serialize", "deSerialize", "save", "load", "print", "lorem",
 		"clear", "popup", "getSelectionBounds",
 		"hasGlobalFocus", "isToplevelFocus",
+
 		NULL
 	};
 
 	enum cmdIdx
 	{
+		GetMarkupIdx, GetAttributesIdx,
+		InsertMarkupIdx,
+
+
 		DeleteIdx, ConfigureIdx, ScrollToPosIdx, ScrollToMarkIdx,
 		ParentIdx,
 		GetIndexIdx, GetCoordsIdx, GetRectIdx,
@@ -3597,6 +3816,85 @@ int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl
 		case HasGlobalFocusIdx:	return 14;
 		case IsToplevelFocusIdx:	return 15;
 			/* these are GtkTextBuffer operations */
+
+		case InsertMarkupIdx:
+			{
+				GtkTextIter iter;
+				g_print ( "InsertMarkupIdx\n" );
+
+				if ( posToIter ( interp, objv[cmdNo+1], buffer, &iter ) != TCL_OK )
+				{
+					return TCL_ERROR;
+				}
+
+				gnoclInsertMarkup ( buffer, &iter, Tcl_GetString ( objv[cmdNo+2]  ) );
+			}
+			break;
+
+		case GetAttributesIdx:
+			{
+				if ( strcmp ( Tcl_GetString ( objv[cmdNo+1] ), "attributes" ) == 0 )
+				{
+
+					GtkTextIter iter;
+					GtkTextAttributes values;
+
+					if ( posToIter ( interp, objv[cmdNo+2], buffer, &iter ) != TCL_OK )
+					{
+						return TCL_ERROR;
+					}
+
+					if ( gtk_text_iter_get_attributes ( &iter, &values ) )
+					{
+#ifdef DEBUG_TEXT
+						g_print ( "attributes at %s\n", Tcl_GetString ( objv[cmdNo+2] ) );
+#endif
+						/*
+						GtkJustification justification;
+						GtkTextDirection direction;
+						PangoFontDescription *font;
+						gdouble font_scale;
+						gint left_margin;
+						gint indent;
+						gint right_margin;
+						gint pixels_above_lines;
+						gint pixels_below_lines;
+						gint pixels_inside_wrap;
+						PangoTabArray *tabs;
+						GtkWrapMode wrap_mode;
+						PangoLanguage *language;
+						guint invisible : 1;
+						guint bg_full_height : 1;
+						guint editable : 1;
+						guint realized : 1;
+						*/
+
+						getAttributes ( interp, &values );
+
+					}
+
+					return TCL_OK;
+
+				}
+			}
+			break;
+
+		case GetMarkupIdx:
+			{
+				//g_print ( "%s getMarkup\n",__FUNCTION__);
+
+				GtkTextIter startIter, endIter;
+
+				posToIter ( interp, objv[cmdNo+1], buffer, &startIter );
+				posToIter ( interp, objv[cmdNo+2], buffer, &endIter );
+				//g_print ( "getMarkup 1\n" );
+				Tcl_Obj *res = getMarkUpString ( interp, buffer, &startIter, &endIter );
+				//g_print ( "getMarkup 2\n" );
+				//char *txt = gtk_text_buffer_get_text ( buffer, &startIter, &endIter, 1 );
+				Tcl_SetObjResult ( interp, res );
+				//g_print ( "getMarkup 3\n" );
+			}
+			break;
 
 		case PrintIdx:
 			{
@@ -4002,107 +4300,7 @@ int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl
 		case GetIdx:
 			{
 				GtkTextIter startIter, endIter;
-				/*  text erase/select/getChars startIndex ?endIndex? */
-				gint get_markup = 0;
 
-#ifdef DEBUG_TEXT
-				g_print ( "2\n" );
-#endif
-
-				if ( objc == 6 )
-				{
-					if ( strcmp ( Tcl_GetString ( objv[cmdNo+4] ), "1" ) == 0 )
-					{
-						get_markup = 1;
-						objc += 2;
-					}
-				}
-
-#ifdef DEBUG_TEXT
-				g_print ( "3\n" );
-#endif
-
-				if ( objc < cmdNo + 3 )
-				{
-					Tcl_WrongNumArgs ( interp, cmdNo + 2, objv, "{row col} -options" );
-					return -1;
-				}
-
-#ifdef DEBUG_TEXT
-				g_print ( "4\n" );
-#endif
-				/* get attributes */
-
-				if ( strcmp ( Tcl_GetString ( objv[cmdNo+1] ), "attributes" ) == 0 )
-				{
-
-#ifdef DEBUG_TEXT
-					g_print ( "attributes at %s\n", Tcl_GetString ( objv[cmdNo+2] ) );
-#endif
-					GtkTextIter iter;
-					GtkTextAttributes values;
-
-					if ( posToIter ( interp, objv[cmdNo+2], buffer, &iter ) != TCL_OK )
-					{
-						return TCL_ERROR;
-					}
-
-					if ( gtk_text_iter_get_attributes ( &iter, &values ) )
-					{
-#ifdef DEBUG_TEXT
-						g_print ( "attributes at %s\n", Tcl_GetString ( objv[cmdNo+2] ) );
-#endif
-						/*
-						GtkJustification justification;
-						GtkTextDirection direction;
-						PangoFontDescription *font;
-						gdouble font_scale;
-						gint left_margin;
-						gint indent;
-						gint right_margin;
-						gint pixels_above_lines;
-						gint pixels_below_lines;
-						gint pixels_inside_wrap;
-						PangoTabArray *tabs;
-						GtkWrapMode wrap_mode;
-						PangoLanguage *language;
-						guint invisible : 1;
-						guint bg_full_height : 1;
-						guint editable : 1;
-						guint realized : 1;
-						*/
-
-						getAttributes ( interp, &values );
-
-					}
-
-					return TCL_OK;
-				}
-
-
-				if ( strcmp ( Tcl_GetString ( objv[cmdNo+1] ), "markup" ) == 0 )
-				{
-
-#ifdef DEBUG_TEXT
-					g_print ( "markup from %s to %s\n", Tcl_GetString ( objv[cmdNo+2] ), Tcl_GetString ( objv[cmdNo+3] ) );
-					g_print ( "=====get as markup string\n" );
-#endif
-
-					posToIter ( interp, objv[cmdNo+2], buffer, &startIter );
-					posToIter ( interp, objv[cmdNo+3], buffer, &endIter );
-
-					Tcl_Obj *res = getMarkUpString ( interp, buffer, &startIter, &endIter );
-
-					//char *txt = gtk_text_buffer_get_text ( buffer, &startIter, &endIter, 1 );
-					Tcl_SetObjResult ( interp, res );
-					return TCL_OK;
-
-
-				}
-
-#ifdef DEBUG_TEXT
-				g_print ( "6\n" );
-#endif
 
 				if ( objc < cmdNo + 3 )
 				{
@@ -4161,22 +4359,9 @@ int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl
 							g_print ( "10 ----\n" );
 #endif
 
-							if ( get_markup )
-							{
-#ifdef DEBUG_TEXT
-								g_print ( "-----get as markup string\n" );
-#endif
-								Tcl_Obj *res = getMarkUpString ( interp, buffer, &startIter, &endIter );
+							char *txt = gtk_text_buffer_get_text ( buffer, &startIter, &endIter, 1 );
+							Tcl_SetObjResult ( interp, Tcl_NewStringObj ( txt, -1 ) );
 
-								//char *txt = gtk_text_buffer_get_text ( buffer, &startIter, &endIter, 1 );
-								Tcl_SetObjResult ( interp, res );
-							}
-
-							else
-							{
-								char *txt = gtk_text_buffer_get_text ( buffer, &startIter, &endIter, 1 );
-								Tcl_SetObjResult ( interp, Tcl_NewStringObj ( txt, -1 ) );
-							}
 						}
 						break;
 				}
@@ -4654,6 +4839,7 @@ int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl
 \note       Unlike gnocl, Builder/Glade  not provide text objects within scrolled windows.
             Two handle functions are necessary, one for gnocl built widgets, and one for builder/glade widgets.
 **/
+
 static int textFunc ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj *  const objv[] )
 {
 	TextParams *para = ( TextParams * ) data;

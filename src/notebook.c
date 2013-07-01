@@ -12,6 +12,12 @@
 
 /*
    History:
+   2013-07	new option
+			-data
+			added extra percentage subtitution strings to -onPageAdded, -onPageRemoved
+				%c child
+				%n page number
+				%d data
    2013-01	added options
     		-startWidget
 			-endWidget
@@ -234,10 +240,16 @@ static void onPageAddedFunc ( GtkNotebook *notebook, GtkWidget *child, guint pag
 	GnoclPercSubst ps[] =
 	{
 		{ 'w', GNOCL_STRING },  /* window */
+		{ 'c', GNOCL_STRING },  /* window */
+		{ 'n', GNOCL_INT },  /* window */
+		{ 'd', GNOCL_STRING },  /* window */
 		{ 0 }
 	};
 
 	ps[0].val.str = gnoclGetNameFromWidget ( notebook );
+	ps[1].val.str = gnoclGetNameFromWidget ( child );
+	ps[2].val.i = page_num;
+	ps[3].val.str = g_object_get_data ( G_OBJECT ( notebook ), "gnocl::data" );
 
 	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
 
@@ -252,16 +264,25 @@ static void onPageRemovedFunc ( GtkNotebook *notebook, GtkWidget *child, guint p
 	GnoclPercSubst ps[] =
 	{
 		{ 'w', GNOCL_STRING },  /* window */
+		{ 'c', GNOCL_STRING },  /* window */
+		{ 'n', GNOCL_INT },  /* window */
+		{ 'd', GNOCL_STRING },  /* window */
 		{ 0 }
 	};
 
 	ps[0].val.str = gnoclGetNameFromWidget ( notebook );
+	ps[1].val.str = gnoclGetNameFromWidget ( child );
+	ps[2].val.i = page_num;
+	ps[3].val.str = g_object_get_data ( G_OBJECT ( notebook ), "gnocl::data" );
 
 	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
 
 }
 
-static void onSelectPageFunc ( GtkNotebook *notebook, gboolean arg1, gpointer     user_data )
+/**
+\brief
+**/
+static void onSelectPageFunc ( GtkNotebook *notebook, gboolean arg1, gpointer user_data )
 {
 
 	GnoclCommandData *cs = ( GnoclCommandData * ) user_data;
@@ -270,10 +291,12 @@ static void onSelectPageFunc ( GtkNotebook *notebook, gboolean arg1, gpointer   
 	GnoclPercSubst ps[] =
 	{
 		{ 'w', GNOCL_STRING },  /* window */
+		{ 'd', GNOCL_STRING },  /* window */
 		{ 0 }
 	};
 
 	ps[0].val.str = gnoclGetNameFromWidget ( notebook );
+	ps[1].val.str = g_object_get_data ( G_OBJECT ( notebook ), "gnocl::data" );
 
 	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
 
@@ -347,6 +370,8 @@ static GnoclOption notebookOptions[] =
 	{ "-startWidget", GNOCL_OBJ, NULL },     /* 9 */
 	{ "-endWidget", GNOCL_OBJ, NULL },     /* 10 */
 	{ "-onChangeCurrentPage", GNOCL_OBJ, NULL },     /* 11 */
+
+	{ "-data", GNOCL_OBJ, "", gnoclOptData },
 
 	/* GtkNoteBook soecific properties */
 	{ "-enablePopup", GNOCL_BOOL, "enable-popup" },
