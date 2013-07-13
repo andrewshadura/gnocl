@@ -13,6 +13,7 @@
 
 /*
    History:
+   2013-07: added commands, options, commands
    2011-04: Begin of developement
  */
 
@@ -175,14 +176,14 @@ int toolPaletteFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * c
 	static const char *cmds[] =
 	{
 		"addGroup",
-		"delete", "configure", "class",
+		"delete", "configure", "class", "parent", "options", "commands",
 		NULL
 	};
 
 	enum cmdIdx
 	{
 		AddGroupIdx,
-		DeleteIdx, ConfigureIdx, ClassIdx, ParentIdx
+		DeleteIdx, ConfigureIdx, ClassIdx, ParentIdx, OptionsIdx, CommandsIdx
 	};
 
 	GtkWidget *palette_scroller = GTK_WIDGET ( data );
@@ -196,6 +197,16 @@ int toolPaletteFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * c
 
 	switch ( idx )
 	{
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, options );
+			}
+			break;
 		case AddGroupIdx:
 			{
 
@@ -225,6 +236,10 @@ int toolPaletteFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * c
 				gnoclClearOptions ( options );
 
 				return ret;
+			}
+		case ParentIdx:
+			{
+				return TCL_OK;
 			}
 
 			break;

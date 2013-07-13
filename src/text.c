@@ -26,6 +26,7 @@
 */
 /*
    History:
+   2013-07: added command, options
    2013-05: added -onDragEnd
    2013-04: resolved problem with tag sub-command "ranges"
    2013-02: serialize command now returns buffer data as string
@@ -177,7 +178,7 @@ static void changedFunc ( GtkWidget *widget, gpointer data )
 	gtk_text_buffer_get_bounds ( buffer, &start, &end );
 	const char *val = gtk_text_buffer_get_text ( buffer, &start, &end, FALSE );
 
-	g_print ( "....%s\n", val );
+	//g_print ( "....%s\n", val );
 
 
 	//const char *val = gtk_label_get_text ( para->label );
@@ -2569,15 +2570,15 @@ int tagCmd ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, Tcl_Obj *  c
 			break;
 		case CgetIdx:	// tagCmd
 			{
-				g_print ( "tag CgetIdx 1\n" );
+				//g_print ( "tag CgetIdx 1\n" );
 
 				int     idx;
 				Tcl_Obj *resList;
 
 				GtkTextTagTable *tagtable = gtk_text_buffer_get_tag_table ( buffer );
-				g_print ( "tag CgetIdx 2\n" );
+				//g_print ( "tag CgetIdx 2\n" );
 				GtkTextTag *tag = gtk_text_tag_table_lookup ( tagtable, Tcl_GetString ( objv[cmdNo+1] ) );
-				g_print ( "tag CgetIdx 3\n" );
+				//g_print ( "tag CgetIdx 3\n" );
 
 				switch ( gnoclTagCget ( interp, objc, objv, G_OBJECT ( tag ), tagOptions, &idx ) )
 				{
@@ -2663,7 +2664,7 @@ int tagCmd ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, Tcl_Obj *  c
 							break;
 						default:
 							{
-								g_print ( "got everything!\n" );
+								//g_print ( "got everything!\n" );
 								tagList = gtk_text_iter_get_tags ( &iter );
 							}
 					}
@@ -3181,7 +3182,7 @@ static int cget ( Tcl_Interp * interp, GtkTextView * text, GnoclOption options[]
 
 	if ( idx == baseFontIdx )
 	{
-		g_print ( "basefont\n" );
+		//g_print ( "basefont\n" );
 		PangoContext *context = gtk_widget_get_pango_context ( GTK_WIDGET ( text ) );
 		PangoFontDescription *desc = pango_context_get_font_description ( context );
 		char *font = pango_font_description_to_string  ( desc );
@@ -3198,7 +3199,7 @@ static int cget ( Tcl_Interp * interp, GtkTextView * text, GnoclOption options[]
 
 	if ( idx == baseColorIdx )
 	{
-		g_print ( "basecolor\n" );
+		//g_print ( "basecolor\n" );
 
 		Tcl_Obj *ret = Tcl_NewListObj ( 0, interp );
 		GdkColor color;
@@ -3234,8 +3235,8 @@ static int cget ( Tcl_Interp * interp, GtkTextView * text, GnoclOption options[]
 **/
 static void gnoclGetTagRanges ( Tcl_Interp *interp, GtkTextBuffer *buffer, gchar *tagName )
 {
-#ifdef DEBUG_TEXT
-	g_print ( "%s %s\n", __FUNCTION__, tagName );
+#if 0
+	g_print ( "func = %s  tagname = %s\n", __FUNCTION__, tagName );
 #endif
 
 	GtkTextIter iter;
@@ -3250,10 +3251,20 @@ static void gnoclGetTagRanges ( Tcl_Interp *interp, GtkTextBuffer *buffer, gchar
 	static char s1[300];
 	static char s2[10];
 
+
 	gtk_text_buffer_get_start_iter ( buffer, &iter );
 
 	table = gtk_text_buffer_get_tag_table ( buffer );
+
 	tag = gtk_text_tag_table_lookup ( table, tagName );
+
+	if ( tag == NULL )
+	{
+
+		return TCL_ERROR;
+	}
+
+
 
 	/* check to see if tag applied at start of text */
 	if ( gtk_text_iter_begins_tag ( &iter, tag ) == TRUE )
@@ -3268,6 +3279,7 @@ static void gnoclGetTagRanges ( Tcl_Interp *interp, GtkTextBuffer *buffer, gchar
 
 	while ( ( gtk_text_iter_forward_to_tag_toggle ( &iter, tag ) ) == TRUE )
 	{
+
 		row = gtk_text_iter_get_line ( &iter );
 		col = gtk_text_iter_get_line_offset ( &iter );
 
@@ -3737,7 +3749,7 @@ int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl
 		"delete", "configure", "scrollToPosition", "scrollToMark",
 		"parent",
 		"getIndex", "getCoords", "getRect",
-		"undo", "redo", "grabFocus", "resetUndo", "getPos",
+		"undo", "redo", "grabFocus", "resetUndo", "getPos", "options", "commands",
 
 		"set", "erase", "select", "get", "cut", "copy", "paste",
 		"cget", "getLineCount", "getWordLength", "getLength",
@@ -3760,7 +3772,7 @@ int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl
 		DeleteIdx, ConfigureIdx, ScrollToPosIdx, ScrollToMarkIdx,
 		ParentIdx,
 		GetIndexIdx, GetCoordsIdx, GetRectIdx,
-		UndoIdx, RedoIdx, GrabFocusIdx, ResetUndoIdx, GetPosIdx,
+		UndoIdx, RedoIdx, GrabFocusIdx, ResetUndoIdx, GetPosIdx, OptionsIdx, CommandsIdx,
 
 		SetIdx, EraseIdx, SelectIdx, GetIdx, CutIdx, CopyIdx, PasteIdx,
 		CgetIdx, GetLineCountIdx, GetWordLengthIdx, GetLengthIdx,
@@ -3815,12 +3827,26 @@ int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl
 		case GetPosIdx: 		return 13;
 		case HasGlobalFocusIdx:	return 14;
 		case IsToplevelFocusIdx:	return 15;
+
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, textOptions );
+			}
+			break;
+
+		case CommandsIdx:
+			{
+				gnoclGetCommands ( interp, cmds );
+			}
+			break;
+
+
 			/* these are GtkTextBuffer operations */
 
 		case InsertMarkupIdx:
 			{
 				GtkTextIter iter;
-				g_print ( "InsertMarkupIdx\n" );
+				//g_print ( "InsertMarkupIdx\n" );
 
 				if ( posToIter ( interp, objv[cmdNo+1], buffer, &iter ) != TCL_OK )
 				{
@@ -4936,7 +4962,7 @@ static int textFunc ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * 
 		case 6: /* get line/row from root window coordinates, ie passed from an event */
 			{
 
-				g_print ( "tag getIndex\n" );
+				//g_print ( "tag getIndex\n" );
 
 				GtkTextIter iter;
 				gint y, line_no;
@@ -4951,7 +4977,7 @@ static int textFunc ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * 
 				Tcl_GetIntFromObj ( NULL, objv[2], &wx ) ;
 				Tcl_GetIntFromObj ( NULL, objv[3], &wy ) ;
 
-				g_print ( "1\n" );
+				//g_print ( "1\n" );
 
 				//gdk_window_get_pointer (TxT->window, &wx, &wy, NULL);
 				gtk_text_view_window_to_buffer_coords ( text, GTK_TEXT_WINDOW_WIDGET, wx, wy, &bx, &by );
@@ -4959,18 +4985,18 @@ static int textFunc ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * 
 
 				//gtk_text_layout_get_iter_at_pixel (text->layout, &iter, x, y);
 
-				g_print ( "2\n" );
+				//g_print ( "2\n" );
 
 
 				line = gtk_text_iter_get_line ( &iter );
 				row = gtk_text_iter_get_line_offset ( &iter );
 
-				g_print ( "3\n" );
+				//g_print ( "3\n" );
 
 				gchar str[16];
 				sprintf ( str, "%d %d", line, row );
 
-				g_print ( "4\n" );
+				//g_print ( "4\n" );
 
 				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( str, -1 ) );
 
@@ -5062,6 +5088,7 @@ static int textFunc ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * 
 				Tcl_SetObjResult ( interp, Tcl_NewIntObj ( gtk_widget_is_focus ( text ) ) );
 				return TCL_OK;
 			}
+
 
 		default:
 			{

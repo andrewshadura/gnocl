@@ -2,6 +2,7 @@
 \brief
 \todo	add getColumn and getRow widget commands
 \history
+   2013-07: added commands, options, commands
    2013-01: added insert
    2012-12: fixed problem with -wrapMode failing to set to option word
    2012-09: new option
@@ -25,7 +26,7 @@
             some cleanups
    2003-03: added collapse, expand, scrollToPosition, setSelection,
             onSelectionChanged, option -single to add a single row
-        12: switched from GnoclWidgetOptions to GnoclOption
+        12: switched from GnoclWidgetOptions to GnoclOptionFgetWtt
         10: new command erase and getSelection
         09: renamed -command to -onToggled, -onEdited resp.
             renamed -selectionChanged to -onSelectionChanged
@@ -3375,7 +3376,7 @@ int treeListFunc ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * con
 		"cellConfigure", "erase", "scrollToPosition", "collapse",
 		"expand", "getNumChildren", "coordsToPath", "setCursor",
 		"getReference", "deleteReference", "referenceToPath", "class",
-		"search", "resize", "columns", "rows", "redraw", "options",
+		"search", "resize", "columns", "rows", "redraw", "options", "commands",
 		NULL
 	};
 
@@ -3391,7 +3392,7 @@ int treeListFunc ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * con
 		CellConfigureIdx, EraseIdx, ScrollToPosIdx, CollapseIdx,
 		ExpandIdx, GetNumChildren, CoordsToPathIdx, SetCursorIdx,
 		GetReferenceIdx, DeleteReferenceIdx, ReferenceToPathIdx, ClassIdx,
-		SearchIdx, ResizeIdx, ColumnsIdx, RowsIdx, RedrawIdx, OptionsIdx
+		SearchIdx, ResizeIdx, ColumnsIdx, RowsIdx, RedrawIdx, OptionsIdx, CommandsIdx
 	};
 
 	TreeListParams *para = ( TreeListParams * ) data;
@@ -3437,9 +3438,14 @@ int treeListFunc ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * con
 
 			}
 			break;
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
 		case OptionsIdx:
 			{
-				gnoclGetWidgetOptions ( interp, treeListOptions );
+				gnoclGetOptions ( interp, treeListOptions );
 			}
 			break;
 		case RedrawIdx:

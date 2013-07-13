@@ -15,6 +15,7 @@ date	2001-03:
 /**
 \par Modification History
 \verbatim
+	2013-07:	added commands, options, commands
 	2009-10:    added -width -height -size
 	2008-10:    added command, class
 	2008-08:	began development
@@ -179,8 +180,9 @@ int arrowButtonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * c
 	g_print ( "%s\n", __FUNCTION__, );
 #endif
 
-	static const char *cmds[] = { "delete", "configure", "cget", "onClicked", "class", NULL };
-	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, OnClickedIdx, ClassIdx };
+	static const char *cmds[] = { "delete", "configure", "cget", "onClicked", "class", "options", "commands", NULL };
+	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, OnClickedIdx, ClassIdx, OptionsIdx, CommandsIdx };
+
 	GtkWidget *widget = GTK_WIDGET ( data );
 	int idx;
 
@@ -197,6 +199,15 @@ int arrowButtonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * c
 
 	switch ( idx )
 	{
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, arrowOptions );
+			} break;
 		case ClassIdx:
 			Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "arrowButton", -1 ) );
 			break;

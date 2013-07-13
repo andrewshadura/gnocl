@@ -1,5 +1,10 @@
+/* todo
+ * implement cget
+ */
+
 /*
    History:
+   2013-07: added commands, options, commands
    2011-04: Begin of developement
  */
 
@@ -37,13 +42,13 @@ int spinnerFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const
 {
 	static const char *cmds[] =
 	{
-		"delete", "configure", "class", "start", "stop",
+		"delete", "configure", "class", "start", "stop", "options", "commands",
 		NULL
 	};
 
 	enum cmdIdx
 	{
-		DeleteIdx, ConfigureIdx, ClassIdx, ParentIdx, StartIdx, StopIdx
+		DeleteIdx, ConfigureIdx, ClassIdx, ParentIdx, StartIdx, StopIdx, OptionsIdx, CommandsIdx
 	};
 
 	GtkSpinner *spinner = GTK_SPINNER ( data );
@@ -57,6 +62,11 @@ int spinnerFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const
 
 	switch ( idx )
 	{
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, spinnerOptions );
+			}
+			break;
 		case StartIdx:
 			{
 				gtk_spinner_start ( spinner );

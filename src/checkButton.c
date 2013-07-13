@@ -12,6 +12,7 @@
 
 /*
    History:
+   2013-07: added commands, options, commands
    2012-08: added %d (data) to -onToggled substitutions.
    2008-10: added command, class
    2004-02: added -data
@@ -421,9 +422,9 @@ static int cget ( Tcl_Interp *interp, GnoclCheckParams *para, GnoclOption option
 **/
 int checkButtonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-	static const char *cmds[] = { "delete", "configure", "cget", "onToggled", "class", NULL
+	static const char *cmds[] = { "delete", "configure", "cget", "onToggled", "class", "options", "commands", NULL
 								};
-	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, OnToggledIdx, ClassIdx };
+	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, OnToggledIdx, ClassIdx, OptionsIdx, CommandsIdx };
 	GnoclCheckParams *para = ( GnoclCheckParams * ) data;
 	int idx;
 
@@ -438,6 +439,16 @@ int checkButtonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * c
 
 	switch ( idx )
 	{
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, checkButtonOptions );
+			}
+			break;
 		case ClassIdx:
 			Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "checkButton", -1 ) );
 			break;

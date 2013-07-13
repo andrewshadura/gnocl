@@ -12,6 +12,7 @@
 
 /*
    History:
+   2013-07:	added commands, options, commands
    2009-12: renamed separatorFunc to menuSeparatorFunc to avoid name clash,
    2008-10: added command, class
    2002-10: split from menuItem
@@ -39,8 +40,9 @@ static GnoclOption separatorOptions[] =
 **/
 static int menuSeparatorFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-	static const char *cmds[] = { "delete", "configure", "class", NULL };
-	enum cmdIdx { DeleteIdx, ConfigureIdx, ClassIdx };
+	static const char *cmds[] = { "delete", "configure", "class", "options", "commands", NULL };
+	enum cmdIdx { DeleteIdx, ConfigureIdx, ClassIdx, OptionsIdx, CommandsIdx };
+
 	GtkSeparatorMenuItem *separator = GTK_SEPARATOR_MENU_ITEM ( data );
 	int idx;
 
@@ -56,6 +58,15 @@ static int menuSeparatorFunc ( ClientData data, Tcl_Interp *interp, int objc, Tc
 
 	switch ( idx )
 	{
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, separatorOptions );
+			}
 		case ClassIdx:
 			Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "menuSeparator", -1 ) );
 			break;

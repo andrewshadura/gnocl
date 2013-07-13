@@ -17,9 +17,10 @@
 /**
  \par Modification History
  \verbatim
-   2009-12: added -visible
-            fixed error in displaying the correct string in title bar
-   2005-07: Began of developement
+	2013-07: added commands, options, commands
+	2009-12: added -visible
+             fixed error in displaying the correct string in title bar
+	2005-07: Began of developement
  \endverbatim
 **/
 
@@ -164,12 +165,12 @@ static int cget ( Tcl_Interp *interp, GtkLabel *label,
 /**
 \brief
 **/
-int inputDialogFunc ( ClientData data, Tcl_Interp *interp,
-					  int objc, Tcl_Obj * const objv[] )
+int inputDialogFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
 
-	static const char *cmds[] = { "delete", "configure", "cget", "class", "hide", "show", NULL };
-	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, ClassIdx, HideIdx, ShowIdx };
+	static const char *cmds[] = { "delete", "configure", "cget", "class", "hide", "show", "options", "commands", NULL };
+	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, ClassIdx, HideIdx, ShowIdx, OptionsIdx, CommandsIdx };
+
 	int idx;
 	GtkWidget *widget = GTK_WIDGET ( data );
 
@@ -187,6 +188,16 @@ int inputDialogFunc ( ClientData data, Tcl_Interp *interp,
 
 	switch ( idx )
 	{
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, inputDialogOptions );
+			}
+			break;
 		case HideIdx:
 			{
 				gtk_widget_hide ( widget );

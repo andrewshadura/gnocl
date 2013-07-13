@@ -3,6 +3,7 @@
 \date      31-DEC-2011
 \version   0.9.95
 	History:
+	2013-07: added command, commands
 	2011-12: New module added.
 **/
 
@@ -115,14 +116,14 @@ static int recentMgrFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Ob
 	const char *cmds[] =
 	{
 		"add", "remove", "purge",
-		"delete", "configure",
+		"delete", "configure", "commands",
 		NULL
 	};
 
 	enum cmdIdx
 	{
 		AddIdx, RemoveIdx, PurgeIdx,
-		DeleteIdx, ConfigureIdx,
+		DeleteIdx, ConfigureIdx, CommandsIdx
 	};
 
 	int idx;
@@ -140,6 +141,11 @@ static int recentMgrFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Ob
 
 	switch ( idx )
 	{
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
 		case AddIdx:
 			{
 

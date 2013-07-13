@@ -14,6 +14,7 @@
 
 /*
    History:
+   2013-07:	added commands, options, commands
    2013-05: debugged the remove command
    2012-04: added commands, reorder, addStart
 			corrected bugs in addBegin command
@@ -422,7 +423,7 @@ int boxFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const obj
 	{
 		"cget", "delete", "configure", "add",
 		"addBegin", "addStart", "addEnd", "class", "remove",
-		"reorder",
+		"reorder", "options", "commands",
 		NULL
 	};
 
@@ -430,7 +431,7 @@ int boxFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const obj
 	{
 		CgetIdx, DeleteIdx, ConfigureIdx, AddIdx,
 		BeginIdx, StartIdx, EndIdx, ClassIdx, RemoveIdx,
-		ReorderIdx
+		ReorderIdx, OptionsIdx, CommandsIdx
 	};
 
 	int idx;
@@ -464,6 +465,17 @@ int boxFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const obj
 
 	switch ( idx )
 	{
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, boxOptions );
+			}
+			break;
+
 			/* may require implementation of error checking */
 		case RemoveIdx:
 			{

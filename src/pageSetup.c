@@ -2,6 +2,7 @@
 \brief     This module implements the .
 \author    Peter G. Baum, William J Giddings
 \history
+	2013-07:	added commands, options, commands
  	01/05/10	Began Development
 
 \notes
@@ -367,12 +368,12 @@ int pageSetupFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * con
 
 	static const char *cmds[] =
 	{
-		"delete", "configure", "cget", "class", NULL
+		"delete", "configure", "cget", "class", "options", "commands", NULL
 	};
 
 	enum cmdIdx
 	{
-		DeleteIdx, ConfigureIdx, CgetIdx, ClassIdx
+		DeleteIdx, ConfigureIdx, CgetIdx, ClassIdx, OptionsIdx, CommandsIdx
 	};
 
 
@@ -399,6 +400,16 @@ int pageSetupFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * con
 
 	switch ( idx )
 	{
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, pageSetUpOptions );
+			}
+			break;
 		case DeleteIdx: {} break;
 		case ConfigureIdx:
 			{

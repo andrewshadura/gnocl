@@ -1,5 +1,6 @@
 /*
  History:
+	2013-07: added commands, options, commands
     2012-09: added delete command
  	2010-01: added cget
  	2009-05: added configure
@@ -612,7 +613,7 @@ int assistantFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * con
 		"cget", "delete", "page",
 		"configure", "addPage", "insertPage",
 		"currentPage", "pages", "addWidget",
-		"removeWidget", "update",
+		"removeWidget", "update", "options", "commands",
 		NULL
 	};
 
@@ -621,7 +622,7 @@ int assistantFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * con
 		CgetIdx, DeleteIdx, PageIdx,
 		ConfigureIdx, AddPageIdx, InsertPageIdx,
 		CurrentPageIdx, PagesIdx, AddWidgetIdx,
-		RemoveWidgetIdx, UpdateIdx
+		RemoveWidgetIdx, UpdateIdx, OptionsIdx, CommandsIdx
 	};
 
 	GtkAssistant *assistant = GTK_ASSISTANT ( data );
@@ -640,6 +641,15 @@ int assistantFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * con
 
 	switch ( idx )
 	{
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, assistantOptions );
+			}		break;
 		case CgetIdx:
 			{
 				int     idx;

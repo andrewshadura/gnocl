@@ -7,7 +7,12 @@ fixed.c
 \page page_fixed gnocl::fixed
 \htmlinclude fixed.html
 **/
-
+/**
+\par Modification History
+\verbatim
+	2013-07:	added commands, options, commands
+\endverbatim
+**/
 
 #include "gnocl.h"
 
@@ -302,7 +307,7 @@ static int fixedFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * 
 		"delete", "configure", "add", "move",
 		"remove", "class", "raise", "lower",
 		"children", "toTop", "toBottom", "position",
-		"stackLevel", "size",
+		"stackLevel", "size", "options", "commands",
 		NULL
 	};
 	enum cmdIdx
@@ -310,7 +315,7 @@ static int fixedFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * 
 		DeleteIdx, ConfigureIdx, AddIdx, MoveIdx,
 		RemoveIdx, ClassIdx, RaiseIdx, LowerIdx,
 		ChildrenIdx, ToTopIdx, ToBottomIdx, PositionIdx,
-		StackLevelIdx, SizeIdx
+		StackLevelIdx, SizeIdx, OptionsIdx, CommandsIdx
 	};
 
 	GtkWidget *widget = GTK_WIDGET ( data );
@@ -338,7 +343,16 @@ static int fixedFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * 
 
 	switch ( idx )
 	{
-
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, fixedOptions );
+			}
+			break;
 			/* return child widget position as {x y} or size (w h) */
 		case SizeIdx:
 		case PositionIdx:

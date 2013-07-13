@@ -3,6 +3,12 @@ authors	Peter G Baum	William J Giddings
 date	2008-06
 */
 
+/**
+\par Modification History
+\verbatim
+	2013-07:	added commands, options, commands
+\endverbatim
+**/
 
 /*
  * The main functions a
@@ -190,8 +196,9 @@ static int cget ( Tcl_Interp *interp, GtkWidget *widget, GnoclOption options[], 
 **/
 int linkButtonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-	static const char *cmds[] = { "delete", "configure", "cget", "onClicked", "class", NULL };
-	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, OnClickedIdx, ClassIdx };
+	static const char *cmds[] = { "delete", "configure", "cget", "onClicked", "class", "opetions", "commands", NULL };
+	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, OnClickedIdx, ClassIdx, OptionsIdx, CommandsIdx };
+
 #ifdef DEBUG
 	printf ( "linkButtonFunc 1\n" );
 #endif
@@ -213,6 +220,16 @@ int linkButtonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * co
 
 	switch ( idx )
 	{
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, linkButtonOptions );
+			}
+			break;
 		case ClassIdx:
 			Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "linkButton", -1 ) );
 			break;

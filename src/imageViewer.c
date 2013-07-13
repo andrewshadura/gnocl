@@ -1,5 +1,6 @@
 /**
 	History:
+	2013-07: added commands, options, commands
 	2011-06: Begin of developement
 
 	Default bindings
@@ -69,13 +70,13 @@ int imageViewerFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * c
 {
 	static const char *cmds[] =
 	{
-		"delete", "configure", "class", "start", "stop",
+		"delete", "configure", "class", "start", "stop", "options", "commands",
 		NULL
 	};
 
 	enum cmdIdx
 	{
-		DeleteIdx, ConfigureIdx, ClassIdx, ParentIdx, StartIdx, StopIdx
+		DeleteIdx, ConfigureIdx, ClassIdx, ParentIdx, StartIdx, StopIdx, OptionsIdx, CommandsIdx
 	};
 
 	GtkWidget *imageViewer = GTK_WIDGET ( data );
@@ -89,7 +90,11 @@ int imageViewerFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * c
 
 	switch ( idx )
 	{
-
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, imageViewerOptions );
+			}
+			break;
 		case ClassIdx:
 			{
 				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "imageViewer", -1 ) );

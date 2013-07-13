@@ -12,6 +12,7 @@
 
 /*
    History:
+   2013-07: added commands, options, commands
    2009-12: added -tooltip
    2008-10: added command, class
    2003-01: switched from GnoclWidgetOptions to GnoclOption
@@ -147,8 +148,9 @@ int statusBarFuc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * cons
 		{ NULL }
 	};
 
-	static const char *cmds[] = { "delete", "configure", "push", "pop", "remove", "add", "addBegin", "addEnd", "class", NULL };
-	enum cmdIdx { DeleteIdx, ConfigureIdx, PushIdx, PopIdx, RemoveIdx, AddIdx, BeginIdx, EndIdx, ClassIdx };
+	static const char *cmds[] = { "delete", "configure", "push", "pop", "remove", "add", "addBegin", "addEnd", "class", "options", "commands", NULL };
+	enum cmdIdx { DeleteIdx, ConfigureIdx, PushIdx, PopIdx, RemoveIdx, AddIdx, BeginIdx, EndIdx, ClassIdx, OptionsIdx, CommandsIdx };
+
 	GtkStatusbar *bar = GTK_STATUSBAR ( data );
 	int idx;
 
@@ -164,6 +166,16 @@ int statusBarFuc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * cons
 
 	switch ( idx )
 	{
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, barOptions );
+			}
+			break;
 		case ClassIdx:
 			Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "statusBar", -1 ) );
 			break;

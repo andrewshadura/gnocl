@@ -12,6 +12,7 @@
 
 /*
    History:
+   2013-07:	added commands, options, commands
    2004-02: added -data
         09: added cget
             removed getValue and setValue
@@ -164,18 +165,13 @@ static int cget ( Tcl_Interp *interp, GnoclCheckParams  *para,
 /**
 \brief
 **/
-static int checkItemFunc ( ClientData data, Tcl_Interp *interp,
-						   int objc, Tcl_Obj * const objv[] )
+static int checkItemFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-	static const char *cmds[] = { "delete", "configure", "cget",
-								  "onToggled", NULL
-								};
-	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx,
-				  OnToggledIdx
-				};
+	static const char *cmds[] = { "delete", "configure", "cget", "onToggled", "options", "commands", NULL };
+	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, OnToggledIdx, OptionsIdx, CommandsIdx };
 
 	GnoclCheckParams *para = ( GnoclCheckParams * ) data;
-	int             idx;
+	int idx;
 
 	if ( objc < 2 )
 	{
@@ -189,6 +185,16 @@ static int checkItemFunc ( ClientData data, Tcl_Interp *interp,
 
 	switch ( idx )
 	{
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, checkOptions );
+			}
+			break;
 		case DeleteIdx:
 			return gnoclDelete ( interp, para->widget, objc, objv );
 

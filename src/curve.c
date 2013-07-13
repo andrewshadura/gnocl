@@ -1,3 +1,10 @@
+/**
+\par Modification History
+\verbatim
+	2013-07:	added commands, options, commands
+\endverbatim
+**/
+
 #include "gnocl.h"
 
 /**
@@ -159,14 +166,14 @@ static int curveFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * 
 	{
 		"set", "reset", "get",
 		"delete", "configure",
-		"cget", "class",
+		"cget", "class", "options", "commands",
 		NULL
 	};
 	enum cmdIdx
 	{
 		SetIdx, ResetIdx, GetIdx,
 		DeleteIdx, ConfigureIdx,
-		CgetIdx, ClassIdx
+		CgetIdx, ClassIdx, OptionsIdx, CommandsIdx
 	};
 
 	GtkCurve *widget = GTK_WIDGET ( data );
@@ -186,6 +193,16 @@ static int curveFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * 
 
 	switch ( idx )
 	{
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, curveOptions );
+			}
+			break;
 		case SetIdx:
 			{
 

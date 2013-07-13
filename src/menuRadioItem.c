@@ -12,6 +12,7 @@
 
 /*
    History:
+   2013-07:	added commands, options, commands
    2008-10: added command, class
    2004-02: added -data
         09: renamed -value to -onValue
@@ -157,11 +158,11 @@ static int radioItemFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Ob
 	static const char *cmds[] =
 	{
 		"delete", "configure", "cget",
-		"onToggled", "class",
+		"onToggled", "class", "options", "commands",
 		NULL
 	};
 
-	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, OnToggledIdx, ClassIdx, };
+	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, OnToggledIdx, ClassIdx, OptionsIdx, CommandsIdx};
 
 	GnoclRadioParams *para = ( GnoclRadioParams * ) data;
 	int idx;
@@ -177,6 +178,16 @@ static int radioItemFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Ob
 
 	switch ( idx )
 	{
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, radioOptions );
+			}
+			break;
 		case ClassIdx:
 			{
 				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "menuRadioItem", -1 ) );

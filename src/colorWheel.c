@@ -12,6 +12,7 @@
 /**
 \par Modification History
 \verbatim
+	2013-07:	added commands, options, commands
 	2009/05/20: Begin developement
 \endverbatim
 **/
@@ -359,8 +360,9 @@ static int widgetFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *
 
 #endif
 
-	static const char *cmds[] = { "delete", "configure", "cget", "onClicked", "class", NULL };
-	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, OnClickedIdx, ClassIdx };
+	static const char *cmds[] = { "delete", "configure", "cget", "onClicked", "class", "options", "commands", NULL };
+	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, OnClickedIdx, ClassIdx, OptionsIdx, CommandsIdx };
+
 	GtkWidget *widget = GTK_WIDGET ( data );
 	int idx;
 
@@ -377,6 +379,16 @@ static int widgetFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *
 
 	switch ( idx )
 	{
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, colorWheelOptions );
+			}
+			break;
 		case ClassIdx:
 			Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "colorWheel", -1 ) );
 			break;

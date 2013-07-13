@@ -12,6 +12,7 @@
 /**
  \par Modification History
  \verbatim
+	2013-07: added commands, options, commands
 	2009-12: Began developement
  \endverbatim
 **/
@@ -234,8 +235,8 @@ int recentChooserFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *
 {
 	printf ( "widgetFunc\n" );
 
-	static const char *cmds[] = { "delete", "configure", "cget", "onClicked", "class", NULL };
-	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, OnClickedIdx, ClassIdx };
+	static const char *cmds[] = { "delete", "configure", "cget", "onClicked", "class", "options", "commands", NULL };
+	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, OnClickedIdx, ClassIdx, OptionsIdx, CommandsIdx };
 	GtkWidget *widget = GTK_WIDGET ( data );
 	int idx;
 
@@ -252,6 +253,16 @@ int recentChooserFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *
 
 	switch ( idx )
 	{
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, recentChooserOptions );
+			}
+			break;
 		case ClassIdx:
 			{
 

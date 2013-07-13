@@ -12,6 +12,7 @@
 
 /*
    History:
+   2013-07: added commands, options, commands
    2011-04: ZD's code enhancements for windows compilation added
    2002-02: switched from GnoclWidgetOptions to GnoclOption
    2001-11: Begin of developement
@@ -80,8 +81,9 @@ static int socketFunc ( ClientData data, Tcl_Interp *interp,
 						int objc, Tcl_Obj * const objv[] )
 {
 
-	const char *cmds[] = { "delete", "configure", "getID", "getPlugID", NULL };
-	enum cmdIdx { DeleteIdx, ConfigureIdx, GetIDIdx, GetPlugIDIdx  };
+	const char *cmds[] = { "delete", "configure", "getID", "getPlugID", "options", "commands", NULL };
+	enum cmdIdx { DeleteIdx, ConfigureIdx, GetIDIdx, GetPlugIDIdx, OptionsIdx, CommandsIdx  };
+
 	int idx;
 	GtkSocket *socket = GTK_SOCKET ( data );
 
@@ -97,6 +99,16 @@ static int socketFunc ( ClientData data, Tcl_Interp *interp,
 
 	switch ( idx )
 	{
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, socketOptions );
+			}
+			break;
 		case DeleteIdx:
 			return gnoclDelete ( interp, GTK_WIDGET ( socket ), objc, objv );
 		case ConfigureIdx:

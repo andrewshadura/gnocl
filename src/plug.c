@@ -12,6 +12,7 @@
 
 /*
    History:
+   2013-07:	added commands, options, commands
    2003-06: added onDestroy
    2002-02: switched from GnoclWidgetOptions to GnoclOption
    2001-11: Begin of developement
@@ -69,8 +70,9 @@ static int plugFunc ( ClientData data, Tcl_Interp *interp,
 					  int objc, Tcl_Obj * const objv[] )
 {
 
-	const char *cmds[] = { "delete", "configure", "getID", NULL };
-	enum cmdIdx { DeleteIdx, ConfigureIdx, GetIDIdx };
+	const char *cmds[] = { "delete", "configure", "getID", "options", "commands", NULL };
+	enum cmdIdx { DeleteIdx, ConfigureIdx, GetIDIdx, OptionsIdx, CommandsIdx };
+
 	int idx;
 	GtkPlug *plug = GTK_PLUG ( data );
 
@@ -86,6 +88,16 @@ static int plugFunc ( ClientData data, Tcl_Interp *interp,
 
 	switch ( idx )
 	{
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, plugOptions );
+			}
+			break;
 		case DeleteIdx:
 			return gnoclDelete ( interp, GTK_WIDGET ( plug ), objc, objv );
 		case ConfigureIdx:

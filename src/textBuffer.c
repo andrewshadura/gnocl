@@ -12,10 +12,10 @@
 #include "gnocl.h"
 
 /**
-\brief
-\author     William J Giddings
-\date       12-Jan-2010
-\since      0.9.94
+\par Modification History
+\verbatim
+	2013-07: added commands, options, commands
+\endverbatim
 **/
 
 static const int textIdx = 0;
@@ -87,8 +87,8 @@ int textBufferFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * co
 {
 
 	/* set list of valid commands for this widget */
-	static const char *cmds[] = { "insert", "class", "delete", "configure", "cget", "show", "hide", NULL };
-	enum cmdIdx { InsertIdx, ClassIdx, DeleteIdx, ConfigureIdx, CgetIdx, ShowIdx, HideIdx };
+	static const char *cmds[] = { "insert", "class", "delete", "configure", "cget", "show", "hide", "options", "commands", NULL };
+	enum cmdIdx { InsertIdx, ClassIdx, DeleteIdx, ConfigureIdx, CgetIdx, ShowIdx, HideIdx, OptionsIdx, CommandsIdx };
 
 	int idx;
 	GtkTextBuffer *widget;
@@ -111,6 +111,16 @@ int textBufferFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * co
 	/* respsond to the commands received */
 	switch ( idx )
 	{
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, textBufferOptions );
+			}
+			break;
 			/* return class of widget */
 		case ClassIdx:
 			{

@@ -17,6 +17,7 @@
       - -onFocusOut
 
    History:
+   2013-07: added commands, options, commands
    2011-04: resolved issue with deprecated options
    2008-10: added command, class
    2004-02: added -data
@@ -411,8 +412,9 @@ static int cget ( Tcl_Interp *interp, SpinButtonParams *para,
 **/
 int spinButtonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-	static const char *cmds[] = { "delete", "configure", "cget", "onValueChanged", "class", NULL };
-	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, OnValueChangedIdx, ClassIdx};
+	static const char *cmds[] = { "delete", "configure", "cget", "onValueChanged", "class", "options", "commands", NULL };
+	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, OnValueChangedIdx, ClassIdx, OptionsIdx, CommandsIdx};
+
 	SpinButtonParams *para = ( SpinButtonParams * ) data;
 	GtkWidget *widget = GTK_WIDGET ( para->spinButton );
 	int idx;
@@ -429,6 +431,16 @@ int spinButtonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * co
 
 	switch ( idx )
 	{
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, spinButtonOptions );
+			}
+			break;
 		case ClassIdx:
 			Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "spinButton", -1 ) );
 			break;

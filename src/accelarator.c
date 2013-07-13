@@ -4,6 +4,13 @@
 \htmlinclude accelarator.html
 **/
 
+/**
+\par Modification History
+\verbatim
+	2013-07:	added commands, options, commands
+\endverbatim
+**/
+
 #include "gnocl.h"
 #include "gnoclparams.h"
 
@@ -218,12 +225,12 @@ int accelaratorFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * c
 
 	static const char *cmds[] =
 	{
-		"delete", "configure", "cget", "class",  NULL
+		"delete", "configure", "cget", "class", "options", "commands", NULL
 	};
 
 	enum cmdIdx
 	{
-		DeleteIdx, ConfigureIdx, CgetIdx, ClassIdx
+		DeleteIdx, ConfigureIdx, CgetIdx, ClassIdx, OptionsIdx, CommandsIdx
 	};
 
 	GtkAccelGroup *accelarator = GTK_ACCEL_GROUP ( data );
@@ -242,7 +249,16 @@ int accelaratorFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * c
 
 	switch ( idx )
 	{
-
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, accGrpOptions );
+			}
+			break;
 		case ClassIdx:
 			Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "accelarator", -1 ) );
 			break;

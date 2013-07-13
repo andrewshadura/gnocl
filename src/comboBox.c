@@ -16,18 +16,20 @@
  * /
 
 
-/*
-   History:
-
-*   2010-10   added -widthChars
-*   2009-06   added -entryWidth
-*                   -heightRequest
-*   2009-02:  added -widthRequest
-*   2008-11:  added -baseFont (WJG)
-*   2008-10:  added command, class (WJG)
-*   2008-05:  began -onActivate (WJG) -how to run a command when <CR> is pressed?
-*   2004-12:  Begin of developement
- */
+/**
+\par Modification History
+\verbatim
+	2013-07: added commands, options, commands
+*   2010-10: added -widthChars
+*   2009-06: added -entryWidth
+*                  -heightRequest
+*   2009-02: added -widthRequest
+*   2008-11: added -baseFont (WJG)
+*   2008-10: added command, class (WJG)
+*   2008-05: began -onActivate (WJG) -how to run a command when <CR> is pressed?
+*   2004-12: Begin of developement
+\endverbatim
+**/
 
 /**
 \page page_comboBox gnocl::comboBox
@@ -631,9 +633,8 @@ static int addItemTcl ( ComboParams *para, Tcl_Interp *interp, int objc, Tcl_Obj
 **/
 int comboBoxFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-	static const char *cmds[] = { "delete", "configure", "cget", "add", "onChanged", "class", NULL
-								};
-	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, AddIdx, DoOnChangedIdx, ClassIdx };
+	static const char *cmds[] = { "delete", "configure", "cget", "add", "onChanged", "class", "options", "commands", NULL};
+	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, AddIdx, DoOnChangedIdx, ClassIdx, OptionsIdx, CommandsIdx };
 
 	ComboParams *para = ( ComboParams * ) data;
 	GtkWidget *widget = GTK_WIDGET ( para->comboBox );
@@ -651,6 +652,16 @@ int comboBoxFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * cons
 
 	switch ( idx )
 	{
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, comboBoxOptions );
+			}
+			break;
 		case ClassIdx:
 			/* need to differentiate between comboBox and comboEntry */
 			Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "comboBox", -1 ) );

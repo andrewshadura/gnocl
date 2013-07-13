@@ -11,6 +11,7 @@ date 	2001-03:
 /**
  \par Modification History
  \verbatim
+ 2013-07: added commands, options, commands
  2013-04: added -baseFont
  2012-11: added -align
  2012-09: switched to the use of ButtonParams
@@ -480,8 +481,8 @@ int buttonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const 
 	{
 		"delete", "configure", "cget",
 		"onClicked", "class", "parent",
-		"geometry", "toplevel", "options",
-		"add",
+		"geometry", "toplevel",
+		"add", "options", "commands",
 		NULL
 	};
 
@@ -489,8 +490,8 @@ int buttonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const 
 	{
 		DeleteIdx, ConfigureIdx, CgetIdx,
 		OnClickedIdx, ClassIdx, ParentIdx,
-		GeometryIdx, ToplevelIdx, OptionsIdx,
-		AddIdx
+		GeometryIdx, ToplevelIdx,
+		AddIdx, OptionsIdx, CommandsIdx
 	};
 
 	ButtonParams *para = ( ButtonParams * ) data;
@@ -511,6 +512,16 @@ int buttonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const 
 
 	switch ( idx )
 	{
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, buttonOptions );
+			}
+			break;
 			/* button is a container, a pointless functionality */
 		case AddIdx:
 			{
@@ -518,11 +529,6 @@ int buttonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const 
 				GtkWidget *child2 = gtk_bin_get_child ( GTK_CONTAINER ( child1 ) );
 				GtkWidget *widget = gnoclGetWidgetFromName (  Tcl_GetString ( objv[2] ), interp );
 				gtk_container_add ( GTK_CONTAINER ( child2 ), widget );
-			}
-			break;
-		case OptionsIdx:
-			{
-				gnoclGetWidgetOptions ( interp, buttonOptions );
 			}
 			break;
 		case ToplevelIdx:

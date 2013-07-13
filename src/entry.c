@@ -12,6 +12,7 @@
 
 /*
    History:
+   2013-07:	added commands, options, commands
    2012-10-15: added -onDestroy
    2012-08-23: added substitution parameter %d
    2012-01-03: added options
@@ -672,6 +673,7 @@ int entryFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const o
 		"delete", "configure", "cget", "onChanged",
 		"class", "get", "clear", "set",  "setPosition",
 		"wordList", "popup", "progress", "pulse",
+		"options", "commands",
 		NULL
 	};
 
@@ -679,7 +681,8 @@ int entryFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const o
 	{
 		DeleteIdx, ConfigureIdx, CgetIdx, OnChangedIdx,
 		ClassIdx, GetIdx, ClearIdx, SetIdx, SetPositionIdx,
-		WordListIdx, PopupIdx, ProgressIdx, PulseIdx
+		WordListIdx, PopupIdx, ProgressIdx, PulseIdx,
+		OptionsIdx, CommandsIdx
 	};
 
 	EntryParams *para = ( EntryParams * ) data;
@@ -699,6 +702,17 @@ int entryFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const o
 
 	switch ( idx )
 	{
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, entryOptions );
+			}
+			break;
 		case PulseIdx:
 			{
 				gtk_entry_progress_pulse ( GTK_WIDGET ( para->entry ) );

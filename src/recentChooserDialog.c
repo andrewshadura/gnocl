@@ -28,6 +28,7 @@
 
 /*
    History:
+   2013-07: added commands, options, Commands
    2008-10: added command, class
    2005-07: Begin of developement
  */
@@ -158,8 +159,9 @@ static int cget ( Tcl_Interp *interp, GtkLabel *label,
 int recentChooserDialogFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
 
-	static const char *cmds[] = { "delete", "configure", "cget", "class", "hide", "show", NULL };
-	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, ClassIdx, HideIdx, ShowIdx };
+	static const char *cmds[] = { "delete", "configure", "cget", "class", "hide", "show", "options", "commands", NULL };
+	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, ClassIdx, HideIdx, ShowIdx, OptionsIdx, CommandsIdx };
+
 	int idx;
 	GtkWidget *widget = GTK_WIDGET ( data );
 
@@ -175,6 +177,16 @@ int recentChooserDialogFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl
 
 	switch ( idx )
 	{
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, recentChooserDialogOptions );
+			}
+			break;
 		case HideIdx:
 			{
 				gtk_widget_hide ( widget );

@@ -12,6 +12,7 @@
 
 /*
    History:
+   2013-07: removed gnoclGetWidgetOptions func, moved to parseOptions.c
    2013-06: added str_replace
    2012-03: added trim
    2010-10: added stringtype
@@ -844,30 +845,6 @@ int gnoclGet2Int ( Tcl_Interp *interp, Tcl_Obj *obj, int *b1, int *b2 )
 					   "two integer values but got \"", Tcl_GetString ( obj ), "\"", NULL );
 
 	return TCL_ERROR;
-}
-
-/**
-\brief	Return a list of all available widget options
-\note	This might be useful for scripts looking to save/restor UI states
-**/
-int gnoclGetWidgetOptions ( Tcl_Interp *interp, GnoclOption *options )
-{
-	GnoclOption *pop;
-	gchar str[32];
-
-	Tcl_Obj *retList;
-	retList = Tcl_NewListObj ( 0, NULL );
-
-	for ( pop = options; pop->optName; ++pop )
-	{
-		sprintf ( str, "%s", pop->optName );
-
-		Tcl_ListObjAppendElement ( NULL, retList, Tcl_NewStringObj ( str, -1 ) );
-	}
-
-	Tcl_SetObjResult ( interp, retList );
-
-	return TCL_OK;
 }
 
 /**

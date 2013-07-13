@@ -2,6 +2,12 @@
 /brief	Create ticker-tape animated label.
 **/
 
+/**
+\par Modification History
+\verbatim
+	2013-07: added commands, options, commands
+\endverbatim
+**/
 
 #include "gnocl.h"
 #include "./ticker/mymarquee.h"
@@ -111,13 +117,13 @@ static int tickerTapeFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_O
 	{
 		"set", "reset", "get",
 		"delete", "configure",
-		"cget", "class",
+		"cget", "class", "options", "commands",
 		NULL
 	};
 	enum cmdIdx
 	{
 		DeleteIdx, ConfigureIdx,
-		CgetIdx, ClassIdx
+		CgetIdx, ClassIdx, OptionsIdx, CommandsIdx
 	};
 
 	GtkCurve *widget = GTK_WIDGET ( data );
@@ -137,7 +143,16 @@ static int tickerTapeFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_O
 
 	switch ( idx )
 	{
-
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, tickerTapeOptions );
+			}
+			break;
 		case ClassIdx:
 			{
 				printf ( "Class\n" );

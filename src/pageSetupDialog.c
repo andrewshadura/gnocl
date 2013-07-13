@@ -1,5 +1,6 @@
 /**
 \brief	This module implements the gnocl::pageSetupDialog widget.
+\todo	CODE INCOMPLETE
 **/
 
 /* user documentation */
@@ -11,6 +12,7 @@
 /**
  \par Modification History
  \verbatim
+	2013-07: added commands, options, commands
 	2011-04: Begin developement
  \endverbatim
 **/
@@ -53,7 +55,73 @@ typedef struct
 int pageSetupDialogFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
 
+#if 0
+	static const char *cmds[] = { "delete", "configure", "class", "hide", "show", "options", "commands", NULL };
+	enum cmdIdx { DeleteIdx, ConfigureIdx, ClassIdx, HideIdx, ShowIdx, OptionsIdx, CommandsIdx };
 
+	GtkWidget *widget = GTK_WIDGET ( data );
+
+	int idx;
+
+	if ( objc < 2 )
+	{
+		Tcl_WrongNumArgs ( interp, 1, objv, "command" );
+		return TCL_ERROR;
+	}
+
+	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "command", TCL_EXACT, &idx ) != TCL_OK )
+		return TCL_ERROR;
+
+	switch ( idx )
+	{
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, options );
+			}
+			break;
+		case HideIdx:
+			{
+				gtk_widget_hide ( widget );
+			}
+			break;
+		case ShowIdx:
+			{
+				gtk_widget_show_all ( widget );
+			}
+			break;
+		case ClassIdx:
+			{
+				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "pageSetupDialog", -1 ) );
+			}
+
+			break;
+		case DeleteIdx:
+			{
+				return gnoclDelete ( interp, widget, objc, objv );
+			} break;
+		case ConfigureIdx:
+			{
+				int ret = TCL_ERROR;
+
+				if ( gnoclParseAndSetOptions ( interp, objc - 1, objv + 1,
+											   options, G_OBJECT ( widget ) ) == TCL_OK )
+				{
+					ret = configure ( interp, widget, options );
+				}
+
+				gnoclClearOptions ( options );
+
+				return ret;
+			}
+			break;
+	}
+
+#endif
 	return TCL_OK;
 }
 
@@ -114,10 +182,6 @@ int gnoclPageSetupDialogCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl
 	}
 
 	page_setup = new_page_setup;
-
-
-
-
 
 
 	ret = TCL_OK;

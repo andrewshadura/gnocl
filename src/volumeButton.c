@@ -3,7 +3,12 @@
 \page page_volumeButton gnocl::volumeButton
 \htmlinclude volumeButton.html
 **/
-
+/**
+\par Modification History
+\verbatim
+	2013-07: added commands, options, commands
+\endverbatim
+**/
 #include "gnocl.h"
 
 /**
@@ -234,8 +239,8 @@ static int cget ( Tcl_Interp *interp, GtkWidget *widget, GnoclOption options[], 
 **/
 int volumeButtonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-	static const char *cmds[] = { "delete", "configure", "cget", "class", NULL };
-	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, OnClickedIdx, ClassIdx };
+	static const char *cmds[] = { "delete", "configure", "cget", "class", "options", "commands", NULL };
+	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, OnClickedIdx, ClassIdx, OptionsIdx, CommandsIdx };
 	GtkWidget *widget = GTK_WIDGET ( data );
 	int idx;
 
@@ -251,6 +256,16 @@ int volumeButtonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * 
 
 	switch ( idx )
 	{
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, volumeButtonOptions );
+			}
+			break;
 		case ClassIdx:
 			{
 				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "volumeButton", -1 ) );

@@ -12,6 +12,7 @@
 
 /*
    History:
+   2013-07: added commands, options, commands
    2008-10: added command, class
    2003-06: Begin of developement
  */
@@ -40,8 +41,9 @@ static const int orientationIdx  = 0;
 **/
 int separatorFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-	static const char *cmds[] = { "delete", "configure", "class", NULL };
-	enum cmdIdx { DeleteIdx, ConfigureIdx, ClassIdx };
+	static const char *cmds[] = { "delete", "configure", "class", "options", "commands", NULL };
+	enum cmdIdx { DeleteIdx, ConfigureIdx, ClassIdx, OptionsIdx, CommandsIdx };
+
 	GtkSeparator *separator = GTK_SEPARATOR ( data );
 	int idx;
 
@@ -58,6 +60,16 @@ int separatorFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * con
 
 	switch ( idx )
 	{
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, separatorOptions );
+			}
+			break;
 		case ClassIdx:
 			Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "separator", -1 ) );
 			break;

@@ -13,6 +13,7 @@
 /**
  \par Modification History
  \verbatim
+   2013-07: added commands, options, commands
    2008-10: added command, class
    2004-02: added -data
    2003-09: added cget
@@ -396,8 +397,9 @@ static int cget ( Tcl_Interp *interp, ScrollParams *para,
 int scrollFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 
 {
-	static const char *cmds[] = { "delete", "configure", "cget", "onValueChanged", "class", NULL };
-	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, OnValueChangedIdx, ClassIdx };
+	static const char *cmds[] = { "delete", "configure", "cget", "onValueChanged", "class", "options", "commands", NULL };
+	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, OnValueChangedIdx, ClassIdx, OptionsIdx, CommandsIdx };
+
 	ScrollParams *para = ( ScrollParams * ) data;
 	GtkWidget   *widget = GTK_WIDGET ( para->scroll );
 	int idx;
@@ -414,6 +416,16 @@ int scrollFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const 
 
 	switch ( idx )
 	{
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, scrollOptions );
+			}
+			break;
 		case ClassIdx:
 			Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "scroll", -1 ) );
 			break;

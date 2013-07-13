@@ -23,6 +23,13 @@ take an optional graphic,
 \htmlinclude splashScreen.html
 **/
 
+/**
+\par Modification History
+\verbatim
+	2013-07: added commands, options, commands
+\endverbatim
+**/
+
 #include "gnocl.h"
 #include "gnoclparams.h"
 
@@ -536,14 +543,14 @@ int splashScreenFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * 
 	{
 		"add", "progress", "push",
 		"delete", "configure", "cget",
-		"class", "show",
+		"class", "show", "options", "commands",
 		NULL
 	};
 	enum cmdIdx
 	{
 		AddIdx, ProgressIdx, PushIdx,
 		DeleteIdx, ConfigureIdx, CgetIdx,
-		ClassIdx, ShowIdx
+		ClassIdx, ShowIdx, OptionsIdx, CommandsIdx
 	};
 
 	SplashScreenParams *para = ( SplashScreenParams * ) data;
@@ -563,6 +570,16 @@ int splashScreenFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * 
 
 	switch ( idx )
 	{
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, splashScreenOptions );
+			}
+			break;
 		case ShowIdx:
 			{
 				drawSplashScreen ( para );

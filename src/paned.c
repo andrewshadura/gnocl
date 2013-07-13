@@ -13,6 +13,7 @@
 
 /*
    History:
+   2013-07:	added commands, options, commands
    2013-04: fixed bug with -onHandleMoved option
 			added -onButtonPress, -onButtonRelease, -tooltip,
    2011-11: added -proportion, -onHandleMoved, cget, -data
@@ -275,7 +276,7 @@ int panedFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const o
 		"cget",
 		"delete", "configure",
 		"class", "parent",
-		"pack",
+		"pack", "options", "commands",
 		NULL
 	};
 	enum cmdIdx
@@ -283,7 +284,7 @@ int panedFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const o
 		CgetIdx,
 		DeleteIdx, ConfigureIdx,
 		ClassIdx, ParentIdx,
-		PackIdx
+		PackIdx, OptionsIdx, CommandsIdx
 	};
 	GtkPaned *paned = GTK_PANED ( data );
 	int idx;
@@ -295,6 +296,16 @@ int panedFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const o
 
 	switch ( idx )
 	{
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, panedOptions );
+			}
+			break;
 		case PackIdx:
 			{
 				g_print ( "%s pack\n", __FUNCTION__ );

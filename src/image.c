@@ -1,8 +1,14 @@
-/**image.c
+/**
 \brief		Implement binding to the GtkImage widget.
-\history	2011-06-11	Implemented changes to support PixbufParams
 **/
 
+/**
+\par Modification History
+\verbatim
+2013-07:	added commands, options, commands
+2011-06-11	Implemented changes to support PixbufParams
+\endverbatim
+**/
 
 /*
 * $Id: image.c,v 1.9 2005/08/16 20:57:45 baum Exp $
@@ -287,8 +293,9 @@ int imageFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj* const ob
 
 #endif
 
-	static const char *cmds[] = { "turn", "flip", "delete", "configure", "class", NULL };
-	enum cmdIdx { TurnIdx, FlipIdx, DeleteIdx, ConfigureIdx, ClassIdx };
+	static const char *cmds[] = { "turn", "flip", "delete", "configure", "class", "options", "commands", NULL };
+	enum cmdIdx { TurnIdx, FlipIdx, DeleteIdx, ConfigureIdx, ClassIdx, OptionsIdx, CommandsIdx };
+
 	int idx;
 	GtkImage *image = ( GtkImage* ) data;
 
@@ -306,6 +313,16 @@ int imageFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj* const ob
 
 	switch ( idx )
 	{
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, imageOptions );
+			}
+			break;
 		case FlipIdx:
 			{
 				GdkPixbuf *pixbuf;

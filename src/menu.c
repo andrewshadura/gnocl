@@ -12,6 +12,7 @@
 
 /*
    History:
+   2013-07:	added commands, options, commands
    2012-09: added -data option
    2008-10: added command, class
         10: switched from GnoclWidgetOptions to GnoclOption
@@ -178,7 +179,7 @@ int menuFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const ob
 	{
 		"delete", "configure", "add",
 		"addBegin", "addEnd", "popup",
-		"popdown", "class",
+		"popdown", "class", "options", "commands",
 		NULL
 	};
 
@@ -186,7 +187,7 @@ int menuFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const ob
 	{
 		DeleteIdx, ConfigureIdx, AddIdx,
 		BeginIdx, EndIdx, PopupIdx,
-		PopdownIdx, ClassIdx
+		PopdownIdx, ClassIdx, OptionsIdx, CommandsIdx
 	};
 
 	GtkMenu *menu = GTK_MENU ( data );
@@ -203,6 +204,16 @@ int menuFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const ob
 
 	switch ( idx )
 	{
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, menuOptions );
+			}
+			break;
 		case ClassIdx:
 			Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "menu", -1 ) );
 			break;

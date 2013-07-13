@@ -305,6 +305,8 @@ gnoclOptFunc gnoclOptMoveHandle;
 gnoclOptFunc gnoclOptHeightRequest;
 
 int gnoclClearOptions ( GnoclOption *opts );
+int gnoclGetOptions ( Tcl_Interp *interp, GnoclOption *options );
+int gnoclGetCommands ( Tcl_Interp *interp, char *cmds[] );
 int gnoclResetSetOptions ( GnoclOption *opts );
 int gnoclSetOptions ( Tcl_Interp *interp, GnoclOption *opts, GObject *object, int no );
 int gnoclGetIndexFromObjStruct ( Tcl_Interp *interp, Tcl_Obj *objPtr, char **tablePtr, int offset, char *msg, int flags, int *indexPtr );

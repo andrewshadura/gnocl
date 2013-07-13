@@ -12,6 +12,7 @@
 
 /*
    History:
+   2013-07: added commands, options, commands
    2008-10: added command, class
    2008-06: Begin of developement
  */
@@ -321,8 +322,9 @@ static int cget ( Tcl_Interp *interp, GtkWidget *widget, GnoclOption options[], 
 **/
 int scaleButtonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-	static const char *cmds[] = { "delete", "configure", "cget", "onClicked", "class", NULL };
-	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, OnClickedIdx, ClassIdx };
+	static const char *cmds[] = { "delete", "configure", "cget", "onClicked", "class", "options", "commands", NULL };
+	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, OnClickedIdx, ClassIdx, OptionsIdx, CommandsIdx };
+
 	GtkWidget *widget = GTK_WIDGET ( data );
 	int idx;
 
@@ -339,6 +341,16 @@ int scaleButtonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * c
 
 	switch ( idx )
 	{
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, scaleButtonOptions );
+			}
+			break;
 		case ClassIdx:
 			Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "scaleButton", -1 ) );
 			break;

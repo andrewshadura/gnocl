@@ -13,14 +13,15 @@
 **/
 
 /**
- \par Modification History
- \verbatim
- *  2011/03/28	  added -currentFolder
- *  2011/03/20    completed cget
- *  2011/03/20    added extra options
- *  2008/10/08    added class
- *  2008/07/13    Begin development
- \endverbatim
+\par Modification History
+\verbatim
+	2013-07:	added commands, options, commands
+	2011/03/28	added -currentFolder
+	2011/03/20  completed cget
+	2011/03/20  added extra options
+	2008/10/08  added class
+	2008/07/13  Begin development
+\endverbatim
 **/
 
 
@@ -125,12 +126,12 @@ int fileChooserButtonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_O
 
 	static const char *cmds[] =
 	{
-		"delete", "configure", "cget", "class", NULL
+		"delete", "configure", "cget", "class", "options", "commands", NULL
 	};
 
 	enum cmdIdx
 	{
-		DeleteIdx, ConfigureIdx, CgetIdx, ClassIdx
+		DeleteIdx, ConfigureIdx, CgetIdx, ClassIdx, OptionsIdx, CommandsIdx
 	};
 
 	GtkButton *button = GTK_FILE_CHOOSER_BUTTON ( data );
@@ -143,6 +144,17 @@ int fileChooserButtonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_O
 
 	switch ( idx )
 	{
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, chooserButtonOptions );
+			}
+			break;
+
 		case DeleteIdx:
 			{
 			}

@@ -11,6 +11,7 @@
  */
 
 /*
+	2013-07: added commands, options, commands
 	2013-01: began children widget command
 	2012-10: implemented cget -data
 	2011-05: added hasFocus, setFocus, present, -defaultWidget
@@ -1001,7 +1002,7 @@ int windowFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const 
 		"reshow", "geometry", "pointer", "reposition",
 		"grab", "ungrab", "hide", "show", "jitter",
 		"hasFocus", "setFocus", "grabFocus", "present",
-		"children",
+		"children", "options", "commands",
 		NULL
 	};
 
@@ -1012,7 +1013,7 @@ int windowFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const 
 		ReshowIdx, GeometryIdx, PointerIdx, RepositionIdx,
 		GrabIdx, UngrabIdx, HideIdx, ShowIdx, JitterIdx,
 		HasFocusIdx, SetFocusIdx, GrabFocusIdx, PresentIdx,
-		ChildrenIdx
+		ChildrenIdx, OptionsIdx, CommandsIdx
 	};
 
 	GtkWindow *window = GTK_WINDOW ( data );
@@ -1031,7 +1032,16 @@ int windowFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const 
 
 	switch ( idx )
 	{
-
+		case CommandsIdx:
+			{
+				gnoclGetCommands ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, windowOptions );
+			}
+			break;
 		case ChildrenIdx:
 			{
 				// GtkWidget *gnoclFindChild ( GtkWidget *widget, GtkType type )

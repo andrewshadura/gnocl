@@ -18,6 +18,7 @@
 				%c child
 				%n page number
 				%d data
+			added commands, options, commands
    2013-01	added options
     		-startWidget
 			-endWidget
@@ -754,8 +755,8 @@ static int notebookNext ( GtkNotebook *notebook, Tcl_Interp *interp, int objc, T
 int notebookFunc ( ClientData data,	Tcl_Interp *interp,	int objc, Tcl_Obj * const objv[] )
 {
 	/* TODO?: notebook insert pos child label ?menu? */
-	static const char *cmds[] = { "delete", "configure", "addPage", "currentPage", "nextPage", "removePage", "class", NULL };
-	enum cmdIdx { DeleteIdx, ConfigureIdx, AddPageIdx, CurrentIdx, NextPageIdx, RemovePageIdx, ClassIdx };
+	static const char *cmds[] = { "delete", "configure", "addPage", "currentPage", "nextPage", "removePage", "class", "options", "commands", NULL };
+	enum cmdIdx { DeleteIdx, ConfigureIdx, AddPageIdx, CurrentIdx, NextPageIdx, RemovePageIdx, ClassIdx, OptionsIdx, CommandsIdx };
 
 	GtkNotebook *notebook = GTK_NOTEBOOK ( data );
 	int idx;
@@ -773,6 +774,16 @@ int notebookFunc ( ClientData data,	Tcl_Interp *interp,	int objc, Tcl_Obj * cons
 
 	switch ( idx )
 	{
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, notebookOptions );
+			}
+			break;
 		case ClassIdx:
 			Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "notebook", -1 ) );
 			break;

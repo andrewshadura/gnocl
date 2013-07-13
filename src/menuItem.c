@@ -12,6 +12,7 @@
 
 /*
    History:
+   2013-07:	added commands, options, commands
    2012-04: added -data
 			cget (partial implementation)
    2009-06: added -showImage for Gtk+ 2.16
@@ -332,8 +333,8 @@ static int configure ( Tcl_Interp *interp, GtkMenuItem *label, GnoclOption optio
 **/
 int menuItemFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-	static const char *cmds[] = { "delete", "configure", "onClicked", "class", "cget", NULL };
-	enum cmdIdx { DeleteIdx, ConfigureIdx, OnClickedIdx, ClassIdx, CgetIdx};
+	static const char *cmds[] = { "delete", "configure", "onClicked", "class", "cget", "options", "commands", NULL };
+	enum cmdIdx { DeleteIdx, ConfigureIdx, OnClickedIdx, ClassIdx, CgetIdx, OptionsIdx, CommandsIdx};
 	GtkMenuItem *label = GTK_MENU_ITEM ( data );
 	int idx;
 
@@ -348,6 +349,16 @@ int menuItemFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * cons
 
 	switch ( idx )
 	{
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, labelOptions );
+			}
+			break;
 		case CgetIdx:
 			{
 				int     idx;

@@ -5,6 +5,14 @@
 */
 
 /**
+\par Modification History
+\verbatim
+	2013-07:	added commands, options, commands
+\endverbatim
+**/
+
+
+/**
 \page page_aspectFrame gnocl::aspectFrame
 \htmlinclude aspectFrame.html
 **/
@@ -141,7 +149,7 @@ static int aspectFrameFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_
 	{
 		"delete", "configure",
 		"cget", "onClicked",
-		"class",
+		"class", "options", "commands",
 		NULL
 	};
 
@@ -149,7 +157,7 @@ static int aspectFrameFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_
 	{
 		DeleteIdx, ConfigureIdx,
 		CgetIdx, OnClickedIdx,
-		ClassIdx
+		ClassIdx, OptionsIdx, CommandsIdx
 	};
 
 	GtkWidget *widget = GTK_WIDGET ( data );
@@ -168,6 +176,15 @@ static int aspectFrameFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_
 
 	switch ( idx )
 	{
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, aspectFrameOptions );
+			} break;
 		case ClassIdx:
 			Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "arrowButton", -1 ) );
 			break;

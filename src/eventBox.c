@@ -12,6 +12,7 @@
 
 /*
    History:
+   2013-07:	added commands, options, commands
    2009-02: added -width, -height
    2008-10: added command, class
    2003-02: added drag and drop options
@@ -172,8 +173,9 @@ int eventBoxFunc (
 	int objc,
 	Tcl_Obj * const objv[] )
 {
-	static const char *cmds[] = { "delete", "configure", "cget", "class", NULL };
-	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, ClassIdx };
+	static const char *cmds[] = { "delete", "configure", "cget", "class", "options", "commands", NULL };
+	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, ClassIdx, OptionsIdx, CommandsIdx };
+
 	GtkEventBox *box = GTK_EVENT_BOX ( data );
 	int idx;
 
@@ -189,6 +191,16 @@ int eventBoxFunc (
 
 	switch ( idx )
 	{
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, boxOptions );
+			}
+			break;
 		case ClassIdx:
 			Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "eventBox", -1 ) );
 			break;

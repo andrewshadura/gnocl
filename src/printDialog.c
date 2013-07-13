@@ -11,6 +11,7 @@
 /**
 \par Modification History
 \verbatim
+	2013-07: added commands, options, commands
 	2011-04: Begin developement
 \endverbatim
 **/
@@ -191,6 +192,18 @@ int printDialogFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * c
 #ifdef DEBUG_PRINTER_DIALOG
 	printf ( "%s\n", __FUNCTION__ );
 #endif
+
+	/*
+	case CommandsIdx:
+	{
+		gnoclGetOptions ( interp, cmds );
+	}
+	break;
+	case OptionsIdx: {
+		gnoclGetOptions (interp, options);
+	}
+	break;
+	*/
 
 	return TCL_OK;
 }

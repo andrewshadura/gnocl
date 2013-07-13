@@ -1,12 +1,17 @@
-/*
-   History:
-   2011-04: Begin of developement
- */
 
 /**
 \page page_dial gnocl::dial
 \htmlinclude dial.html
 **/
+
+/**
+\par Modification History
+\verbatim
+	2013-07: added commands, options, commands
+	2011-04: Begin of developement
+\endverbatim
+**/
+
 
 #include "gnocl.h"
 #include "./dial/gtkdial.h"
@@ -40,13 +45,13 @@ int dialFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const ob
 {
 	static const char *cmds[] =
 	{
-		"delete", "configure", "class", "start", "stop",
+		"delete", "configure", "class", "start", "stop", "options", "commands",
 		NULL
 	};
 
 	enum cmdIdx
 	{
-		DeleteIdx, ConfigureIdx, ClassIdx, ParentIdx, StartIdx, StopIdx
+		DeleteIdx, ConfigureIdx, ClassIdx, ParentIdx, StartIdx, StopIdx, OptionsIdx, CommandsIdx
 	};
 
 	GtkDial *dial = GTK_WIDGET ( data );
@@ -60,7 +65,16 @@ int dialFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const ob
 
 	switch ( idx )
 	{
-
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, dialOptions );
+			}
+			break;
 		case ClassIdx:
 			{
 				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "dial", -1 ) );

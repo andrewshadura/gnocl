@@ -18,9 +18,10 @@
 /**
  \par Modification History
  \verbatim
-   2008-10: added command, class
-   2003-02: cleanups with GnoclOption
-   2002-07: start of developement
+	2013-07: added commands, options, commands
+	2008-10: added command, class
+	2003-02: cleanups with GnoclOption
+	2002-07: start of developement
  \endverbatim
 **/
 
@@ -107,8 +108,8 @@ static int cget (   Tcl_Interp *interp, GtkButton *button,  GnoclOption options[
 **/
 static int fontSelFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-	static const char *cmds[] = { "delete", "configure", "class", "cget", NULL };
-	enum cmdIdx { DeleteIdx, ConfigureIdx, ClassIdx, CgetIdx };
+	static const char *cmds[] = { "delete", "configure", "class", "cget", "options", "commands", NULL };
+	enum cmdIdx { DeleteIdx, ConfigureIdx, ClassIdx, CgetIdx, OptionsIdx, CommandsIdx };
 
 	GtkWidget *widget = GTK_WIDGET ( data  );
 	int idx;
@@ -125,6 +126,16 @@ static int fontSelFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj 
 
 	switch ( idx )
 	{
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, fontSelectOptions );
+			}
+			break;
 		case ClassIdx:
 			{
 				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "fontSelection", -1 ) );

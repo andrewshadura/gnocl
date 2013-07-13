@@ -12,6 +12,7 @@
 
 /*
    History:
+   2013-07:	added commands, options, commands
    2011-11: completed support for file filters, now accepts multiple filters.
    2010-07: merged contents of fileChooserDialog.c with fileChooser.c
    2010-01: deprecated -action option "openFolder" in favor of Gtk compliant "selectFolder"
@@ -581,8 +582,10 @@ static int cget ( FileSelDialogParams *para, GnoclOption options[], int idx )
 **/
 int fileDialogFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-	static const char *cmds[] = { "delete", "configure", "cget", "hide", "show", NULL };
-	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, HideIdx, ShowIdx };
+	static const char *cmds[] = { "delete", "configure", "cget", "hide", "show", "options", "commands", NULL };
+
+	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, HideIdx, ShowIdx, OptionsIdx, CommandsIdx };
+
 	FileSelDialogParams *para = ( FileSelDialogParams * ) data;
 	GtkWidget *widget = GTK_WIDGET ( para->fileDialog );
 	int idx;
@@ -599,6 +602,16 @@ int fileDialogFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * co
 
 	switch ( idx )
 	{
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, options );
+			}
+			break;
 		case HideIdx:
 			{
 				gtk_widget_hide ( widget );
@@ -774,8 +787,9 @@ int fileChooserFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * c
 {
 	printf ( "widgetFunc\n" );
 
-	static const char *cmds[] = { "delete", "configure", "cget", "onClicked", "class", NULL };
-	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, OnClickedIdx, ClassIdx };
+	static const char *cmds[] = { "delete", "configure", "cget", "onClicked", "class", "options", "commands", NULL };
+	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, OnClickedIdx, ClassIdx, OptionsIdx, CommandsIdx };
+
 	GtkWidget *widget = GTK_WIDGET ( data );
 	int idx;
 
@@ -792,6 +806,16 @@ int fileChooserFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * c
 
 	switch ( idx )
 	{
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, options );
+			}
+			break;
 		case ClassIdx:
 			Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "fileChooser", -1 ) );
 			break;

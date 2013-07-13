@@ -1,5 +1,6 @@
 /*
- *    2013-05: added command parent
+ * 	  2013-07: added commands, options, commands
+ *    2013-05: added command, parent
  * 			   -visible
  *    2008-10: added command, class
  */
@@ -70,13 +71,13 @@ int handleBoxFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * con
 	static const char *cmds[] =
 	{
 		"delete", "configure", "cget",
-		"class", "size", "paren",
+		"class", "size", "paren", "options", "commands",
 		NULL
 	};
 	enum cmdIdx
 	{
 		DeleteIdx, ConfigureIdx, CgetIdx,
-		ClassIdx, SizeIdx, ParentIdx
+		ClassIdx, SizeIdx, ParentIdx, OptionsIdx, CommandsIdx
 	};
 	int idx;
 
@@ -103,6 +104,16 @@ int handleBoxFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * con
 
 	switch ( idx )
 	{
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, handleBoxOptions );
+			}
+			break;
 		case ParentIdx:
 			{
 

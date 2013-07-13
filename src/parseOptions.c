@@ -6019,6 +6019,46 @@ int gnoclClearOptions ( GnoclOption *opts )
 }
 
 /**
+\brief
+\author
+\date
+\note
+**/
+int gnoclGetOptions ( Tcl_Interp *interp, GnoclOption *options )
+{
+
+	GnoclOption *opts = options;
+
+	for ( ; opts->optName; ++opts )
+	{
+		// g_print ("%s\n",opts->optName);
+		Tcl_AppendResult ( interp, opts->optName, " ", NULL );
+	}
+
+	return TCL_OK;
+}
+
+/**
+\brief
+\author
+\date
+\note
+**/
+int gnoclGetCommands ( Tcl_Interp *interp, char *cmds[] )
+{
+	gint i = 0;
+
+	while ( cmds[i] != NULL )
+	{
+		Tcl_AppendResult ( interp, cmds[i], " ", NULL );
+		i++;
+	}
+
+	return TCL_OK;
+}
+
+
+/**
 \brief		Notify script that cget not available for specific option.
 \author		Peter G Baum
 \date

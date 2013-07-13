@@ -12,6 +12,7 @@
 
 /*
    History:
+   2013-07:	added commands, options, commands
    2012-04: added -height, -width, -x and -y options
    2012-01: added "other" to the range of dialog types, i.e. no icon.
             implemented automatic setting of type to "other" if -child option set.
@@ -343,8 +344,8 @@ static void destroyFunc ( GtkWidget *widget, gpointer data )
 **/
 int dialogFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-	static const char *cmds[] = { "delete", "configure", "class", "hide", "show", NULL };
-	enum cmdIdx { DeleteIdx, ConfigureIdx, ClassIdx, HideIdx, ShowIdx };
+	static const char *cmds[] = { "delete", "configure", "class", "hide", "show", "options", "commands", NULL };
+	enum cmdIdx { DeleteIdx, ConfigureIdx, ClassIdx, HideIdx, ShowIdx, OptionsIdx, CommandsIdx };
 
 	DialogParams *para = ( DialogParams * ) data;
 	GtkWidget *widget = GTK_WIDGET ( para->dialog );
@@ -362,6 +363,16 @@ int dialogFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const 
 
 	switch ( idx )
 	{
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, dialogOptions );
+			}
+			break;
 		case HideIdx:
 			{
 				gtk_widget_hide ( widget );

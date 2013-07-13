@@ -14,7 +14,7 @@
  \par Modification History
  \verbatim
  *  2011/03/20    completed cget
- *  2011/03/20    added extra options
+ *  		      added commands options, commands
  *  2008/10/08    added class
  *  2008/07/13    Begin development
  \endverbatim
@@ -182,8 +182,19 @@ static int cget ( Tcl_Interp *interp, GtkLabel *label, GnoclOption options[], in
 int aboutDialogFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
 
-	static const char *cmds[] = { "delete", "configure", "cget", "show", "hide", NULL };
-	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, ShowIdx, HideIdx };
+	static const char *cmds[] =
+	{
+		"delete", "configure",
+		"cget", "show",
+		"hide", "options", "commands",
+		NULL
+	};
+	enum cmdIdx
+	{
+		DeleteIdx, ConfigureIdx,
+		CgetIdx, ShowIdx,
+		HideIdx, OptionsIdx, CommandsIdx
+	};
 	int idx;
 	GtkLabel *dialog = ( GtkLabel * ) data;
 
@@ -201,6 +212,15 @@ int aboutDialogFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * c
 
 	switch ( idx )
 	{
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, aboutDialogOptions );
+			} break;
 		case HideIdx:
 			{
 				gtk_widget_hide ( GTK_WIDGET ( dialog ) );

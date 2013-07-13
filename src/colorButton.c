@@ -12,6 +12,7 @@
 
 /*
    History:
+   2013-07: added commands, options, commands
    2013-04: new options -widthRequest, -heightRequest
    2008-10: added command, class
    2004-12: Begin of developement
@@ -79,8 +80,8 @@ static int configure (  Tcl_Interp *interp, GtkButton *button,  GnoclOption opti
 **/
 int clrButtonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-	static const char *cmds[] = { "delete", "configure", "cget", "onClicked", "class", NULL };
-	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, OnClickedIdx, ClassIdx };
+	static const char *cmds[] = { "delete", "configure", "cget", "onClicked", "class", "options", "commands", NULL };
+	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, OnClickedIdx, ClassIdx, OptionsIdx, CommandsIdx };
 	GtkColorButton *button = GTK_COLOR_BUTTON ( data );
 	int idx;
 
@@ -96,6 +97,15 @@ int clrButtonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * con
 
 	switch ( idx )
 	{
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, colorButtonOptions );
+			} break;
 		case ClassIdx:
 			Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "colorButton", -1 ) );
 			break;

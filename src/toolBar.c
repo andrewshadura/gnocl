@@ -12,6 +12,8 @@
 
 /*
    History:
+   2013-07:	added commands options, commands
+			cget -style now works
    2013-06: configure/cget -orientation now works
 			added flip -an expiremental feature
    2013-05: added parent
@@ -85,19 +87,22 @@ static const int RadioIdx      	= 9;
 /* */
 static const int dataIdx = 0;
 static const int orientationIdx = 1;
+static const int tooolbarStyleIdx = 2;
+static const int reliefIdx = 3;
 
 /* toolBar options */
 static GnoclOption toolBarOptions[] =
 {
 	{ "-data", GNOCL_OBJ, "", gnoclOptData }, /* 0 */
-	//{ "-orientation", GNOCL_OBJ, "orientation", gnoclOptOrientation },
 	{ "-orientation", GNOCL_STRING, NULL},
+	{ "-style", GNOCL_OBJ, "toolbar-style", optStyle },
+	//{ "-relief", GNOCL_OBJ, "button-relief", gnoclOptButtonRelief },
 
 	/* widget specific options */
 	{ "-iconSize", GNOCL_INT, "icon-size"},
 	{ "-iconSizeSet", GNOCL_BOOL, "icon-size-set"},
 	{ "-showArrow", GNOCL_BOOL, "show-arrow"},
-	{ "-style", GNOCL_OBJ, "toolbar-style", optStyle },
+
 	{ "-tooltips", GNOCL_BOOL, "tooltips" },
 
 	/* inherited container properties */
@@ -107,7 +112,7 @@ static GnoclOption toolBarOptions[] =
 	{ "-visible", GNOCL_BOOL, "visible" },
 	{ "-sensitive", GNOCL_BOOL, "sensitive" },
 	{ "-name", GNOCL_STRING, "name" },
-	{ "-relief", GNOCL_OBJ, "button-relief", gnoclOptButtonRelief },
+
 
 	/* drag and drop functionality */
 	/*
@@ -296,8 +301,7 @@ static int optVisibility ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, T
 /**
 \brief
 **/
-static int optStyle ( Tcl_Interp *interp, GnoclOption *opt,
-					  GObject *obj, Tcl_Obj **ret )
+static int optStyle ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
 	const char *txt[] =
 	{
@@ -524,10 +528,34 @@ static int toolBarCget (  Tcl_Interp *interp, GtkWidget *widget,  GnoclOption op
 		obj = Tcl_NewStringObj ( g_object_get_data ( widget, "gnocl::data" ), -1 );
 	}
 
+
+	if ( idx == reliefIdx )
+	{
+		switch ( gtk_toolbar_get_relief_style ( widget ) )
+		{
+			case GTK_RELIEF_NORMAL:
+				{
+					obj = Tcl_NewStringObj ( "normal", -1 );
+				} break;
+			case GTK_RELIEF_HALF:
+				{
+					obj = Tcl_NewStringObj ( "half", -1 );
+				} break;
+			case GTK_RELIEF_NONE:
+				{
+					obj = Tcl_NewStringObj ( "none", -1 );
+				} break;
+			default:
+				{
+					return TCL_ERROR;
+				}
+		}
+	}
+
 	if ( idx == orientationIdx )
 	{
 
-		switch ( gtk_toolbar_get_orientation ( widget ) )
+		switch ( gtk_orientable_get_orientation ( widget ) )
 		{
 			case GTK_ORIENTATION_HORIZONTAL:
 				{
@@ -536,6 +564,33 @@ static int toolBarCget (  Tcl_Interp *interp, GtkWidget *widget,  GnoclOption op
 			case  GTK_ORIENTATION_VERTICAL:
 				{
 					obj = Tcl_NewStringObj ( "vertical", -1 );
+				} break;
+			default:
+				{
+					return TCL_ERROR;
+				}
+		}
+	}
+
+	if ( idx == tooolbarStyleIdx )
+	{
+		switch ( gtk_toolbar_get_style ( widget ) )
+		{
+			case GTK_TOOLBAR_ICONS:
+				{
+					obj = Tcl_NewStringObj ( "icons", -1 );
+				} break;
+			case  GTK_TOOLBAR_TEXT:
+				{
+					obj = Tcl_NewStringObj ( "text", -1 );
+				} break;
+			case  GTK_TOOLBAR_BOTH:
+				{
+					obj = Tcl_NewStringObj ( "both", -1 );
+				} break;
+			case  GTK_TOOLBAR_BOTH_HORIZ:
+				{
+					obj = Tcl_NewStringObj ( "horizontal", -1 );
 				} break;
 			default:
 				{
@@ -1886,7 +1941,7 @@ int toolBarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const
 		"flip", "add", "addBegin", "addEnd",
 		"class", "configure", "delete",
 		"insert", "nItems", "cget",
-		"parent",
+		"parent", "options", "commands",
 		NULL
 	};
 
@@ -1895,7 +1950,7 @@ int toolBarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const
 		FlipIdx, AddIdx, BeginIdx, EndIdx,
 		ClassIdx, ConfigureIdx, DeleteIdx,
 		InsertIdx, NitemsIdx, CgetIdx,
-		ParentIdx
+		ParentIdx, OptionsIdx, CommandsIdx
 	};
 
 	GtkToolbar *toolBar = GTK_TOOLBAR ( data );
@@ -1914,6 +1969,16 @@ int toolBarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const
 
 	switch ( idx )
 	{
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, toolBarOptions );
+			}
+			break;
 		case FlipIdx:
 			{
 

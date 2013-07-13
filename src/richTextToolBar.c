@@ -1,5 +1,6 @@
 /*
    History:
+   2013-07: added commands, options, commands
    2013-02: Begin of developement
  */
 
@@ -456,13 +457,13 @@ int richTextToolBarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj
 	static const char *cmds[] =
 	{
 		"delete", "configure",
-		"class",
+		"class", "options", "commands",
 		NULL
 	};
 
 	enum cmdIdx
 	{
-		DeleteIdx, ConfigureIdx, ClassIdx, SetIdx
+		DeleteIdx, ConfigureIdx, ClassIdx, SetIdx, OptionsIdx, CommandsIdx
 	};
 
 	RichTextToolbarParams *para = ( RichTextToolbarParams * ) data;
@@ -477,6 +478,16 @@ int richTextToolBarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj
 
 	switch ( idx )
 	{
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, richTextToolBarOptions );
+			}
+			break;
 		case ClassIdx:
 			{
 				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "richTextToolBar", -1 ) );

@@ -5,6 +5,13 @@
 */
 
 /**
+\par Modification History
+\verbatim
+	2013-07: added commands, options, commands
+\endverbatim
+**/
+
+/**
 \page page_infoBar gnocl::ruler
 \htmlinclude ruler.html
 **/
@@ -217,7 +224,7 @@ static int rulerFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * 
 	static const char *cmds[] =
 	{
 		"delete", "configure",
-		"cget",	"class",
+		"cget",	"class", "options", "commands",
 		NULL
 	};
 
@@ -225,7 +232,7 @@ static int rulerFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * 
 	{
 		DeleteIdx, ConfigureIdx,
 		CgetIdx, OnClickedIdx,
-		ClassIdx
+		ClassIdx, OptionsIdx, CommandsIdx
 	};
 
 	GtkWidget *widget = GTK_WIDGET ( data );
@@ -244,6 +251,16 @@ static int rulerFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * 
 
 	switch ( idx )
 	{
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, rulerOptions );
+			}
+			break;
 		case ClassIdx:
 			Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "arrowButton", -1 ) );
 			break;

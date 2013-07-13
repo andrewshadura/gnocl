@@ -12,6 +12,7 @@
 
 /*
    History:
+   2013-07:	added commands, options, commands
         10: switched from GnoclWidgetOptions to GnoclOption
    2002-04: updates for gtk 2.0
         09: accelerator for menuItems
@@ -61,7 +62,7 @@ int menuBarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const
 	{
 		"delete", "configure",
 		"add", "addBegin",
-		"addEnd",
+		"addEnd", "options", "commands",
 		NULL
 	};
 
@@ -69,7 +70,7 @@ int menuBarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const
 	{
 		DeleteIdx, ConfigureIdx,
 		AddIdx, BeginIdx,
-		EndIdx
+		EndIdx, OptionsIdx, CommandsIdx
 	};
 
 	GtkMenuBar *menuBar = GTK_MENU_BAR ( data );
@@ -87,6 +88,16 @@ int menuBarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const
 
 	switch ( idx )
 	{
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, menuBarOptions );
+			}
+			break;
 		case DeleteIdx:
 			return gnoclDelete ( interp, GTK_WIDGET ( menuBar ), objc, objv );
 

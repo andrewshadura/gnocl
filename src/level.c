@@ -1,11 +1,14 @@
-/*
-   History:
-   2013-02: Begin of developement
- */
-
 /**
 \page page_level gnocl::level
 \htmlinclude level.html
+**/
+
+/**
+\par Modification History
+\verbatim
+	2013-07: added commands, options, commands
+	2013-02: Begin of developement
+\endverbatim
 **/
 
 #include "gnocl.h"
@@ -41,13 +44,13 @@ int levelFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const o
 	static const char *cmds[] =
 	{
 		"delete", "configure",
-		"class", "set",
+		"class", "set", "options", "commands",
 		NULL
 	};
 
 	enum cmdIdx
 	{
-		DeleteIdx, ConfigureIdx, ClassIdx, SetIdx
+		DeleteIdx, ConfigureIdx, ClassIdx, SetIdx, OptionsIdx, CommandsIdx
 	};
 
 	GtkLevel *level = GTK_WIDGET ( data );
@@ -61,7 +64,16 @@ int levelFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const o
 
 	switch ( idx )
 	{
-
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, levelOptions );
+			}
+			break;
 		case SetIdx:
 			{
 				//g_print ("%s %s\n",__FUNCTION__,cmds[idx]);

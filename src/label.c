@@ -13,6 +13,7 @@
 
 /*
    History:
+   2013-07:	added commands, options, commands
    2013-05: added -foreground, -background
 			bugfix in cget
 			-useMarkup now working properly, default = 0
@@ -538,8 +539,8 @@ static int cget ( Tcl_Interp *interp, LabelParams *para, GnoclOption options[], 
 **/
 int labelFunc (	ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-	static const char *cmds[] = { "delete", "configure", "cget", "onChanged", "class", NULL };
-	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, OnChangedIdx, ClassIdx};
+	static const char *cmds[] = { "delete", "configure", "cget", "onChanged", "class", "options", "commands", NULL };
+	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, OnChangedIdx, ClassIdx, OptionsIdx, CommandsIdx};
 
 	LabelParams *para = ( LabelParams * ) data;
 	GtkWidget *widget = GTK_WIDGET ( para->label );
@@ -558,6 +559,16 @@ int labelFunc (	ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const o
 
 	switch ( idx )
 	{
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, labelOptions );
+			}
+			break;
 		case ClassIdx:
 			{
 				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "label", -1 ) );

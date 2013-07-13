@@ -25,7 +25,8 @@
 
 /*
    History:
-	Began Development	01/05/2010
+	2013-07: added commands, options, commands
+	2010-01: Began Development
  */
 
 #include "gnocl.h"
@@ -228,8 +229,8 @@ static int cget ( Tcl_Interp *interp, GtkLabel *label, GnoclOption options[], in
 int printerDialogFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
 
-	static const char *cmds[] = { "class", "delete", "configure", "cget", "show", "hide", NULL };
-	enum cmdIdx { ClassIdx, DeleteIdx, ConfigureIdx, CgetIdx, ShowIdx, HideIdx };
+	static const char *cmds[] = { "class", "delete", "configure", "cget", "show", "hide", "options", "commands", NULL };
+	enum cmdIdx { ClassIdx, DeleteIdx, ConfigureIdx, CgetIdx, ShowIdx, HideIdx, OptionsIdx, CommandsIdx };
 	int idx;
 	GtkLabel *dialog = ( GtkLabel * ) data;
 
@@ -247,6 +248,16 @@ int printerDialogFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *
 
 	switch ( idx )
 	{
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, printerDialogOptions );
+			}
+			break;
 		case ClassIdx:
 			{
 				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "printerDialog", -1 ) );

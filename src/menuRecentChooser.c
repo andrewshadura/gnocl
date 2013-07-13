@@ -6,6 +6,7 @@
 
 /*
    History:
+   2013-07:	added commands, options, commands
    2011-12: New module added.
  */
 
@@ -166,8 +167,8 @@ static int configure ( Tcl_Interp *interp, GtkWidget *menu, GnoclOption options[
 **/
 static int menuRecentChooserFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-	static const char *cmds[] = { "delete", "configure", "class", NULL };
-	enum cmdIdx { DeleteIdx, ConfigureIdx, ClassIdx };
+	static const char *cmds[] = { "delete", "configure", "class", "options", "commands", NULL };
+	enum cmdIdx { DeleteIdx, ConfigureIdx, ClassIdx, OptionsIdx, CommandsIdx };
 
 	GtkWidget *menu = GTK_WIDGET ( data );
 
@@ -184,6 +185,16 @@ static int menuRecentChooserFunc ( ClientData data, Tcl_Interp *interp, int objc
 
 	switch ( idx )
 	{
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, recentChooserOptions );
+			}
+			break;
 		case ClassIdx:
 			{
 				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "menuRecentChooser", -1 ) );

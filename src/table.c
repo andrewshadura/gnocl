@@ -13,6 +13,7 @@
 
 /*
    History:
+   2013-07: added commands, options, commands
    2009-12: changed defaults for borderwidth and row spacing to to GNOCL_PAD_TINY
    2008-10: added class
         08: added gnoclOptPadding
@@ -591,8 +592,8 @@ static int tableFuncAdd ( GtkTable *table, Tcl_Interp *interp,
 static int tableFunc ( ClientData data, Tcl_Interp *interp,
 					   int objc, Tcl_Obj * const objv[] )
 {
-	const char *cmds[] = { "delete", "configure", "add", "addRow", "addColumn", "class", NULL };
-	enum cmdIdx { DeleteIdx, ConfigureIdx, AddIdx, AddRowIdx, AddColumnIdx, ClassIdx };
+	const char *cmds[] = { "delete", "configure", "add", "addRow", "addColumn", "class", "options", "commands", NULL };
+	enum cmdIdx { DeleteIdx, ConfigureIdx, AddIdx, AddRowIdx, AddColumnIdx, ClassIdx, OptionsIdx, CommandsIdx };
 
 	int idx;
 
@@ -634,8 +635,20 @@ static int tableFunc ( ClientData data, Tcl_Interp *interp,
 
 	switch ( idx )
 	{
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, tableOptions );
+			}
+			break;
 		case ClassIdx:
-			Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "table", -1 ) );
+			{
+				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "table", -1 ) );
+			}
 			break;
 		case DeleteIdx:
 			return gnoclDelete ( interp, widget, objc, objv );

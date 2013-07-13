@@ -7,6 +7,13 @@
 \htmlinclude iconview.html
 **/
 
+/**
+\par Modification History
+\verbatim
+	2013-07:	added commands, options, commands
+\endverbatim
+**/
+
 #include "gnocl.h"
 #include "gnoclparams.h"
 
@@ -699,12 +706,14 @@ int iconViewFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * cons
 	{
 		"delete", "configure", "cget",
 		"onClicked", "class", "add",
+		"options", "commands",
 		NULL
 	};
 	enum cmdIdx
 	{
 		DeleteIdx, ConfigureIdx, CgetIdx,
-		OnClickedIdx, ClassIdx, AddIdx
+		OnClickedIdx, ClassIdx, AddIdx,
+		OptionsIdx, CommandsIdx
 	};
 
 	int idx;
@@ -722,6 +731,16 @@ int iconViewFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * cons
 
 	switch ( idx )
 	{
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, iconViewOptions );
+			}
+			break;
 		case AddIdx:
 			{
 

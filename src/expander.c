@@ -12,6 +12,7 @@
 
 /*
    History:
+   2013-07:	added commands, options, commands
    2013-04: added options -onActivate
    2009-12: added options -spacing -expanderSize -underline
    2008-10: added command, class
@@ -153,11 +154,11 @@ int expanderFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * cons
 	const char *cmds[] =
 	{
 		"delete", "configure", "cget",
-		"class",
+		"class", "options", "commands",
 		NULL
 	};
 
-	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, ClassIdx };
+	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, ClassIdx, OptionsIdx, CommandsIdx };
 	int idx;
 	GtkExpander *expander = GTK_EXPANDER ( data );
 
@@ -174,6 +175,16 @@ int expanderFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * cons
 
 	switch ( idx )
 	{
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, expanderOptions );
+			}
+			break;
 		case ClassIdx:
 			{
 				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "expander", -1 ) );

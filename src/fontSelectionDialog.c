@@ -11,6 +11,10 @@
 /**
  \par Modification History
  \verbatim
+	2013-07: added command, options, commands
+	2008-10: added command, class
+	2003-02: cleanups with GnoclOption
+	2002-07: start of developement
 	2001-03: Begin developement
  \endverbatim
 **/
@@ -114,8 +118,8 @@ static void onCancelFunc ( GtkWidget *widget, gpointer data )
 **/
 int fontSelDialogFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-	static const char *cmds[] = { "delete", "configure", "class", "hide", "show", NULL };
-	enum cmdIdx { DeleteIdx, ConfigureIdx, ClassIdx, HideIdx, ShowIdx };
+	static const char *cmds[] = { "delete", "configure", "class", "hide", "show", "options", "commands", NULL };
+	enum cmdIdx { DeleteIdx, ConfigureIdx, ClassIdx, HideIdx, ShowIdx, OptionsIdx, CommandsIdx };
 	FontSelDialogParams *para = ( FontSelDialogParams * ) data;
 	GtkWidget *widget = GTK_WIDGET ( para->fontSel );
 	int idx;
@@ -132,6 +136,16 @@ int fontSelDialogFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *
 
 	switch ( idx )
 	{
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, options );
+			}
+			break;
 		case HideIdx:
 			{
 				gtk_widget_hide ( widget );

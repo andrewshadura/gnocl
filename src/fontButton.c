@@ -12,6 +12,7 @@
 
 /*
    History:
+   2013-07:	added commands, options, commands
    2008-10: added command, class
    2004-12: Begin of developement
 */
@@ -85,8 +86,9 @@ static int configure (  Tcl_Interp *interp, GtkButton *button,  GnoclOption opti
 **/
 int fontButtonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-	static const char *cmds[] = { "delete", "configure", "cget", "onClicked", "class", NULL };
-	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, OnClickedIdx, ClassIdx };
+	static const char *cmds[] = { "delete", "configure", "cget", "onClicked", "class", "options", "commands", NULL };
+	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, OnClickedIdx, ClassIdx, OptionsIdx, CommandsIdx };
+
 	GtkFontButton *button = GTK_FONT_BUTTON ( data );
 	int idx;
 
@@ -102,6 +104,16 @@ int fontButtonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * co
 
 	switch ( idx )
 	{
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, fontButtonOptions );
+			}
+			break;
 		case ClassIdx:
 			Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "fontButton", -1 ) );
 			break;

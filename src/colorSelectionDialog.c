@@ -28,6 +28,7 @@
 /**
  \par Modification History
  \verbatim
+   2013-07: added commands, options, commands
    2003-02: cleanups with GnoclOption
    2002-07: start of developement
  \endverbatim
@@ -138,11 +139,12 @@ int colorSelDialogFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj 
 	static const char *cmds[] =
 	{
 		"delete", "configure",
-		"hide", "show",
+		"hide", "show", "options", "commands",
 		NULL
 	};
 
-	enum cmdIdx { DeleteIdx, ConfigureIdx, HideIdx, ShowIdx };
+	enum cmdIdx { DeleteIdx, ConfigureIdx, HideIdx, ShowIdx, OptionsIdx, CommandsIdx };
+
 	ColorSelDialogParams *para = ( ColorSelDialogParams * ) data;
 	GtkWidget *widget = GTK_WIDGET ( para->colorSel );
 	int idx;
@@ -160,6 +162,16 @@ int colorSelDialogFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj 
 
 	switch ( idx )
 	{
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, colorSelectDialogOptions );
+			}
+			break;
 		case HideIdx:
 			{
 				gtk_widget_hide ( widget );

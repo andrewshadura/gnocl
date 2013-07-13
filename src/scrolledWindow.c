@@ -12,6 +12,7 @@
 
 /*
    History:
+   2013-07: added commands, options, commands
    2008-10: added command, class
    2003-08: added gnoclOptPadding
         12: switched from GnoclWidgetOptions to GnoclOption
@@ -248,8 +249,9 @@ static int cget ( Tcl_Interp *interp, GtkScrolledWindow *window, GnoclOption opt
 **/
 int scrlWindowFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-	static const char *cmds[] = { "delete", "configure", "cget", "class", NULL };
-	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, ClassIdx };
+	static const char *cmds[] = { "delete", "configure", "cget", "class", "options", "commands", NULL };
+	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, ClassIdx, OptionsIdx, CommandsIdx };
+
 	GtkScrolledWindow *window = GTK_SCROLLED_WINDOW ( data );
 	int idx;
 
@@ -259,6 +261,16 @@ int scrlWindowFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * co
 
 	switch ( idx )
 	{
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, windowOptions );
+			}
+			break;
 		case ClassIdx:
 			Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "scrolledWindow", -1 ) );
 			break;

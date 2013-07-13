@@ -69,13 +69,13 @@ static int clockFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * 
 	{
 		"set", "reset", "get",
 		"delete", "configure",
-		"cget", "class",
+		"cget", "class", "options", "commands",
 		NULL
 	};
 	enum cmdIdx
 	{
 		DeleteIdx, ConfigureIdx,
-		CgetIdx, ClassIdx
+		CgetIdx, ClassIdx, OptionsIdx, CommandsIdx
 	};
 
 	GtkCurve *widget = GTK_WIDGET ( data );
@@ -95,7 +95,15 @@ static int clockFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * 
 
 	switch ( idx )
 	{
-
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, clockOptions );
+			} break;
 		case ClassIdx:
 			{
 				//printf ( "Class\n" );

@@ -13,6 +13,7 @@ date	20012
 /**
 \par Modification History
 \verbatim
+	2013-07: added commands, options, commands
 	2013-02: new options
 				-child
 				-onIconPress
@@ -840,8 +841,8 @@ int labelEntryFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * co
 
 	LabelEntryParams *para = ( LabelEntryParams * ) data;
 
-	static const char *cmds[] = { "delete", "configure", "cget", "class", NULL };
-	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, ClassIdx };
+	static const char *cmds[] = { "delete", "configure", "cget", "class", "options", "commands", NULL };
+	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, ClassIdx, OptionsIdx, CommandsIdx };
 
 	gint idx;
 
@@ -858,6 +859,16 @@ int labelEntryFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * co
 
 	switch ( idx )
 	{
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, labelEntryOptions );
+			}
+			break;
 		case ClassIdx:
 			{
 				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "labelEntry", -1 ) );

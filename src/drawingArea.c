@@ -7,6 +7,13 @@
 \htmlinclude drawingArea.html
 **/
 
+/**
+\par Modification History
+\verbatim
+	2013-07: added commands, options, commands
+\endverbatim
+**/
+
 /* user documentation */
 
 #include "gnocl.h"
@@ -128,14 +135,14 @@ int drawingAreaFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * c
 	{
 		"draw", "cget", "configure",
 		"delete", "class", "erase",
-		"option",
+		"option", "options", "commands",
 		NULL
 	};
 	enum cmdIdx
 	{
 		DrawIdx, CgetIdx, ConfigureIdx,
 		DeleteIdx, ClassIdx, EraseIdx,
-		OptionIdx,
+		OptionIdx, OptionsIdx, CommandsIdx
 	};
 
 	/*
@@ -170,7 +177,16 @@ int drawingAreaFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * c
 
 	switch ( idx )
 	{
-
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, drawingAreaOptions );
+			}
+			break;
 		case OptionIdx:
 			{
 #ifdef DEBUG_DRAWING_AREA

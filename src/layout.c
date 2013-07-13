@@ -9,6 +9,13 @@
 \htmlinclude layout.html
 **/
 
+/**
+\par Modification History
+\verbatim
+	2013-07:	added commands, options, commands
+\endverbatim
+**/
+
 #include "gnocl.h"
 
 /**
@@ -264,7 +271,7 @@ static int layoutFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *
 	{
 		"add", "move", "remove",
 		"delete", "configure", "cget",
-		"class",
+		"class", "options", "commands",
 		NULL
 	};
 
@@ -272,7 +279,7 @@ static int layoutFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *
 	{
 		AddIdx, MoveIdx, RemoveIdx,
 		DeleteIdx, ConfigureIdx, CgetIdx,
-		ClassIdx
+		ClassIdx, OptionsIdx, CommandsIdx
 	};
 
 	GtkScrolledWindow   *scrolled = GTK_SCROLLED_WINDOW ( data );
@@ -293,6 +300,16 @@ static int layoutFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *
 
 	switch ( idx )
 	{
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, layoutOptions );
+			}
+			break;
 		case RemoveIdx:
 			{
 				/* remove but not delete the child widget */

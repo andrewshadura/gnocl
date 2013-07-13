@@ -2,10 +2,13 @@
 \brief         This module implements the gnocl::infoBar widget.
 **/
 
-/*
-   History:
+/**
+\par Modification History
+\verbatim
+   2013-07:	added commands, options, commands
    2010-10: Begin of developement
- */
+\endverbatim
+**/
 
 /**
 \page page_infoBar gnocl::infoBar
@@ -209,7 +212,7 @@ static int infobarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj 
 	{
 		"add", "item", "reponse",
 		"delete", "configure", "cget",
-		"onClicked", "class",
+		"onClicked", "class", "options", "commands",
 		NULL
 	};
 
@@ -217,7 +220,7 @@ static int infobarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj 
 	{
 		AddIdx, ItemIdx, ResponseIdx,
 		DeleteIdx, ConfigureIdx, CgetIdx,
-		OnClickedIdx, ClassIdx
+		OnClickedIdx, ClassIdx, OptionsIdx, CommandsIdx
 	};
 
 	GtkWidget *widget = GTK_WIDGET ( data );
@@ -236,6 +239,11 @@ static int infobarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj 
 
 	switch ( idx )
 	{
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, infoBarOptions );
+			}
+			break;
 		case ResponseIdx:
 			{
 				/* emit response signal for item */

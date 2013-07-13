@@ -9,6 +9,13 @@
 **/
 
 /**
+\par Modification History
+\verbatim
+	2013-07: added commands, options, commands
+\endverbatim
+**/
+
+/**
 \page page_printing gnocl::printOperation
 \htmlinclude printop.html
 **/
@@ -752,7 +759,7 @@ int printOperationFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj 
 		"export", "cancel", "finish",
 		"preview", "print", "file",
 		"class", "configure", "cget",
-		"status",
+		"status", "options", "commands",
 		NULL
 	};
 
@@ -761,7 +768,7 @@ int printOperationFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj 
 		ExportIdx, CancelIdx, FinishIdx,
 		PreviewIdx, PrintIdx, FileIdx,
 		ClassIdx, ConfigureIdx, CgetIdx,
-		StatusIdx
+		StatusIdx, OptionsIdx, CommandsIdx
 	};
 
 	//GtkPrintOperation *operation = GTK_PRINT_OPERATION ( data );
@@ -785,6 +792,16 @@ int printOperationFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj 
 
 	switch ( idx )
 	{
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, printOptions );
+			}
+			break;
 		case StatusIdx:
 			{
 

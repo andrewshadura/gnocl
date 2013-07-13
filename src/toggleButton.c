@@ -13,6 +13,7 @@
 
 /*
    History:
+   2013-07: added commands, options, commands
    2011-03: fixed problems with -icon option
    2011-03: added -widthGroup
    2010-10: added -icon option
@@ -616,8 +617,9 @@ static int cget ( Tcl_Interp *interp, GnoclToggleParams *para, GnoclOption optio
 **/
 int toggleButtonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-	static const char *cmds[] = { "delete", "configure", "cget", "toggle", "class", "geometry", NULL };
-	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, ToggleIdx, ClassIdx, GeometryIdx };
+	static const char *cmds[] = { "delete", "configure", "cget", "toggle", "class", "geometry", "options", "commands", NULL };
+	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, ToggleIdx, ClassIdx, GeometryIdx, OptionsIdx, CommandsIdx };
+
 	GnoclToggleParams *para = ( GnoclToggleParams * ) data;
 
 	int idx;
@@ -635,6 +637,16 @@ int toggleButtonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * 
 
 	switch ( idx )
 	{
+		case CommandsIdx:
+			{
+				gnoclGetOptions ( interp, cmds );
+			}
+			break;
+		case OptionsIdx:
+			{
+				gnoclGetOptions ( interp, toggleButtonOptions );
+			}
+			break;
 		case GeometryIdx:
 			{
 				g_print ( "toggleButton GeometryIdx\n" );
