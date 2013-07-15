@@ -38,15 +38,15 @@ static int cget ( Tcl_Interp *interp, GtkWidget *widget, GnoclOption options[], 
 	return gnoclCgetNotImplemented ( interp, options + idx );
 }
 
+static const char *cmds[] = { "delete", "configure", "cget", "onClicked", "class", NULL };
+
 /**
 \brief
 **/
 int colorSelectionFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-	printf ( "widgetFunc\n" );
 
-	static const char *cmds[] = { "delete", "configure", "cget", "onClicked", "class", "options", "commands", NULL };
-	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, OnClickedIdx, ClassIdx, OptionsIdx, CommandsIdx };
+	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, OnClickedIdx, ClassIdx };
 	GtkWidget *widget = GTK_WIDGET ( data );
 	int idx;
 
@@ -63,20 +63,16 @@ int colorSelectionFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj 
 
 	switch ( idx )
 	{
-		case CommandsIdx:
+
+		case ClassIdx:
 			{
-				gnoclGetOptions ( interp, cmds );
+				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "fileChooser", -1 ) );
 			}
 			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, colorSelectionOptions );
-			}		break;
-		case ClassIdx:
-			Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "fileChooser", -1 ) );
-			break;
 		case DeleteIdx:
-			return gnoclDelete ( interp, GTK_WIDGET ( widget ), objc, objv );
+			{
+				return gnoclDelete ( interp, GTK_WIDGET ( widget ), objc, objv );
+			}
 
 		case ConfigureIdx:
 			{
@@ -145,6 +141,10 @@ int colorSelectionFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj 
 **/
 int gnoclColorSelectionCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, colorSelectionOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
 
 	int            ret = TCL_OK;
 	GtkWidget      *widget;

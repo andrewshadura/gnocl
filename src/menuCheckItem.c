@@ -162,13 +162,15 @@ static int cget ( Tcl_Interp *interp, GnoclCheckParams  *para,
 	return gnoclCgetNotImplemented ( interp, options + idx );
 }
 
+static const char *cmds[] = { "delete", "configure", "cget", "onToggled",  NULL };
+
 /**
 \brief
 **/
 static int checkItemFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-	static const char *cmds[] = { "delete", "configure", "cget", "onToggled", "options", "commands", NULL };
-	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, OnToggledIdx, OptionsIdx, CommandsIdx };
+
+	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, OnToggledIdx };
 
 	GnoclCheckParams *para = ( GnoclCheckParams * ) data;
 	int idx;
@@ -179,22 +181,14 @@ static int checkItemFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Ob
 		return TCL_ERROR;
 	}
 
-	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "command",
-							   TCL_EXACT, &idx ) != TCL_OK )
+	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "command", TCL_EXACT, &idx ) != TCL_OK )
+	{
 		return TCL_ERROR;
+	}
 
 	switch ( idx )
 	{
-		case CommandsIdx:
-			{
-				gnoclGetOptions ( interp, cmds );
-			}
-			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, checkOptions );
-			}
-			break;
+
 		case DeleteIdx:
 			return gnoclDelete ( interp, para->widget, objc, objv );
 
@@ -202,8 +196,7 @@ static int checkItemFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Ob
 			{
 				int ret = TCL_ERROR;
 
-				if ( gnoclParseAndSetOptions ( interp, objc - 1, objv + 1,
-											   checkOptions, G_OBJECT ( para->widget ) ) == TCL_OK )
+				if ( gnoclParseAndSetOptions ( interp, objc - 1, objv + 1, checkOptions, G_OBJECT ( para->widget ) ) == TCL_OK )
 				{
 					ret = configure ( interp, para, checkOptions );
 				}
@@ -240,9 +233,14 @@ static int checkItemFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Ob
 /**
 \brief
 **/
-int gnoclMenuCheckItemCmd ( ClientData data, Tcl_Interp *interp,
-							int objc, Tcl_Obj * const objv[] )
+int gnoclMenuCheckItemCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, checkOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
+
 	GnoclCheckParams *para;
 	int             ret;
 

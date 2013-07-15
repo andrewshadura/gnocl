@@ -191,13 +191,15 @@ static int cget ( Tcl_Interp *interp, GtkWidget *widget, GnoclOption options[], 
 	return gnoclCgetNotImplemented ( interp, options + idx );
 }
 
+static const char *cmds[] = { "delete", "configure", "cget", "onClicked", "class",  NULL };
+
 /**
 \brief
 **/
 int linkButtonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-	static const char *cmds[] = { "delete", "configure", "cget", "onClicked", "class", "opetions", "commands", NULL };
-	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, OnClickedIdx, ClassIdx, OptionsIdx, CommandsIdx };
+
+	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, OnClickedIdx, ClassIdx };
 
 #ifdef DEBUG
 	printf ( "linkButtonFunc 1\n" );
@@ -214,24 +216,18 @@ int linkButtonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * co
 		return TCL_ERROR;
 	}
 
-	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "command",
-							   TCL_EXACT, &idx ) != TCL_OK )
+	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "command", TCL_EXACT, &idx ) != TCL_OK )
+	{
 		return TCL_ERROR;
+	}
 
 	switch ( idx )
 	{
-		case CommandsIdx:
-			{
-				gnoclGetOptions ( interp, cmds );
-			}
-			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, linkButtonOptions );
-			}
-			break;
+
 		case ClassIdx:
-			Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "linkButton", -1 ) );
+			{
+				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "linkButton", -1 ) );
+			}
 			break;
 		case DeleteIdx:
 			{
@@ -295,6 +291,12 @@ int linkButtonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * co
 **/
 int gnoclLinkButtonCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, linkButtonOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
 	int         ret;
 	GtkWidget   *widget;
 	int         k, a, b;

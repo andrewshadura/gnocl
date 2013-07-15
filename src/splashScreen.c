@@ -529,6 +529,13 @@ static int configure ( Tcl_Interp *interp, SplashScreenParams *para, GnoclOption
 	return TCL_OK;
 }
 
+static const char *cmds[] =
+{
+	"add", "progress", "push",
+	"delete", "configure", "cget",
+	"class", "show",
+	NULL
+};
 
 /**
 /brief
@@ -539,18 +546,12 @@ static int configure ( Tcl_Interp *interp, SplashScreenParams *para, GnoclOption
 int splashScreenFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
 
-	static const char *cmds[] =
-	{
-		"add", "progress", "push",
-		"delete", "configure", "cget",
-		"class", "show", "options", "commands",
-		NULL
-	};
+
 	enum cmdIdx
 	{
 		AddIdx, ProgressIdx, PushIdx,
 		DeleteIdx, ConfigureIdx, CgetIdx,
-		ClassIdx, ShowIdx, OptionsIdx, CommandsIdx
+		ClassIdx, ShowIdx
 	};
 
 	SplashScreenParams *para = ( SplashScreenParams * ) data;
@@ -570,16 +571,7 @@ int splashScreenFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * 
 
 	switch ( idx )
 	{
-		case CommandsIdx:
-			{
-				gnoclGetOptions ( interp, cmds );
-			}
-			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, splashScreenOptions );
-			}
-			break;
+
 		case ShowIdx:
 			{
 				drawSplashScreen ( para );
@@ -875,6 +867,12 @@ typedef struct
 **/
 int gnoclSplashScreenCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, splashScreenOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
 
 	int ret;
 	//GtkImage *image;

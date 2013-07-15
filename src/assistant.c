@@ -592,6 +592,16 @@ static int addPage ( GtkAssistant *assistant, gchar *title, gint type )
 	return index;
 }
 
+
+static const char *cmds[] =
+{
+	"cget", "delete", "page",
+	"configure", "addPage", "insertPage",
+	"currentPage", "pages", "addWidget",
+	"removeWidget", "update",
+	NULL
+};
+
 /**
 \brief
 */
@@ -608,21 +618,13 @@ int assistantFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * con
 
 #endif
 
-	static const char *cmds[] =
-	{
-		"cget", "delete", "page",
-		"configure", "addPage", "insertPage",
-		"currentPage", "pages", "addWidget",
-		"removeWidget", "update", "options", "commands",
-		NULL
-	};
 
 	enum cmdIdx
 	{
 		CgetIdx, DeleteIdx, PageIdx,
 		ConfigureIdx, AddPageIdx, InsertPageIdx,
 		CurrentPageIdx, PagesIdx, AddWidgetIdx,
-		RemoveWidgetIdx, UpdateIdx, OptionsIdx, CommandsIdx
+		RemoveWidgetIdx, UpdateIdx
 	};
 
 	GtkAssistant *assistant = GTK_ASSISTANT ( data );
@@ -641,21 +643,12 @@ int assistantFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * con
 
 	switch ( idx )
 	{
-		case CommandsIdx:
-			{
-				gnoclGetOptions ( interp, cmds );
-			}
-			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, assistantOptions );
-			}		break;
+
 		case CgetIdx:
 			{
 				int     idx;
 
-				switch ( gnoclCget ( interp, objc, objv, G_OBJECT ( assistant ),
-									 assistantOptions, &idx ) )
+				switch ( gnoclCget ( interp, objc, objv, G_OBJECT ( assistant ), assistantOptions, &idx ) )
 				{
 					case GNOCL_CGET_ERROR:
 						return TCL_ERROR;
@@ -885,6 +878,11 @@ int assistantFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * con
 */
 int gnoclAssistantCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, assistantOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
 	int  ret;
 	gint index;
 

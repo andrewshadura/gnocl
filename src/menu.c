@@ -170,24 +170,26 @@ static int configure ( Tcl_Interp *interp, GtkMenu *menu, GnoclOption options[] 
 }
 
 
+static const char *cmds[] =
+{
+	"delete", "configure", "add",
+	"addBegin", "addEnd", "popup",
+	"popdown", "class",
+	NULL
+};
+
 /**
 \brief
 **/
 int menuFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-	static const char *cmds[] =
-	{
-		"delete", "configure", "add",
-		"addBegin", "addEnd", "popup",
-		"popdown", "class", "options", "commands",
-		NULL
-	};
+
 
 	enum cmdIdx
 	{
 		DeleteIdx, ConfigureIdx, AddIdx,
 		BeginIdx, EndIdx, PopupIdx,
-		PopdownIdx, ClassIdx, OptionsIdx, CommandsIdx
+		PopdownIdx, ClassIdx
 	};
 
 	GtkMenu *menu = GTK_MENU ( data );
@@ -200,20 +202,13 @@ int menuFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const ob
 	}
 
 	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "command", TCL_EXACT, &idx ) != TCL_OK )
+	{
 		return TCL_ERROR;
+	}
 
 	switch ( idx )
 	{
-		case CommandsIdx:
-			{
-				gnoclGetOptions ( interp, cmds );
-			}
-			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, menuOptions );
-			}
-			break;
+
 		case ClassIdx:
 			Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "menu", -1 ) );
 			break;
@@ -295,6 +290,12 @@ int menuFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const ob
 **/
 int gnoclMenuCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, menuOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
 	int       ret;
 	GtkMenu   *menu;
 	GtkWidget *tearoff;

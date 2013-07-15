@@ -414,24 +414,26 @@ static int boxFuncAdd ( GtkBox *box, Tcl_Interp *interp, int objc, Tcl_Obj * con
 	return ret;
 }
 
+static const char *cmds[] =
+{
+	"cget", "delete", "configure", "add",
+	"addBegin", "addStart", "addEnd", "class", "remove",
+	"reorder",
+	NULL
+};
+
 /**
 \brief Function called by the interpreter in response to widget command.
 **/
 int boxFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-	static const char *cmds[] =
-	{
-		"cget", "delete", "configure", "add",
-		"addBegin", "addStart", "addEnd", "class", "remove",
-		"reorder", "options", "commands",
-		NULL
-	};
+
 
 	enum cmdIdx
 	{
 		CgetIdx, DeleteIdx, ConfigureIdx, AddIdx,
 		BeginIdx, StartIdx, EndIdx, ClassIdx, RemoveIdx,
-		ReorderIdx, OptionsIdx, CommandsIdx
+		ReorderIdx
 	};
 
 	int idx;
@@ -465,16 +467,6 @@ int boxFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const obj
 
 	switch ( idx )
 	{
-		case CommandsIdx:
-			{
-				gnoclGetOptions ( interp, cmds );
-			}
-			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, boxOptions );
-			}
-			break;
 
 			/* may require implementation of error checking */
 		case RemoveIdx:
@@ -596,6 +588,14 @@ int boxFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const obj
 **/
 int gnoclBoxCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, boxOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
+
+
 	GtkOrientation orient = GTK_ORIENTATION_HORIZONTAL;
 	int            isButtonType = 0;
 	int            ret = TCL_OK;

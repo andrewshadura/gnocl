@@ -52,25 +52,26 @@ static int configure ( Tcl_Interp *interp, GtkMenuBar *menuBar, GnoclOption opti
 	return TCL_OK;
 }
 
+static const char *cmds[] =
+{
+	"delete", "configure",
+	"add", "addBegin",
+	"addEnd",
+	NULL
+};
 
 /**
 \brief
 **/
 int menuBarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-	static const char *cmds[] =
-	{
-		"delete", "configure",
-		"add", "addBegin",
-		"addEnd", "options", "commands",
-		NULL
-	};
+
 
 	enum cmdIdx
 	{
 		DeleteIdx, ConfigureIdx,
 		AddIdx, BeginIdx,
-		EndIdx, OptionsIdx, CommandsIdx
+		EndIdx
 	};
 
 	GtkMenuBar *menuBar = GTK_MENU_BAR ( data );
@@ -82,31 +83,24 @@ int menuBarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const
 		return TCL_ERROR;
 	}
 
-	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "command",
-							   TCL_EXACT, &idx ) != TCL_OK )
+	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "command", TCL_EXACT, &idx ) != TCL_OK )
+	{
 		return TCL_ERROR;
+	}
 
 	switch ( idx )
 	{
-		case CommandsIdx:
-			{
-				gnoclGetOptions ( interp, cmds );
-			}
-			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, menuBarOptions );
-			}
-			break;
+
 		case DeleteIdx:
-			return gnoclDelete ( interp, GTK_WIDGET ( menuBar ), objc, objv );
+			{
+				return gnoclDelete ( interp, GTK_WIDGET ( menuBar ), objc, objv );
+			}
 
 		case ConfigureIdx:
 			{
 				int ret = TCL_ERROR;
 
-				if ( gnoclParseAndSetOptions ( interp, objc - 1, objv + 1,
-											   menuBarOptions, G_OBJECT ( menuBar ) ) == TCL_OK )
+				if ( gnoclParseAndSetOptions ( interp, objc - 1, objv + 1, menuBarOptions, G_OBJECT ( menuBar ) ) == TCL_OK )
 				{
 					ret = configure ( interp, menuBar, menuBarOptions );
 				}
@@ -143,6 +137,12 @@ int menuBarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const
 **/
 int gnoclMenuBarCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, menuBarOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
 	int        ret;
 	GtkMenuBar *menuBar;
 

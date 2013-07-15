@@ -417,14 +417,15 @@ static int cget ( Tcl_Interp *interp, GnoclCheckParams *para, GnoclOption option
 	return gnoclCgetNotImplemented ( interp, options + idx );
 }
 
+static const char *cmds[] = { "delete", "configure", "cget", "onToggled", "class", NULL};
+
 /**
 \brief
 **/
 int checkButtonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-	static const char *cmds[] = { "delete", "configure", "cget", "onToggled", "class", "options", "commands", NULL
-								};
-	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, OnToggledIdx, ClassIdx, OptionsIdx, CommandsIdx };
+
+	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, OnToggledIdx, ClassIdx };
 	GnoclCheckParams *para = ( GnoclCheckParams * ) data;
 	int idx;
 
@@ -439,21 +440,16 @@ int checkButtonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * c
 
 	switch ( idx )
 	{
-		case CommandsIdx:
-			{
-				gnoclGetOptions ( interp, cmds );
-			}
-			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, checkButtonOptions );
-			}
-			break;
+
 		case ClassIdx:
-			Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "checkButton", -1 ) );
+			{
+				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "checkButton", -1 ) );
+			}
 			break;
 		case DeleteIdx:
-			return gnoclDelete ( interp, para->widget, objc, objv );
+			{
+				return gnoclDelete ( interp, para->widget, objc, objv );
+			}
 
 		case ConfigureIdx:
 			{
@@ -499,6 +495,12 @@ int checkButtonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * c
 **/
 int gnoclCheckButtonCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, checkButtonOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
 	GnoclCheckParams *para;
 	int ret;
 

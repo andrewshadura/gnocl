@@ -74,6 +74,8 @@ static int configure ( Tcl_Interp *interp, GdkPixmap *pixmap, GnoclOption option
 	return TCL_OK;
 }
 
+static const char *cmds[] = { "class", "delete", "draw", "get", "copy", NULL };
+
 /**
 \brief
 \author     William J Giddings
@@ -97,7 +99,7 @@ int pixMapFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const 
 
 
 	/* set list of valid commands for this pixmap */
-	static const char *cmds[] = { "class", "delete", "draw", "get", "copy", NULL };
+
 	enum cmdIdx { ClassIdx, DeleteIdx, DrawIdx, GetIdx, CopyIdx };
 
 	int idx;
@@ -419,6 +421,10 @@ int pixMapFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const 
 **/
 int gnoclPixMapCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, pixMapOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
 
 #ifdef DEBUG_PIXMAP
 	g_printf ( "gnoclPixMapCmd\n" );

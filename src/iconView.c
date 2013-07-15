@@ -689,6 +689,12 @@ static int cget ( Tcl_Interp *interp, GtkWidget *widget, GnoclOption options[], 
 	return gnoclCgetNotImplemented ( interp, options + idx );
 }
 
+static const char *cmds[] =
+{
+	"delete", "configure", "cget",
+	"onClicked", "class", "add",
+	NULL
+};
 
 /**
 \brief
@@ -702,18 +708,11 @@ int iconViewFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * cons
 	IconViewParams *para = ( IconViewParams * ) data;
 
 
-	static const char *cmds[] =
-	{
-		"delete", "configure", "cget",
-		"onClicked", "class", "add",
-		"options", "commands",
-		NULL
-	};
+
 	enum cmdIdx
 	{
 		DeleteIdx, ConfigureIdx, CgetIdx,
-		OnClickedIdx, ClassIdx, AddIdx,
-		OptionsIdx, CommandsIdx
+		OnClickedIdx, ClassIdx, AddIdx
 	};
 
 	int idx;
@@ -731,16 +730,7 @@ int iconViewFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * cons
 
 	switch ( idx )
 	{
-		case CommandsIdx:
-			{
-				gnoclGetOptions ( interp, cmds );
-			}
-			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, iconViewOptions );
-			}
-			break;
+
 		case AddIdx:
 			{
 
@@ -943,6 +933,10 @@ int iconViewFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * cons
 **/
 int gnoclIconViewCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, iconViewOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
 
 #ifdef DEBUG_ICONVIEW
 	g_print ( "gnoclIconViewCmd\n" );

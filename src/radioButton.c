@@ -630,22 +630,24 @@ static int configure ( Tcl_Interp *interp, GnoclRadioParams *para, GnoclOption o
 	return TCL_OK;
 }
 
+static const char *cmds[] =
+{
+	"delete", "configure", "cget",
+	"onToggled", "class",
+	NULL
+};
+
 /**
 \brief
 **/
 int radioButtonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-	static const char *cmds[] =
-	{
-		"delete", "configure", "cget",
-		"onToggled", "class", "options", "commands",
-		NULL
-	};
+
 
 	enum cmdIdx
 	{
 		DeleteIdx, ConfigureIdx,  CgetIdx,
-		OnToggledIdx, ClassIdx, OptionsIdx, CommandsIdx
+		OnToggledIdx, ClassIdx
 	};
 
 	GnoclRadioParams *para = ( GnoclRadioParams * ) data;
@@ -664,16 +666,7 @@ int radioButtonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * c
 
 	switch ( idx )
 	{
-		case CommandsIdx:
-			{
-				gnoclGetOptions ( interp, cmds );
-			}
-			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, radioButtonOptions );
-			}
-			break;
+
 		case ClassIdx:
 			{
 				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "radioButton", -1 ) );
@@ -735,6 +728,12 @@ int radioButtonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * c
 **/
 int gnoclRadioButtonCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, radioButtonOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
+
 	GnoclRadioParams  *para;
 	int                ret;
 

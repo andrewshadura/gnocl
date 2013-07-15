@@ -130,20 +130,22 @@ static void onCancelFunc ( GtkWidget *widget, gpointer data )
 	onButtonFunc ( ( ColorSelDialogParams * ) data, 0 );
 }
 
+static const char *cmds[] =
+{
+	"delete", "configure",
+	"hide", "show",
+	NULL
+};
+
 /**
 \brief
 \author
 **/
 int colorSelDialogFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-	static const char *cmds[] =
-	{
-		"delete", "configure",
-		"hide", "show", "options", "commands",
-		NULL
-	};
 
-	enum cmdIdx { DeleteIdx, ConfigureIdx, HideIdx, ShowIdx, OptionsIdx, CommandsIdx };
+
+	enum cmdIdx { DeleteIdx, ConfigureIdx, HideIdx, ShowIdx };
 
 	ColorSelDialogParams *para = ( ColorSelDialogParams * ) data;
 	GtkWidget *widget = GTK_WIDGET ( para->colorSel );
@@ -162,16 +164,7 @@ int colorSelDialogFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj 
 
 	switch ( idx )
 	{
-		case CommandsIdx:
-			{
-				gnoclGetOptions ( interp, cmds );
-			}
-			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, colorSelectDialogOptions );
-			}
-			break;
+
 		case HideIdx:
 			{
 				gtk_widget_hide ( widget );
@@ -212,6 +205,12 @@ int colorSelDialogFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj 
 **/
 int gnoclColorSelectionDialogCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, colorSelectDialogOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
+
 	ColorSelDialogParams *para = NULL;
 	int           ret = TCL_ERROR;
 	int           isModal = 1;           /* default: is modal */

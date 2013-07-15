@@ -136,6 +136,14 @@ static int cget ( Tcl_Interp *interp, GtkWidget *widget, GnoclOption options[], 
 	return gnoclCgetNotImplemented ( interp, options + idx );
 }
 
+static const char *cmds[] =
+{
+	"delete", "configure",
+	"cget", "onClicked",
+	"class",
+	NULL
+};
+
 /**
 \brief
 **/
@@ -145,19 +153,13 @@ static int aspectFrameFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_
 	listParameters ( objc, objv, "aspectFrameFunc" );
 #endif
 
-	static const char *cmds[] =
-	{
-		"delete", "configure",
-		"cget", "onClicked",
-		"class", "options", "commands",
-		NULL
-	};
+
 
 	enum cmdIdx
 	{
 		DeleteIdx, ConfigureIdx,
 		CgetIdx, OnClickedIdx,
-		ClassIdx, OptionsIdx, CommandsIdx
+		ClassIdx
 	};
 
 	GtkWidget *widget = GTK_WIDGET ( data );
@@ -176,20 +178,16 @@ static int aspectFrameFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_
 
 	switch ( idx )
 	{
-		case CommandsIdx:
+
+		case ClassIdx:
 			{
-				gnoclGetOptions ( interp, cmds );
+				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "arrowButton", -1 ) );
 			}
 			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, aspectFrameOptions );
-			} break;
-		case ClassIdx:
-			Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "arrowButton", -1 ) );
-			break;
 		case DeleteIdx:
-			return gnoclDelete ( interp, GTK_WIDGET ( widget ), objc, objv );
+			{
+				return gnoclDelete ( interp, GTK_WIDGET ( widget ), objc, objv );
+			}
 
 		case ConfigureIdx:
 			{
@@ -258,6 +256,11 @@ static int aspectFrameFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_
 **/
 int gnoclAspectFrameCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, aspectFrameOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
 
 	GtkOrientation orient = GTK_ORIENTATION_HORIZONTAL;
 	int            ret = TCL_OK;

@@ -112,14 +112,16 @@ static void onCancelFunc ( GtkWidget *widget, gpointer data )
 	onButtonFunc ( ( FontSelDialogParams * ) data, 0 );
 }
 
+static const char *cmds[] = { "delete", "configure", "class", "hide", "show", NULL };
+
 /**
 \brief
 \author     Peter G Baum
 **/
 int fontSelDialogFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-	static const char *cmds[] = { "delete", "configure", "class", "hide", "show", "options", "commands", NULL };
-	enum cmdIdx { DeleteIdx, ConfigureIdx, ClassIdx, HideIdx, ShowIdx, OptionsIdx, CommandsIdx };
+
+	enum cmdIdx { DeleteIdx, ConfigureIdx, ClassIdx, HideIdx, ShowIdx };
 	FontSelDialogParams *para = ( FontSelDialogParams * ) data;
 	GtkWidget *widget = GTK_WIDGET ( para->fontSel );
 	int idx;
@@ -130,22 +132,14 @@ int fontSelDialogFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *
 		return TCL_ERROR;
 	}
 
-	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "command",
-							   TCL_EXACT, &idx ) != TCL_OK )
+	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "command", TCL_EXACT, &idx ) != TCL_OK )
+	{
 		return TCL_ERROR;
+	}
 
 	switch ( idx )
 	{
-		case CommandsIdx:
-			{
-				gnoclGetOptions ( interp, cmds );
-			}
-			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, options );
-			}
-			break;
+
 		case HideIdx:
 			{
 				gtk_widget_hide ( widget );
@@ -187,9 +181,14 @@ int fontSelDialogFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *
 \brief
 \author     Peter G Baum
 **/
-int gnoclFontSelectionDialogCmd ( ClientData data, Tcl_Interp *interp,
-								  int objc, Tcl_Obj * const objv[] )
+int gnoclFontSelectionDialogCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, options, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
+
 	FontSelDialogParams *para = NULL;
 	int           ret = TCL_ERROR;
 	int           isModal = 1;           /* default: is modal */
@@ -203,8 +202,7 @@ int gnoclFontSelectionDialogCmd ( ClientData data, Tcl_Interp *interp,
 
 	para = g_new ( FontSelDialogParams, 1 );
 
-	para->fontSel = GTK_FONT_SELECTION_DIALOG (
-						gtk_font_selection_dialog_new ( "" ) );
+	para->fontSel = GTK_FONT_SELECTION_DIALOG ( gtk_font_selection_dialog_new ( "" ) );
 
 	para->interp = interp;
 

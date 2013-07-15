@@ -293,6 +293,15 @@ static int cget ( Tcl_Interp *interp, GtkWidget *widget, GnoclOption options[], 
 	return gnoclCgetNotImplemented ( interp, options + idx );
 }
 
+static const char *cmds[] =
+{
+	"delete", "configure", "add", "move",
+	"remove", "class", "raise", "lower",
+	"children", "toTop", "toBottom", "position",
+	"stackLevel", "size",
+	NULL
+};
+
 /**
 \brief	Function assigned to the names instances of the gnocl::fixed widget.
 **/
@@ -302,20 +311,13 @@ static int fixedFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * 
 	g_print ( "fixedFunc\n" );
 #endif
 
-	static const char *cmds[] =
-	{
-		"delete", "configure", "add", "move",
-		"remove", "class", "raise", "lower",
-		"children", "toTop", "toBottom", "position",
-		"stackLevel", "size", "options", "commands",
-		NULL
-	};
+
 	enum cmdIdx
 	{
 		DeleteIdx, ConfigureIdx, AddIdx, MoveIdx,
 		RemoveIdx, ClassIdx, RaiseIdx, LowerIdx,
 		ChildrenIdx, ToTopIdx, ToBottomIdx, PositionIdx,
-		StackLevelIdx, SizeIdx, OptionsIdx, CommandsIdx
+		StackLevelIdx, SizeIdx
 	};
 
 	GtkWidget *widget = GTK_WIDGET ( data );
@@ -343,16 +345,7 @@ static int fixedFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * 
 
 	switch ( idx )
 	{
-		case CommandsIdx:
-			{
-				gnoclGetOptions ( interp, cmds );
-			}
-			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, fixedOptions );
-			}
-			break;
+
 			/* return child widget position as {x y} or size (w h) */
 		case SizeIdx:
 		case PositionIdx:
@@ -612,6 +605,13 @@ static int fixedFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * 
 **/
 int gnoclFixedCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, fixedOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
+
+
 	int ret;
 	GtkFrame *frame = NULL;
 	GtkWidget *widget;

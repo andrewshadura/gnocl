@@ -3730,6 +3730,28 @@ static int signalEmit ( Tcl_Interp * interp, Tcl_Obj * obj, int cmdNo, GtkTextBu
 	return TCL_OK;
 }
 
+static	const char *cmds[] =
+{
+	"getMarkup", "getAttributes",
+	"insertMarkup",
+
+	"delete", "configure", "scrollToPosition", "scrollToMark",
+	"parent",
+	"getIndex", "getCoords", "getRect",
+	"undo", "redo", "grabFocus", "resetUndo", "getPos",
+
+	"set", "erase", "select", "get", "cut", "copy", "paste",
+	"cget", "getLineCount", "getWordLength", "getLength",
+	"getLineLength", "setCursor", "getCursor", "insert", "tag",
+	"dump", "signalEmit", "mark", "gotoWordStart",
+	"gotoWordEnd", "search", "class", "spawn", "replace",
+	"serialize", "deSerialize", "save", "load", "print", "lorem",
+	"clear", "popup", "getSelectionBounds",
+	"hasGlobalFocus", "isToplevelFocus",
+
+	NULL
+};
+
 /**
 \brief
 **/
@@ -3741,27 +3763,7 @@ int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl
 
 	GtkTextBuffer  *buffer = gtk_text_view_get_buffer ( textView );
 
-	const char *cmds[] =
-	{
-		"getMarkup", "getAttributes",
-		"insertMarkup",
 
-		"delete", "configure", "scrollToPosition", "scrollToMark",
-		"parent",
-		"getIndex", "getCoords", "getRect",
-		"undo", "redo", "grabFocus", "resetUndo", "getPos", "options", "commands",
-
-		"set", "erase", "select", "get", "cut", "copy", "paste",
-		"cget", "getLineCount", "getWordLength", "getLength",
-		"getLineLength", "setCursor", "getCursor", "insert", "tag",
-		"dump", "signalEmit", "mark", "gotoWordStart",
-		"gotoWordEnd", "search", "class", "spawn", "replace",
-		"serialize", "deSerialize", "save", "load", "print", "lorem",
-		"clear", "popup", "getSelectionBounds",
-		"hasGlobalFocus", "isToplevelFocus",
-
-		NULL
-	};
 
 	enum cmdIdx
 	{
@@ -3772,7 +3774,7 @@ int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl
 		DeleteIdx, ConfigureIdx, ScrollToPosIdx, ScrollToMarkIdx,
 		ParentIdx,
 		GetIndexIdx, GetCoordsIdx, GetRectIdx,
-		UndoIdx, RedoIdx, GrabFocusIdx, ResetUndoIdx, GetPosIdx, OptionsIdx, CommandsIdx,
+		UndoIdx, RedoIdx, GrabFocusIdx, ResetUndoIdx, GetPosIdx,
 
 		SetIdx, EraseIdx, SelectIdx, GetIdx, CutIdx, CopyIdx, PasteIdx,
 		CgetIdx, GetLineCountIdx, GetWordLengthIdx, GetLengthIdx,
@@ -3828,21 +3830,8 @@ int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl
 		case HasGlobalFocusIdx:	return 14;
 		case IsToplevelFocusIdx:	return 15;
 
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, textOptions );
-			}
-			break;
-
-		case CommandsIdx:
-			{
-				gnoclGetCommands ( interp, cmds );
-			}
-			break;
-
 
 			/* these are GtkTextBuffer operations */
-
 		case InsertMarkupIdx:
 			{
 				GtkTextIter iter;
@@ -5178,6 +5167,10 @@ int textViewFunc ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj *  co
 **/
 int gnoclTextCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj *  const objv[] )
 {
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, textOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
 
 	TextParams *para;
 

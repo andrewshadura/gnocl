@@ -331,25 +331,22 @@ static int cget (
 	return gnoclCgetNotImplemented ( interp, options + idx );
 }
 
+static const char *cmds[] =
+{
+	"delete", "configure", "cget", "onClicked",
+	"class", "parent", "geometry", "toplevel", "options", "commands", NULL
+};
+
 /**
 \brief
 **/
-static int buttonFunc (
-	ClientData data,
-	Tcl_Interp *interp,
-	int objc,
-	Tcl_Obj * const objv[] )
+static int buttonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-	static const char *cmds[] =
-	{
-		"delete", "configure", "cget", "onClicked",
-		"class", "parent", "geometry", "toplevel", "options", "commands", NULL
-	};
 
 	enum cmdIdx
 	{
 		DeleteIdx, ConfigureIdx, CgetIdx, OnClickedIdx,
-		ClassIdx, ParentIdx, GeometryIdx, ToplevelIdx. OptionsIdx, CommandsIdx
+		ClassIdx, ParentIdx, GeometryIdx, ToplevelIdx
 	};
 
 	GtkButton *button = GTK_BUTTON ( data );
@@ -368,16 +365,7 @@ static int buttonFunc (
 
 	switch ( idx )
 	{
-		case CommandsIdx:
-			{
-				gnoclGetOptions ( interp, cmds );
-			}
-			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, buttonOptions );
-			}
-			break;
+
 		case ToplevelIdx:
 			{
 				g_print ( "button ToplevelIdx\n" );
@@ -476,6 +464,12 @@ static int buttonFunc (
 **/
 int gnoclButtonCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, buttonOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
 	int       ret;
 	GtkButton *button;
 

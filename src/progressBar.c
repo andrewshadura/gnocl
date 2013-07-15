@@ -143,14 +143,15 @@ static int configure ( Tcl_Interp *interp, GtkProgressBar *progressBar, GnoclOpt
 }
 
 
+static const char *cmds[] = { "delete", "configure", "pulse", "class", NULL };
+
 /**
 \brief
 **/
 int progressBarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
 
-	static const char *cmds[] = { "delete", "configure", "pulse", "class", "options", "commands", NULL };
-	enum cmdIdx { DeleteIdx, ConfigureIdx, PulseIdx, ClassIdx, OptionsIdx, CommandsIdx };
+	enum cmdIdx { DeleteIdx, ConfigureIdx, PulseIdx, ClassIdx };
 	int idx;
 	GtkProgressBar *progressBar = ( GtkProgressBar * ) data;
 
@@ -161,20 +162,13 @@ int progressBarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * c
 	}
 
 	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "command", TCL_EXACT, &idx ) != TCL_OK )
+	{
 		return TCL_ERROR;
+	}
 
 	switch ( idx )
 	{
-		case CommandsIdx:
-			{
-				gnoclGetOptions ( interp, cmds );
-			}
-			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, progressBarOptions );
-			}
-			break;
+
 		case ClassIdx:
 			{
 				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "progressBar", -1 ) );
@@ -224,6 +218,11 @@ int progressBarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * c
 **/
 int gnoclProgressBarCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, progressBarOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
 	GtkProgressBar *progressBar;
 	int            ret;
 

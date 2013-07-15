@@ -148,6 +148,14 @@ static int cget ( Tcl_Interp *interp, GtkWidget *widget, GnoclOption options[], 
 	return gnoclCgetNotImplemented ( interp, options + idx );
 }
 
+static const char *cmds[] =
+{
+	"set", "reset", "get",
+	"delete", "configure",
+	"cget", "class",
+	NULL
+};
+
 /**
 \brief
 \author     William J Giddings
@@ -160,18 +168,12 @@ static int curveFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * 
 	listParameters ( objc, objv, "curveFunc" );
 #endif
 
-	static const char *cmds[] =
-	{
-		"set", "reset", "get",
-		"delete", "configure",
-		"cget", "class", "options", "commands",
-		NULL
-	};
+
 	enum cmdIdx
 	{
 		SetIdx, ResetIdx, GetIdx,
 		DeleteIdx, ConfigureIdx,
-		CgetIdx, ClassIdx, OptionsIdx, CommandsIdx
+		CgetIdx, ClassIdx
 	};
 
 	GtkCurve *widget = GTK_WIDGET ( data );
@@ -191,16 +193,7 @@ static int curveFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * 
 
 	switch ( idx )
 	{
-		case CommandsIdx:
-			{
-				gnoclGetOptions ( interp, cmds );
-			}
-			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, curveOptions );
-			}
-			break;
+
 		case SetIdx:
 			{
 
@@ -333,6 +326,10 @@ static int curveFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * 
 **/
 int gnoclGammaCurveCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * const objv[] )
 {
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, curveOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
 
 	int            ret = TCL_OK;
 	GtkWidget      *curve;

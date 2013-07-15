@@ -74,15 +74,16 @@ static int configure ( Tcl_Interp *interp, GtkSocket *socket,
 	return TCL_OK;
 }
 
+static	const char *cmds[] = { "delete", "configure", "getID", "getPlugID", NULL };
+
 /**
 \brief
 **/
-static int socketFunc ( ClientData data, Tcl_Interp *interp,
-						int objc, Tcl_Obj * const objv[] )
+static int socketFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
 
-	const char *cmds[] = { "delete", "configure", "getID", "getPlugID", "options", "commands", NULL };
-	enum cmdIdx { DeleteIdx, ConfigureIdx, GetIDIdx, GetPlugIDIdx, OptionsIdx, CommandsIdx  };
+
+	enum cmdIdx { DeleteIdx, ConfigureIdx, GetIDIdx, GetPlugIDIdx  };
 
 	int idx;
 	GtkSocket *socket = GTK_SOCKET ( data );
@@ -93,30 +94,23 @@ static int socketFunc ( ClientData data, Tcl_Interp *interp,
 		return TCL_ERROR;
 	}
 
-	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "command",
-							   TCL_EXACT, &idx ) != TCL_OK )
+	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "command", TCL_EXACT, &idx ) != TCL_OK )
+	{
 		return TCL_ERROR;
+	}
 
 	switch ( idx )
 	{
-		case CommandsIdx:
-			{
-				gnoclGetOptions ( interp, cmds );
-			}
-			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, socketOptions );
-			}
-			break;
+
 		case DeleteIdx:
-			return gnoclDelete ( interp, GTK_WIDGET ( socket ), objc, objv );
+			{
+				return gnoclDelete ( interp, GTK_WIDGET ( socket ), objc, objv );
+			}
 		case ConfigureIdx:
 			{
 				int ret = TCL_ERROR;
 
-				if ( gnoclParseAndSetOptions ( interp, objc - 1, objv + 1,
-											   socketOptions, G_OBJECT ( socket ) ) == TCL_OK )
+				if ( gnoclParseAndSetOptions ( interp, objc - 1, objv + 1, socketOptions, G_OBJECT ( socket ) ) == TCL_OK )
 				{
 					ret = configure ( interp, socket, socketOptions );
 				}
@@ -189,6 +183,12 @@ static int socketFunc ( ClientData data, Tcl_Interp *interp,
 **/
 int gnoclSocketCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, socketOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
 	int       ret;
 	GtkSocket *socket;
 

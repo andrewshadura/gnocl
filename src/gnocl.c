@@ -23,7 +23,6 @@
 \htmlinclude inventory.html
 **/
 
-
 /**
 \page page_mainLoop gnocl::mainLoop
 \htmlinclude mainLoop.html
@@ -32,9 +31,9 @@
 #include "gnocl.h"
 #include <ctype.h>
 
-
 static GHashTable *name2widgetList;
 static const char idPrefix[] = "::gnocl::_WID";
+
 
 /**
 \brief      Convert contents of hash list to a glist
@@ -648,6 +647,8 @@ typedef struct
 static GnoclCmd commands[] =
 {
 
+	{ "commands", gnoclCommandsCmd },
+
 	/* non-gtk widgets */
 	{ "spinner", gnoclSpinnerCmd },
 	{ "dial", gnoclDialCmd },
@@ -807,6 +808,25 @@ static GnoclCmd commands[] =
 #endif
 	{ NULL, NULL },
 };
+
+/**
+\brief
+\author
+\date
+\note
+**/
+int getCommandsNames ( Tcl_Interp *interp )
+{
+
+	GnoclCmd *cmds = commands;
+
+	for ( ; cmds->name; ++cmds )
+	{
+		Tcl_AppendResult ( interp, cmds->name, " ", NULL );
+	}
+
+	return TCL_OK;
+}
 
 /*
  *----------------------------------------------------------------------

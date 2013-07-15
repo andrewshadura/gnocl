@@ -780,6 +780,22 @@ int gnoclBeepCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * con
 }
 
 /**
+\brief     Returns a list of all package object and commands names.
+\note
+**/
+int gnoclCommandsCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * const objv[] )
+{
+
+#ifdef DEBUG_COMMANDS
+	g_print ( "%s\n", __FUNCTION__ );
+#endif
+
+	getCommandsNames ( interp );
+	return TCL_OK;
+}
+
+
+/**
 \brief      Control redirection input events to window.
 \note       Gdk Documentation for the implemented features.
             http://library.gnome.org/devel/gdk/stable/gdk-General.html

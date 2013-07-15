@@ -103,13 +103,15 @@ static int cget (   Tcl_Interp *interp, GtkButton *button,  GnoclOption options[
 	return gnoclCgetNotImplemented ( interp, options + idx );
 }
 
+static const char *cmds[] = { "delete", "configure", "class", "cget",  NULL };
+
 /**
 \brief
 **/
 static int fontSelFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-	static const char *cmds[] = { "delete", "configure", "class", "cget", "options", "commands", NULL };
-	enum cmdIdx { DeleteIdx, ConfigureIdx, ClassIdx, CgetIdx, OptionsIdx, CommandsIdx };
+
+	enum cmdIdx { DeleteIdx, ConfigureIdx, ClassIdx, CgetIdx };
 
 	GtkWidget *widget = GTK_WIDGET ( data  );
 	int idx;
@@ -120,22 +122,12 @@ static int fontSelFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj 
 		return TCL_ERROR;
 	}
 
-	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "command",
-							   TCL_EXACT, &idx ) != TCL_OK )
+	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "command", TCL_EXACT, &idx ) != TCL_OK )
 		return TCL_ERROR;
 
 	switch ( idx )
 	{
-		case CommandsIdx:
-			{
-				gnoclGetOptions ( interp, cmds );
-			}
-			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, fontSelectOptions );
-			}
-			break;
+
 		case ClassIdx:
 			{
 				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "fontSelection", -1 ) );
@@ -181,9 +173,13 @@ static int fontSelFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj 
 /**
 \brief
 **/
-int gnoclFontSelectionCmd ( ClientData data, Tcl_Interp *interp,
-							int objc, Tcl_Obj * const objv[] )
+int gnoclFontSelectionCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, fontSelectOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
 
 
 	int ret = TCL_OK;

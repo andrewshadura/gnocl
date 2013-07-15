@@ -1,4 +1,10 @@
 2013-07:
+   new command
+		gnocl::commands
+			o return a list of all commands available in the package.
+   new widget commands added to all widgets and commands
+			"commands" returns a list of all commands for a widget or command
+			"options" returns a list of all options associated with a widget, component (e.g. text tags) or command
    gnocl::notebook
 		o new options
 			-data

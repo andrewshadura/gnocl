@@ -38,20 +38,22 @@ static int configure ( Tcl_Interp *interp, GtkDial *dial, GnoclOption options[] 
 	return TCL_OK;
 }
 
+static const char *cmds[] =
+{
+	"delete", "configure", "class", "start", "stop",
+	NULL
+};
+
 /**
 \brief
 **/
 int dialFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-	static const char *cmds[] =
-	{
-		"delete", "configure", "class", "start", "stop", "options", "commands",
-		NULL
-	};
+
 
 	enum cmdIdx
 	{
-		DeleteIdx, ConfigureIdx, ClassIdx, ParentIdx, StartIdx, StopIdx, OptionsIdx, CommandsIdx
+		DeleteIdx, ConfigureIdx, ClassIdx, ParentIdx, StartIdx, StopIdx
 	};
 
 	GtkDial *dial = GTK_WIDGET ( data );
@@ -65,16 +67,7 @@ int dialFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const ob
 
 	switch ( idx )
 	{
-		case CommandsIdx:
-			{
-				gnoclGetOptions ( interp, cmds );
-			}
-			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, dialOptions );
-			}
-			break;
+
 		case ClassIdx:
 			{
 				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "dial", -1 ) );
@@ -88,8 +81,7 @@ int dialFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const ob
 			{
 				int ret = TCL_ERROR;
 
-				if ( gnoclParseAndSetOptions ( interp, objc - 1, objv + 1,
-											   dialOptions, G_OBJECT ( dial ) ) == TCL_OK )
+				if ( gnoclParseAndSetOptions ( interp, objc - 1, objv + 1, dialOptions, G_OBJECT ( dial ) ) == TCL_OK )
 				{
 					ret = configure ( interp, dial, dialOptions );
 				}
@@ -110,6 +102,13 @@ int dialFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const ob
 **/
 int gnoclDialCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, dialOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
+
+
 	int        ret;
 	GtkWidget *dial;
 	GtkAdjustment *adjustment;

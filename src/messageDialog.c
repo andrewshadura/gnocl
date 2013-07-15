@@ -339,13 +339,15 @@ static void destroyFunc ( GtkWidget *widget, gpointer data )
 	g_free ( para );
 }
 
+static const char *cmds[] = { "delete", "configure", "class", "hide", "show", NULL };
+
 /**
 \brief
 **/
 int dialogFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-	static const char *cmds[] = { "delete", "configure", "class", "hide", "show", "options", "commands", NULL };
-	enum cmdIdx { DeleteIdx, ConfigureIdx, ClassIdx, HideIdx, ShowIdx, OptionsIdx, CommandsIdx };
+
+	enum cmdIdx { DeleteIdx, ConfigureIdx, ClassIdx, HideIdx, ShowIdx };
 
 	DialogParams *para = ( DialogParams * ) data;
 	GtkWidget *widget = GTK_WIDGET ( para->dialog );
@@ -357,22 +359,14 @@ int dialogFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const 
 		return TCL_ERROR;
 	}
 
-	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "command",
-							   TCL_EXACT, &idx ) != TCL_OK )
+	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "command", TCL_EXACT, &idx ) != TCL_OK )
+	{
 		return TCL_ERROR;
+	}
 
 	switch ( idx )
 	{
-		case CommandsIdx:
-			{
-				gnoclGetOptions ( interp, cmds );
-			}
-			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, dialogOptions );
-			}
-			break;
+
 		case HideIdx:
 			{
 				gtk_widget_hide ( widget );
@@ -397,8 +391,7 @@ int dialogFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const 
 			{
 				int ret = TCL_ERROR;
 
-				if ( gnoclParseAndSetOptions ( interp, objc - 1, objv + 1,
-											   dialogOptions, G_OBJECT ( widget ) ) == TCL_OK )
+				if ( gnoclParseAndSetOptions ( interp, objc - 1, objv + 1, dialogOptions, G_OBJECT ( widget ) ) == TCL_OK )
 				{
 					ret = configure ( interp, widget, dialogOptions );
 				}
@@ -546,6 +539,13 @@ static int handleButtons ( Tcl_Interp *interp, GtkDialog *dialog,
 **/
 int gnoclDialogCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, dialogOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
+
 	int          ret;
 	int          type;
 	DialogParams *para;

@@ -391,14 +391,16 @@ static int cget ( Tcl_Interp *interp, ScrollParams *para,
 	return gnoclCgetNotImplemented ( interp, options + idx );
 }
 
+static const char *cmds[] = { "delete", "configure", "cget", "onValueChanged", "class",  NULL };
+
 /**
 \brief
 **/
 int scrollFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 
 {
-	static const char *cmds[] = { "delete", "configure", "cget", "onValueChanged", "class", "options", "commands", NULL };
-	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, OnValueChangedIdx, ClassIdx, OptionsIdx, CommandsIdx };
+
+	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, OnValueChangedIdx, ClassIdx };
 
 	ScrollParams *para = ( ScrollParams * ) data;
 	GtkWidget   *widget = GTK_WIDGET ( para->scroll );
@@ -410,22 +412,13 @@ int scrollFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const 
 		return TCL_ERROR;
 	}
 
-	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "command",
-							   TCL_EXACT, &idx ) != TCL_OK )
+	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "command", TCL_EXACT, &idx ) != TCL_OK )
+	{
 		return TCL_ERROR;
+	}
 
 	switch ( idx )
 	{
-		case CommandsIdx:
-			{
-				gnoclGetOptions ( interp, cmds );
-			}
-			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, scrollOptions );
-			}
-			break;
 		case ClassIdx:
 			Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "scroll", -1 ) );
 			break;
@@ -482,9 +475,15 @@ int scrollFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const 
 /**
 \brief
 **/
-int gnoclscrollCmd ( ClientData data, Tcl_Interp *interp,
-					 int objc, Tcl_Obj * const objv[] )
+int gnoclscrollCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, scrollOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
+
 	GtkOrientation orient = GTK_ORIENTATION_VERTICAL;
 	GtkAdjustment  *adjust;
 	ScrollParams    *para;

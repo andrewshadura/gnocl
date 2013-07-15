@@ -145,20 +145,22 @@ static int configure ( Tcl_Interp *interp, GtkExpander *expander, GnoclOption op
 	return TCL_OK;
 }
 
+
+const char *cmds[] =
+{
+	"delete", "configure", "cget",
+	"class",
+	NULL
+};
+
+
 /**
 \brief
 **/
 int expanderFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
 
-	const char *cmds[] =
-	{
-		"delete", "configure", "cget",
-		"class", "options", "commands",
-		NULL
-	};
-
-	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, ClassIdx, OptionsIdx, CommandsIdx };
+	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, ClassIdx };
 	int idx;
 	GtkExpander *expander = GTK_EXPANDER ( data );
 
@@ -175,16 +177,7 @@ int expanderFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * cons
 
 	switch ( idx )
 	{
-		case CommandsIdx:
-			{
-				gnoclGetOptions ( interp, cmds );
-			}
-			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, expanderOptions );
-			}
-			break;
+
 		case ClassIdx:
 			{
 				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "expander", -1 ) );
@@ -241,6 +234,12 @@ int expanderFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * cons
 **/
 int gnoclExpanderCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, expanderOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
+
 	int ret;
 	GtkExpander *expander;
 

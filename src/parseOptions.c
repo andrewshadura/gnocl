@@ -29,6 +29,75 @@
 /* global used to store a pointer to the text/entry popupmenu */
 GtkMenu *popupMenu;
 
+
+/* add to parseOptions */
+
+/**
+\brief
+\author
+\date
+\note
+**/
+static int getOptions ( Tcl_Interp *interp, GnoclOption *options )
+{
+
+	GnoclOption *opts = options;
+
+	for ( ; opts->optName; ++opts )
+	{
+		Tcl_AppendResult ( interp, opts->optName, " ", NULL );
+	}
+
+	return TCL_OK;
+}
+
+/**
+\brief
+\author
+\date
+\note
+**/
+static int getCommands ( Tcl_Interp *interp, char *cmds[] )
+{
+	gint i = 0;
+
+	while ( cmds[i] != NULL )
+	{
+		Tcl_AppendResult ( interp, cmds[i], " ", NULL );
+		i++;
+	}
+
+	return TCL_OK;
+}
+
+/**
+\brief	Return a list of commands or options belonging to specific package widget command.
+\author
+\date
+\note
+**/
+int gnoclGetCmdsAndOpts ( Tcl_Interp *interp, char *cmds[], GnoclOption *options, Tcl_Obj * const objv[], int objc  )
+{
+	if ( objc != 2 )
+	{
+		return TCL_ERROR;
+	}
+
+	if ( strcmp ( Tcl_GetString ( objv[1] ), "commands" ) == 0 )
+	{
+		getCommands ( interp, cmds );
+		return TCL_OK;
+	}
+
+	if ( strcmp ( Tcl_GetString ( objv[1] ), "options" ) == 0 )
+	{
+		getOptions ( interp, options );
+		return TCL_OK;
+	}
+
+	return TCL_ERROR;
+}
+
 /**
 \brief	Replaces default label with custom label widget.
 **/

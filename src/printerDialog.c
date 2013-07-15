@@ -220,6 +220,8 @@ static int cget ( Tcl_Interp *interp, GtkLabel *label, GnoclOption options[], in
 	return gnoclCgetNotImplemented ( interp, options + idx );
 }
 
+static const char *cmds[] = { "class", "delete", "configure", "cget", "show", "hide",  NULL };
+
 /**
 \brief
 \author		William J Giddings
@@ -229,8 +231,8 @@ static int cget ( Tcl_Interp *interp, GtkLabel *label, GnoclOption options[], in
 int printerDialogFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
 
-	static const char *cmds[] = { "class", "delete", "configure", "cget", "show", "hide", "options", "commands", NULL };
-	enum cmdIdx { ClassIdx, DeleteIdx, ConfigureIdx, CgetIdx, ShowIdx, HideIdx, OptionsIdx, CommandsIdx };
+
+	enum cmdIdx { ClassIdx, DeleteIdx, ConfigureIdx, CgetIdx, ShowIdx, HideIdx };
 	int idx;
 	GtkLabel *dialog = ( GtkLabel * ) data;
 
@@ -240,24 +242,14 @@ int printerDialogFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *
 		return TCL_ERROR;
 	}
 
-	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "command",
-							   TCL_EXACT, &idx ) != TCL_OK )
+	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "command", TCL_EXACT, &idx ) != TCL_OK )
 	{
 		return TCL_ERROR;
 	}
 
 	switch ( idx )
 	{
-		case CommandsIdx:
-			{
-				gnoclGetOptions ( interp, cmds );
-			}
-			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, printerDialogOptions );
-			}
-			break;
+
 		case ClassIdx:
 			{
 				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "printerDialog", -1 ) );
@@ -324,6 +316,12 @@ int printerDialogFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *
 **/
 int gnoclPrinterDialogCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, printerDialogOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
 
 #ifdef DEBUG_PRINTER_DIALOG
 	g_printf ( "gnoclPrinterDialogCmd\n" );

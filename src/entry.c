@@ -656,7 +656,13 @@ static int cget ( Tcl_Interp *interp, EntryParams *para, GnoclOption options[], 
 
 	return gnoclCgetNotImplemented ( interp, options + idx );
 }
-
+static const char *cmds[] =
+{
+	"delete", "configure", "cget", "onChanged",
+	"class", "get", "clear", "set",  "setPosition",
+	"wordList", "popup", "progress", "pulse",
+	NULL
+};
 /**
 \brief
 **/
@@ -668,21 +674,13 @@ int entryFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const o
 #endif
 
 
-	static const char *cmds[] =
-	{
-		"delete", "configure", "cget", "onChanged",
-		"class", "get", "clear", "set",  "setPosition",
-		"wordList", "popup", "progress", "pulse",
-		"options", "commands",
-		NULL
-	};
+
 
 	enum cmdIdx
 	{
 		DeleteIdx, ConfigureIdx, CgetIdx, OnChangedIdx,
 		ClassIdx, GetIdx, ClearIdx, SetIdx, SetPositionIdx,
-		WordListIdx, PopupIdx, ProgressIdx, PulseIdx,
-		OptionsIdx, CommandsIdx
+		WordListIdx, PopupIdx, ProgressIdx, PulseIdx
 	};
 
 	EntryParams *para = ( EntryParams * ) data;
@@ -702,17 +700,7 @@ int entryFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const o
 
 	switch ( idx )
 	{
-		case CommandsIdx:
-			{
-				gnoclGetOptions ( interp, cmds );
-			}
-			break;
 
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, entryOptions );
-			}
-			break;
 		case PulseIdx:
 			{
 				gtk_entry_progress_pulse ( GTK_WIDGET ( para->entry ) );
@@ -953,6 +941,12 @@ int entryFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const o
 **/
 int gnoclEntryCmd (	ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, entryOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
 #ifdef DEBUG_ENTRY
 	printf ( "$s", __FUNCTION__ );
 #endif

@@ -2314,6 +2314,17 @@ int gnoclClr2RGBCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * 
 }
 
 
+static const char *cmds[] =
+{
+	"get", "render", "types",
+	"description", "license", "licence",
+	"extensions", "scalable", "writable",
+	"fileInfo", "new", "load",
+	"snapshot", "screenshot",
+	"logo",
+	NULL
+};
+
 /**
 \brief
 \author     William J Giddings
@@ -2322,6 +2333,12 @@ int gnoclClr2RGBCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * 
 **/
 int gnoclPixBufCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * const objv[] )
 {
+
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, pixBufOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
 
 #ifdef DEBUG_PIXBUF
 	listParameters ( objc, objv, "gnoclpixBufCmd" );
@@ -2337,16 +2354,7 @@ int gnoclPixBufCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * c
 		name2pixbufList = g_hash_table_new ( g_direct_hash, g_direct_equal );
 	}
 
-	static const char *cmd[] =
-	{
-		"get", "render", "types",
-		"description", "license", "licence",
-		"extensions", "scalable", "writable",
-		"fileInfo", "new", "load",
-		"snapshot", "screenshot",
-		"logo",
-		NULL
-	};
+
 
 	enum cmdIdx
 	{
@@ -2381,7 +2389,7 @@ int gnoclPixBufCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * c
 			return TCL_ERROR;
 		}
 	*/
-	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmd, "option", TCL_EXACT, &cIdx ) != TCL_OK )
+	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "option", TCL_EXACT, &cIdx ) != TCL_OK )
 	{
 		return TCL_ERROR;
 	}

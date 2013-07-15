@@ -612,13 +612,15 @@ static int cget ( Tcl_Interp *interp, GnoclToggleParams *para, GnoclOption optio
 	return gnoclCgetNotImplemented ( interp, options + idx );
 }
 
+static const char *cmds[] = { "delete", "configure", "cget", "toggle", "class", "geometry",  NULL };
+
 /**
 \brief
 **/
 int toggleButtonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-	static const char *cmds[] = { "delete", "configure", "cget", "toggle", "class", "geometry", "options", "commands", NULL };
-	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, ToggleIdx, ClassIdx, GeometryIdx, OptionsIdx, CommandsIdx };
+
+	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, ToggleIdx, ClassIdx, GeometryIdx,  };
 
 	GnoclToggleParams *para = ( GnoclToggleParams * ) data;
 
@@ -637,16 +639,7 @@ int toggleButtonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * 
 
 	switch ( idx )
 	{
-		case CommandsIdx:
-			{
-				gnoclGetOptions ( interp, cmds );
-			}
-			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, toggleButtonOptions );
-			}
-			break;
+
 		case GeometryIdx:
 			{
 				g_print ( "toggleButton GeometryIdx\n" );
@@ -709,6 +702,11 @@ int toggleButtonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * 
 **/
 int gnoclToggleButtonCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, toggleButtonOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
 	GnoclToggleParams *para;
 	int ret;
 

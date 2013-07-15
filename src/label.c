@@ -534,13 +534,15 @@ static int cget ( Tcl_Interp *interp, LabelParams *para, GnoclOption options[], 
 	return gnoclCgetNotImplemented ( interp, options + idx );
 }
 
+static const char *cmds[] = { "delete", "configure", "cget", "onChanged", "class", NULL };
+
 /**
 \brief
 **/
 int labelFunc (	ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-	static const char *cmds[] = { "delete", "configure", "cget", "onChanged", "class", "options", "commands", NULL };
-	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, OnChangedIdx, ClassIdx, OptionsIdx, CommandsIdx};
+
+	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, OnChangedIdx, ClassIdx};
 
 	LabelParams *para = ( LabelParams * ) data;
 	GtkWidget *widget = GTK_WIDGET ( para->label );
@@ -559,16 +561,7 @@ int labelFunc (	ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const o
 
 	switch ( idx )
 	{
-		case CommandsIdx:
-			{
-				gnoclGetOptions ( interp, cmds );
-			}
-			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, labelOptions );
-			}
-			break;
+
 		case ClassIdx:
 			{
 				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "label", -1 ) );
@@ -640,6 +633,13 @@ int labelFunc (	ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const o
 **/
 int gnoclLabelCmd (	ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, labelOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
+
 #ifdef DEBUG_LABEL
 	printf ( "label/staticFuncs/gnoclLabelCmd\n" );
 #endif

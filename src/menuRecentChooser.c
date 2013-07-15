@@ -162,13 +162,15 @@ static int configure ( Tcl_Interp *interp, GtkWidget *menu, GnoclOption options[
 }
 
 
+static const char *cmds[] = { "delete", "configure", "class", NULL };
+
 /**
 \brief	Create a menu populated with details of recentley loaded files.
 **/
 static int menuRecentChooserFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-	static const char *cmds[] = { "delete", "configure", "class", "options", "commands", NULL };
-	enum cmdIdx { DeleteIdx, ConfigureIdx, ClassIdx, OptionsIdx, CommandsIdx };
+
+	enum cmdIdx { DeleteIdx, ConfigureIdx, ClassIdx };
 
 	GtkWidget *menu = GTK_WIDGET ( data );
 
@@ -181,20 +183,13 @@ static int menuRecentChooserFunc ( ClientData data, Tcl_Interp *interp, int objc
 	}
 
 	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "command", TCL_EXACT, &idx ) != TCL_OK )
+	{
 		return TCL_ERROR;
+	}
 
 	switch ( idx )
 	{
-		case CommandsIdx:
-			{
-				gnoclGetOptions ( interp, cmds );
-			}
-			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, recentChooserOptions );
-			}
-			break;
+
 		case ClassIdx:
 			{
 				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "menuRecentChooser", -1 ) );
@@ -223,6 +218,14 @@ static int menuRecentChooserFunc ( ClientData data, Tcl_Interp *interp, int objc
 **/
 int gnoclMenuRecentChooserCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, recentChooserOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
+
+
 	int       ret;
 	GtkWidget *menu;
 

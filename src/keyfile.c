@@ -27,6 +27,16 @@ int keyFileFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const
 static GHashTable *name2KeyFileList;
 static const char idPrefix[] = "::gnocl::_KF";
 
+static GnoclOption options[] =
+{
+	{ NULL, GNOCL_STRING, NULL },
+	{ NULL },
+};
+
+static const char *cmds[] =
+{
+	"new", "load", "write", NULL
+};
 
 
 /**
@@ -36,6 +46,14 @@ static const char idPrefix[] = "::gnocl::_KF";
 **/
 int gnoclKeyFileCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * const objv[] )
 {
+
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, options, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
+
+
 
 #ifdef DEBUG_KEYFILE
 	listParameters ( objc, objv, "gnoclKeyFileCmd" );
@@ -48,11 +66,6 @@ int gnoclKeyFileCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * 
 	GError   *  p_error = NULL;
 	gchar *iniFileName = "app.ini";
 
-	static const char *cmd[] =
-	{
-		"new", "load", "write",
-		NULL
-	};
 	enum optIdx
 	{
 		NewIdx, LoadIdx, WriteIdx
@@ -72,12 +85,10 @@ int gnoclKeyFileCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * 
 	para->interp = interp;
 
 
-	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmd, "option", TCL_EXACT, &idx ) != TCL_OK )
+	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "option", TCL_EXACT, &idx ) != TCL_OK )
 	{
 		return TCL_ERROR;
 	}
-
-
 
 	switch ( idx )
 	{

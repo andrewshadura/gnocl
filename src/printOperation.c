@@ -745,6 +745,15 @@ static int cget (   Tcl_Interp *interp, GtkPrintOperation *printOp,  GnoclOption
 	return gnoclCgetNotImplemented ( interp, options + idx );
 }
 
+static const char *cmds[] =
+{
+	"export", "cancel", "finish",
+	"preview", "print", "file",
+	"class", "configure", "cget",
+	"status",
+	NULL
+};
+
 /**
 \brief  Function associated with the widget.
 **/
@@ -754,21 +763,12 @@ int printOperationFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj 
 	listParameters ( objc, objv, "printOperationFunc" );
 #endif
 
-	static const char *cmds[] =
-	{
-		"export", "cancel", "finish",
-		"preview", "print", "file",
-		"class", "configure", "cget",
-		"status", "options", "commands",
-		NULL
-	};
-
 	enum cmdIdx
 	{
 		ExportIdx, CancelIdx, FinishIdx,
 		PreviewIdx, PrintIdx, FileIdx,
 		ClassIdx, ConfigureIdx, CgetIdx,
-		StatusIdx, OptionsIdx, CommandsIdx
+		StatusIdx
 	};
 
 	//GtkPrintOperation *operation = GTK_PRINT_OPERATION ( data );
@@ -792,24 +792,11 @@ int printOperationFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj 
 
 	switch ( idx )
 	{
-		case CommandsIdx:
-			{
-				gnoclGetOptions ( interp, cmds );
-			}
-			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, printOptions );
-			}
-			break;
+
 		case StatusIdx:
 			{
-
 				//const gchar * gtk_print_operation_get_status_string (printOp);
-
 				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( gtk_print_operation_get_status_string ( para->operation ) , -1 ) );
-
-
 			}
 			break;
 		case ConfigureIdx:
@@ -969,6 +956,10 @@ static void simpleDestroyFunc (	GtkPrintOperation *operation, gpointer data )
 **/
 int gnoclPrintOperationCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, printOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
 
 #ifdef DEBUG_PRINT_OPERATION
 	listParameters ( objc, objv, "gnoclPrintOperationCmd" );

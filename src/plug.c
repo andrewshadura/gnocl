@@ -63,14 +63,14 @@ static int configure ( Tcl_Interp *interp, GtkPlug *plug,
 	return TCL_OK;
 }
 
+static const char *cmds[] = { "delete", "configure", "getID", NULL };
+
 /**
 \brief
 **/
-static int plugFunc ( ClientData data, Tcl_Interp *interp,
-					  int objc, Tcl_Obj * const objv[] )
+static int plugFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
 
-	const char *cmds[] = { "delete", "configure", "getID", "options", "commands", NULL };
 	enum cmdIdx { DeleteIdx, ConfigureIdx, GetIDIdx, OptionsIdx, CommandsIdx };
 
 	int idx;
@@ -82,38 +82,29 @@ static int plugFunc ( ClientData data, Tcl_Interp *interp,
 		return TCL_ERROR;
 	}
 
-	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "command",
-							   TCL_EXACT, &idx ) != TCL_OK )
+	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "command", TCL_EXACT, &idx ) != TCL_OK )
+	{
 		return TCL_ERROR;
+	}
 
 	switch ( idx )
 	{
-		case CommandsIdx:
-			{
-				gnoclGetOptions ( interp, cmds );
-			}
-			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, plugOptions );
-			}
-			break;
+
 		case DeleteIdx:
-			return gnoclDelete ( interp, GTK_WIDGET ( plug ), objc, objv );
+			{
+				return gnoclDelete ( interp, GTK_WIDGET ( plug ), objc, objv );
+			}
 		case ConfigureIdx:
 			{
 				int ret = TCL_ERROR;
 
 				if ( plugOptions[socketIDIdx].status == GNOCL_STATUS_CHANGED )
 				{
-					Tcl_SetResult ( interp,
-									"Option -socketID cannot be changed after creation",
-									TCL_STATIC );
+					Tcl_SetResult ( interp, "Option -socketID cannot be changed after creation", TCL_STATIC );
 					return TCL_ERROR;
 				}
 
-				if ( gnoclParseAndSetOptions ( interp, objc - 1, objv + 1,
-											   plugOptions, G_OBJECT ( plug ) ) == TCL_OK )
+				if ( gnoclParseAndSetOptions ( interp, objc - 1, objv + 1, plugOptions, G_OBJECT ( plug ) ) == TCL_OK )
 				{
 					ret = configure ( interp, plug, plugOptions );
 				}
@@ -150,9 +141,15 @@ static int plugFunc ( ClientData data, Tcl_Interp *interp,
 /**
 \brief
 **/
-int gnoclPlugCmd ( ClientData data, Tcl_Interp *interp,
-				   int objc, Tcl_Obj * const objv[] )
+int gnoclPlugCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, plugOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
+
 	int     ret;
 	GtkPlug *plug;
 	long    socketId = 0;
@@ -165,8 +162,7 @@ int gnoclPlugCmd ( ClientData data, Tcl_Interp *interp,
 
 	if ( plugOptions[socketIDIdx].status == GNOCL_STATUS_CHANGED )
 	{
-		if ( Tcl_GetLongFromObj ( interp, plugOptions[socketIDIdx].val.obj,
-								  &socketId ) != TCL_OK )
+		if ( Tcl_GetLongFromObj ( interp, plugOptions[socketIDIdx].val.obj, &socketId ) != TCL_OK )
 			return TCL_ERROR;
 	}
 
@@ -178,7 +174,9 @@ int gnoclPlugCmd ( ClientData data, Tcl_Interp *interp,
 	ret = gnoclSetOptions ( interp, plugOptions, G_OBJECT ( plug ), -1 );
 
 	if ( ret == TCL_OK )
+	{
 		ret = configure ( interp, plug, plugOptions );
+	}
 
 	gnoclClearOptions ( plugOptions );
 

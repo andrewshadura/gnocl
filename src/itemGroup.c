@@ -315,6 +315,7 @@ int addItem ( GtkWidget  *group, Tcl_Interp *interp, int objc, Tcl_Obj * const o
 
 }
 
+static const char *cmds[] =  { "", NULL};
 
 /**
 \brief
@@ -338,6 +339,13 @@ int toolItemGroupFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *
 **/
 int gnoclToolItemGroupCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, options, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
+
 	int        ret;
 	GtkWidget  *item_group, *item;
 

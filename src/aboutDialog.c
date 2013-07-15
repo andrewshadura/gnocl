@@ -176,24 +176,26 @@ static int cget ( Tcl_Interp *interp, GtkLabel *label, GnoclOption options[], in
 	return gnoclCgetNotImplemented ( interp, options + idx );
 }
 
+static const char *cmds[] =
+{
+	"delete", "configure",
+	"cget", "show",
+	"hide",
+	NULL
+};
+
 /**
 \brief
 **/
 int aboutDialogFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
 
-	static const char *cmds[] =
-	{
-		"delete", "configure",
-		"cget", "show",
-		"hide", "options", "commands",
-		NULL
-	};
+
 	enum cmdIdx
 	{
 		DeleteIdx, ConfigureIdx,
 		CgetIdx, ShowIdx,
-		HideIdx, OptionsIdx, CommandsIdx
+		HideIdx
 	};
 	int idx;
 	GtkLabel *dialog = ( GtkLabel * ) data;
@@ -212,15 +214,7 @@ int aboutDialogFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * c
 
 	switch ( idx )
 	{
-		case CommandsIdx:
-			{
-				gnoclGetOptions ( interp, cmds );
-			}
-			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, aboutDialogOptions );
-			} break;
+
 		case HideIdx:
 			{
 				gtk_widget_hide ( GTK_WIDGET ( dialog ) );
@@ -279,6 +273,12 @@ int aboutDialogFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * c
 **/
 int gnoclAboutDialogCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, aboutDialogOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
 	int            ret;
 	GtkAboutDialog *dialog;
 

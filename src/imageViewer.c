@@ -63,20 +63,22 @@ static int configure ( Tcl_Interp *interp, GtkWidget *imageViewer, GnoclOption o
 	return TCL_OK;
 }
 
+static const char *cmds[] =
+{
+	"delete", "configure", "class", "start", "stop", "options", "commands",
+	NULL
+};
+
 /**
 \brief
 **/
 int imageViewerFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-	static const char *cmds[] =
-	{
-		"delete", "configure", "class", "start", "stop", "options", "commands",
-		NULL
-	};
+
 
 	enum cmdIdx
 	{
-		DeleteIdx, ConfigureIdx, ClassIdx, ParentIdx, StartIdx, StopIdx, OptionsIdx, CommandsIdx
+		DeleteIdx, ConfigureIdx, ClassIdx, ParentIdx, StartIdx, StopIdx
 	};
 
 	GtkWidget *imageViewer = GTK_WIDGET ( data );
@@ -90,16 +92,7 @@ int imageViewerFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * c
 
 	switch ( idx )
 	{
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, imageViewerOptions );
-			}
-			break;
-		case ClassIdx:
-			{
-				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "imageViewer", -1 ) );
-			}
-			break;
+
 		case DeleteIdx:
 			{
 				return gnoclDelete ( interp, GTK_WIDGET ( imageViewer ), objc, objv );
@@ -130,6 +123,10 @@ int imageViewerFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * c
 **/
 int gnoclImageViewerCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, imageViewerOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
 
 	int ret;
 	GtkWidget *image_view;

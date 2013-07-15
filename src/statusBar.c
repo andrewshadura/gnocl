@@ -137,6 +137,8 @@ cleanExit:
 	return ret;
 }
 
+static const char *cmds[] = { "delete", "configure", "push", "pop", "remove", "add", "addBegin", "addEnd", "class",  NULL };
+
 /**
 \brief
 **/
@@ -148,8 +150,8 @@ int statusBarFuc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * cons
 		{ NULL }
 	};
 
-	static const char *cmds[] = { "delete", "configure", "push", "pop", "remove", "add", "addBegin", "addEnd", "class", "options", "commands", NULL };
-	enum cmdIdx { DeleteIdx, ConfigureIdx, PushIdx, PopIdx, RemoveIdx, AddIdx, BeginIdx, EndIdx, ClassIdx, OptionsIdx, CommandsIdx };
+
+	enum cmdIdx { DeleteIdx, ConfigureIdx, PushIdx, PopIdx, RemoveIdx, AddIdx, BeginIdx, EndIdx, ClassIdx };
 
 	GtkStatusbar *bar = GTK_STATUSBAR ( data );
 	int idx;
@@ -160,34 +162,29 @@ int statusBarFuc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * cons
 		return TCL_ERROR;
 	}
 
-	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "command",
-							   TCL_EXACT, &idx ) != TCL_OK )
+	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "command", TCL_EXACT, &idx ) != TCL_OK )
+	{
 		return TCL_ERROR;
+	}
 
 	switch ( idx )
 	{
-		case CommandsIdx:
-			{
-				gnoclGetOptions ( interp, cmds );
-			}
-			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, barOptions );
-			}
-			break;
+
 		case ClassIdx:
-			Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "statusBar", -1 ) );
+			{
+				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "statusBar", -1 ) );
+			}
 			break;
 		case DeleteIdx:
-			return gnoclDelete ( interp, GTK_WIDGET ( bar ), objc, objv );
+			{
+				return gnoclDelete ( interp, GTK_WIDGET ( bar ), objc, objv );
+			}
 
 		case ConfigureIdx:
 			{
 				int ret = TCL_ERROR;
 
-				if ( gnoclParseAndSetOptions ( interp, objc - 1, objv + 1,
-											   barOptions, G_OBJECT ( bar ) ) == TCL_OK )
+				if ( gnoclParseAndSetOptions ( interp, objc - 1, objv + 1, barOptions, G_OBJECT ( bar ) ) == TCL_OK )
 				{
 					ret = configure ( interp, bar, barOptions );
 				}
@@ -282,9 +279,13 @@ int statusBarFuc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * cons
 /**
 \brief
 **/
-int gnoclStatusBarCmd ( ClientData data, Tcl_Interp *interp,
-						int objc, Tcl_Obj * const objv[] )
+int gnoclStatusBarCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, barOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
 	GtkStatusbar *bar;
 	int          ret;
 

@@ -244,33 +244,27 @@ static int cget ( Tcl_Interp *interp, GtkScrolledWindow *window, GnoclOption opt
 	return gnoclCgetNotImplemented ( interp, options + idx );
 }
 
+static const char *cmds[] = { "delete", "configure", "cget", "class",  NULL };
+
 /**
 \brief
 **/
 int scrlWindowFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-	static const char *cmds[] = { "delete", "configure", "cget", "class", "options", "commands", NULL };
-	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, ClassIdx, OptionsIdx, CommandsIdx };
+
+	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, ClassIdx };
 
 	GtkScrolledWindow *window = GTK_SCROLLED_WINDOW ( data );
 	int idx;
 
-	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "command",
-							   TCL_EXACT, &idx ) != TCL_OK )
+	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "command", TCL_EXACT, &idx ) != TCL_OK )
+	{
 		return TCL_ERROR;
+	}
 
 	switch ( idx )
 	{
-		case CommandsIdx:
-			{
-				gnoclGetOptions ( interp, cmds );
-			}
-			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, windowOptions );
-			}
-			break;
+
 		case ClassIdx:
 			Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "scrolledWindow", -1 ) );
 			break;
@@ -317,9 +311,14 @@ int scrlWindowFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * co
 /**
 \brief
 **/
-int gnoclScrolledWindowCmd ( ClientData data, Tcl_Interp *interp,
-							 int objc, Tcl_Obj * const objv[] )
+int gnoclScrolledWindowCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, windowOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
 	int               ret;
 	GtkScrolledWindow *window;
 

@@ -39,6 +39,24 @@ static int GnoclOptMiscFp ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, 
 /**
 \brief
 **/
+static int configure ( Tcl_Interp *interp, GtkWidget *widget, GnoclOption options[] )
+{
+	return gnoclCgetNotImplemented ( interp, options );
+}
+
+/**
+\brief
+**/
+static int fc_cget ( Tcl_Interp *interp, GtkWidget *widget, GnoclOption options[], int idx )
+{
+	return gnoclCgetNotImplemented ( interp, options + idx );
+}
+
+
+
+/**
+\brief
+**/
 void addFilterPatterns ( Tcl_Interp *interp, GtkFileFilter *filter, gchar *pattern )
 {
 	int argc, code, i;
@@ -577,14 +595,117 @@ static int cget ( FileSelDialogParams *para, GnoclOption options[], int idx )
 	return gnoclCgetNotImplemented ( para->interp, options + idx );
 }
 
+
+static const char *fc_cmds[] = { "delete", "configure", "cget", "onClicked", "class", NULL };
+
+/**
+\brief
+**/
+int fileChooserFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
+{
+	printf ( "widgetFunc\n" );
+
+
+	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, OnClickedIdx, ClassIdx };
+
+	GtkWidget *widget = GTK_WIDGET ( data );
+	int idx;
+
+	if ( objc < 2 )
+	{
+		Tcl_WrongNumArgs ( interp, 1, objv, "command" );
+		return TCL_ERROR;
+	}
+
+	if ( Tcl_GetIndexFromObj ( interp, objv[1], fc_cmds, "command", TCL_EXACT, &idx ) != TCL_OK )
+	{
+		return TCL_ERROR;
+	}
+
+	switch ( idx )
+	{
+
+		case ClassIdx:
+			{
+				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "fileChooser", -1 ) );
+			}
+			break;
+		case DeleteIdx:
+			{
+				return gnoclDelete ( interp, GTK_WIDGET ( widget ), objc, objv );
+			}
+		case ConfigureIdx:
+			{
+				int ret = TCL_ERROR;
+
+				//ret = configure ( interp, widget, GnoclOptMiscFp );
+
+				if ( 1 )
+				{
+					if ( gnoclParseAndSetOptions ( interp, objc - 1, objv + 1, GnoclOptMiscFp, G_OBJECT ( widget ) ) == TCL_OK )
+					{
+						ret = configure ( interp, widget, GnoclOptMiscFp );
+					}
+				}
+
+				gnoclClearOptions ( GnoclOptMiscFp );
+
+				return ret;
+			}
+
+			break;
+		case OnClickedIdx:
+
+			if ( objc != 2 )
+			{
+				Tcl_WrongNumArgs ( interp, 2, objv, NULL );
+				return TCL_ERROR;
+			}
+
+			if ( GTK_WIDGET_IS_SENSITIVE ( GTK_WIDGET ( widget ) ) )
+			{
+				gtk_button_clicked ( widget );
+			}
+
+			break;
+
+		case CgetIdx:
+			{
+				int     idx;
+
+				switch ( gnoclCget ( interp, objc, objv, G_OBJECT ( widget ), GnoclOptMiscFp, &idx ) )
+				{
+					case GNOCL_CGET_ERROR:
+						{
+							return TCL_ERROR;
+						}
+
+					case GNOCL_CGET_HANDLED:
+						{
+							return TCL_OK;
+						}
+
+					case GNOCL_CGET_NOTHANDLED:
+						{
+							return fc_cget ( interp, widget, GnoclOptMiscFp, idx );
+						}
+				}
+			}
+	}
+
+	return TCL_OK;
+}
+
+static const char *fd_cmds[] = { "delete", "configure", "cget", "hide", "show", NULL };
+
 /**
 \brief
 **/
 int fileDialogFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-	static const char *cmds[] = { "delete", "configure", "cget", "hide", "show", "options", "commands", NULL };
 
-	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, HideIdx, ShowIdx, OptionsIdx, CommandsIdx };
+
+	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, HideIdx, ShowIdx };
 
 	FileSelDialogParams *para = ( FileSelDialogParams * ) data;
 	GtkWidget *widget = GTK_WIDGET ( para->fileDialog );
@@ -596,22 +717,11 @@ int fileDialogFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * co
 		return TCL_ERROR;
 	}
 
-	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "command",
-							   TCL_EXACT, &idx ) != TCL_OK )
+	if ( Tcl_GetIndexFromObj ( interp, objv[1], fd_cmds, "command", TCL_EXACT, &idx ) != TCL_OK )
 		return TCL_ERROR;
 
 	switch ( idx )
 	{
-		case CommandsIdx:
-			{
-				gnoclGetOptions ( interp, cmds );
-			}
-			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, options );
-			}
-			break;
 		case HideIdx:
 			{
 				gtk_widget_hide ( widget );
@@ -660,6 +770,12 @@ int fileDialogFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * co
 **/
 int gnoclFileChooserDialogCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+
+	if ( gnoclGetCmdsAndOpts ( interp, fd_cmds, options, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
 	FileSelDialogParams *para = NULL;
 	int ret = TCL_ERROR;
 	GtkFileChooserAction action = GTK_FILE_CHOOSER_ACTION_OPEN;
@@ -763,132 +879,17 @@ cleanExit:
 /*---------------------------------------------------------------------*/
 
 
-
-/**
-\brief
-**/
-static int configure ( Tcl_Interp *interp, GtkWidget *widget, GnoclOption options[] )
-{
-	return gnoclCgetNotImplemented ( interp, options );
-}
-
-/**
-\brief
-**/
-static int fc_cget ( Tcl_Interp *interp, GtkWidget *widget, GnoclOption options[], int idx )
-{
-	return gnoclCgetNotImplemented ( interp, options + idx );
-}
-
-/**
-\brief
-**/
-int fileChooserFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
-{
-	printf ( "widgetFunc\n" );
-
-	static const char *cmds[] = { "delete", "configure", "cget", "onClicked", "class", "options", "commands", NULL };
-	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, OnClickedIdx, ClassIdx, OptionsIdx, CommandsIdx };
-
-	GtkWidget *widget = GTK_WIDGET ( data );
-	int idx;
-
-	if ( objc < 2 )
-	{
-		Tcl_WrongNumArgs ( interp, 1, objv, "command" );
-		return TCL_ERROR;
-	}
-
-	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "command", TCL_EXACT, &idx ) != TCL_OK )
-	{
-		return TCL_ERROR;
-	}
-
-	switch ( idx )
-	{
-		case CommandsIdx:
-			{
-				gnoclGetOptions ( interp, cmds );
-			}
-			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, options );
-			}
-			break;
-		case ClassIdx:
-			Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "fileChooser", -1 ) );
-			break;
-		case DeleteIdx:
-			return gnoclDelete ( interp, GTK_WIDGET ( widget ), objc, objv );
-
-		case ConfigureIdx:
-			{
-				int ret = TCL_ERROR;
-
-				//ret = configure ( interp, widget, GnoclOptMiscFp );
-
-				if ( 1 )
-				{
-					if ( gnoclParseAndSetOptions ( interp, objc - 1, objv + 1, GnoclOptMiscFp, G_OBJECT ( widget ) ) == TCL_OK )
-					{
-						ret = configure ( interp, widget, GnoclOptMiscFp );
-					}
-				}
-
-				gnoclClearOptions ( GnoclOptMiscFp );
-
-				return ret;
-			}
-
-			break;
-		case OnClickedIdx:
-
-			if ( objc != 2 )
-			{
-				Tcl_WrongNumArgs ( interp, 2, objv, NULL );
-				return TCL_ERROR;
-			}
-
-			if ( GTK_WIDGET_IS_SENSITIVE ( GTK_WIDGET ( widget ) ) )
-			{
-				gtk_button_clicked ( widget );
-			}
-
-			break;
-
-		case CgetIdx:
-			{
-				int     idx;
-
-				switch ( gnoclCget ( interp, objc, objv, G_OBJECT ( widget ), GnoclOptMiscFp, &idx ) )
-				{
-					case GNOCL_CGET_ERROR:
-						{
-							return TCL_ERROR;
-						}
-
-					case GNOCL_CGET_HANDLED:
-						{
-							return TCL_OK;
-						}
-
-					case GNOCL_CGET_NOTHANDLED:
-						{
-							return fc_cget ( interp, widget, GnoclOptMiscFp, idx );
-						}
-				}
-			}
-	}
-
-	return TCL_OK;
-}
-
 /**
 \brief
 **/
 int gnoclFileChooserCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+
+	if ( gnoclGetCmdsAndOpts ( interp, fc_cmds, options, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
 
 	int            ret = TCL_OK;
 	GtkWidget      *widget;

@@ -198,6 +198,14 @@ static int cget ( Tcl_Interp *interp, GtkWidget *widget, GnoclOption options[], 
 	return gnoclCgetNotImplemented ( interp, options + idx );
 }
 
+static const char *cmds[] =
+{
+	"add", "item", "reponse",
+	"delete", "configure", "cget",
+	"onClicked", "class",
+	NULL
+};
+
 /**
 /brief
 **/
@@ -208,19 +216,13 @@ static int infobarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj 
 	listParameters ( objc, objv, "infobarFunc" );
 #endif
 
-	static const char *cmds[] =
-	{
-		"add", "item", "reponse",
-		"delete", "configure", "cget",
-		"onClicked", "class", "options", "commands",
-		NULL
-	};
+
 
 	enum cmdIdx
 	{
 		AddIdx, ItemIdx, ResponseIdx,
 		DeleteIdx, ConfigureIdx, CgetIdx,
-		OnClickedIdx, ClassIdx, OptionsIdx, CommandsIdx
+		OnClickedIdx, ClassIdx
 	};
 
 	GtkWidget *widget = GTK_WIDGET ( data );
@@ -239,11 +241,7 @@ static int infobarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj 
 
 	switch ( idx )
 	{
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, infoBarOptions );
-			}
-			break;
+
 		case ResponseIdx:
 			{
 				/* emit response signal for item */
@@ -409,6 +407,10 @@ static int infobarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj 
 **/
 int gnoclInfoBarCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, infoBarOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
 
 	int            ret = TCL_OK;
 	GtkWidget      *infobar;

@@ -69,6 +69,7 @@ typedef struct
 	char        *onChanged;
 	char        *variable;
 	int         inSetVar;
+	int			type;
 } ComboParams;
 
 
@@ -628,13 +629,15 @@ static int addItemTcl ( ComboParams *para, Tcl_Interp *interp, int objc, Tcl_Obj
 	return ret;
 }
 
+static const char *cmds[] = { "delete", "configure", "cget", "add", "onChanged", "class", NULL};
+
 /**
 \brief
 **/
 int comboBoxFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-	static const char *cmds[] = { "delete", "configure", "cget", "add", "onChanged", "class", "options", "commands", NULL};
-	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, AddIdx, DoOnChangedIdx, ClassIdx, OptionsIdx, CommandsIdx };
+
+	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, AddIdx, DoOnChangedIdx, ClassIdx };
 
 	ComboParams *para = ( ComboParams * ) data;
 	GtkWidget *widget = GTK_WIDGET ( para->comboBox );
@@ -652,22 +655,24 @@ int comboBoxFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * cons
 
 	switch ( idx )
 	{
-		case CommandsIdx:
-			{
-				gnoclGetOptions ( interp, cmds );
-			}
-			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, comboBoxOptions );
-			}
-			break;
 		case ClassIdx:
-			/* need to differentiate between comboBox and comboEntry */
-			Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "comboBox", -1 ) );
+			{
+				/* need to differentiate between comboBox and comboEntry */
+				if ( para->type == 1 )
+				{
+					Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "comboBox", -1 ) );
+				}
+
+				else
+				{
+					Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "comboEntry", -1 ) );
+				}
+			}
 			break;
 		case DeleteIdx:
-			return gnoclDelete ( interp, widget, objc, objv );
+			{
+				return gnoclDelete ( interp, widget, objc, objv );
+			}
 
 		case ConfigureIdx:
 			{
@@ -742,8 +747,7 @@ static int makeComboBox ( Tcl_Interp *interp, int objc, Tcl_Obj * const objv[], 
 		return TCL_ERROR;
 	}
 
-	model = GTK_TREE_MODEL ( gtk_list_store_new ( 3, G_TYPE_STRING,
-							 G_TYPE_STRING, GDK_TYPE_PIXBUF ) );
+	model = GTK_TREE_MODEL ( gtk_list_store_new ( 3, G_TYPE_STRING, G_TYPE_STRING, GDK_TYPE_PIXBUF ) );
 
 	para = g_new ( ComboParams, 1 );
 	para->interp = interp;
@@ -755,6 +759,7 @@ static int makeComboBox ( Tcl_Interp *interp, int objc, Tcl_Obj * const objv[], 
 						 : gtk_combo_box_new_with_model ( model ) );
 	para->inSetVar = 0;
 
+
 	/* excluded these operations if object is simply a GtkComboBox */
 	if ( isEntry == 0 )
 	{
@@ -764,6 +769,12 @@ static int makeComboBox ( Tcl_Interp *interp, int objc, Tcl_Obj * const objv[], 
 		GtkCellRenderer *renderer = gtk_cell_renderer_text_new ();
 		gtk_cell_layout_pack_start ( GTK_CELL_LAYOUT ( para->comboBox ), renderer, TEXT_COLUMN );
 		gtk_cell_layout_set_attributes ( GTK_CELL_LAYOUT ( para->comboBox ), renderer, "text", TEXT_COLUMN, NULL );
+		para->type = 0;
+	}
+
+	else
+	{
+		para->type = 1;
 	}
 
 	gtk_widget_show ( GTK_WIDGET ( para->comboBox ) );
@@ -799,6 +810,12 @@ static int makeComboBox ( Tcl_Interp *interp, int objc, Tcl_Obj * const objv[], 
 **/
 int gnoclComboBoxCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, comboBoxOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
+
 	return makeComboBox ( interp, objc, objv, 0 );
 }
 
@@ -807,6 +824,12 @@ int gnoclComboBoxCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * 
 **/
 int gnoclComboEntryCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, comboBoxOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
+
 	return makeComboBox ( interp, objc, objv, 1 );
 }
 

@@ -357,6 +357,11 @@ static int cget ( Tcl_Interp *interp, PaperSetupParams *para, GnoclOption option
 	return gnoclCgetNotImplemented ( interp, options + idx );
 }
 
+static const char *cmds[] =
+{
+	"delete", "configure", "cget", "class",  NULL
+};
+
 /**
 \brief
 \author
@@ -366,14 +371,11 @@ static int cget ( Tcl_Interp *interp, PaperSetupParams *para, GnoclOption option
 int pageSetupFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
 
-	static const char *cmds[] =
-	{
-		"delete", "configure", "cget", "class", "options", "commands", NULL
-	};
+
 
 	enum cmdIdx
 	{
-		DeleteIdx, ConfigureIdx, CgetIdx, ClassIdx, OptionsIdx, CommandsIdx
+		DeleteIdx, ConfigureIdx, CgetIdx, ClassIdx
 	};
 
 
@@ -400,16 +402,7 @@ int pageSetupFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * con
 
 	switch ( idx )
 	{
-		case CommandsIdx:
-			{
-				gnoclGetOptions ( interp, cmds );
-			}
-			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, pageSetUpOptions );
-			}
-			break;
+
 		case DeleteIdx: {} break;
 		case ConfigureIdx:
 			{
@@ -417,8 +410,7 @@ int pageSetupFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * con
 
 				int ret = TCL_ERROR;
 
-				if ( gnoclParseAndSetOptions ( interp, objc - 1, objv + 1,
-											   pageSetUpOptions, G_OBJECT ( para->setup ) ) == TCL_OK )
+				if ( gnoclParseAndSetOptions ( interp, objc - 1, objv + 1, pageSetUpOptions, G_OBJECT ( para->setup ) ) == TCL_OK )
 				{
 					ret = configure ( interp, para, pageSetUpOptions );
 				}
@@ -595,6 +587,12 @@ GtkPageSetup *gnoclGetPageSetupFromName ( const char *id, Tcl_Interp *interp )
 **/
 int gnoclPageSetupCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, pageSetUpOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
+
 
 #ifdef DEBUG_PRINTER_DIALOG
 	g_printf ( "gnoclPageSetupCmd\n" );

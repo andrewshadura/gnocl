@@ -586,14 +586,15 @@ static int tableFuncAdd ( GtkTable *table, Tcl_Interp *interp,
 	return ret;
 }
 
+static const char *cmds[] = { "delete", "configure", "add", "addRow", "addColumn", "class",  NULL };
+
 /**
 \brief
 **/
-static int tableFunc ( ClientData data, Tcl_Interp *interp,
-					   int objc, Tcl_Obj * const objv[] )
+static int tableFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-	const char *cmds[] = { "delete", "configure", "add", "addRow", "addColumn", "class", "options", "commands", NULL };
-	enum cmdIdx { DeleteIdx, ConfigureIdx, AddIdx, AddRowIdx, AddColumnIdx, ClassIdx, OptionsIdx, CommandsIdx };
+
+	enum cmdIdx { DeleteIdx, ConfigureIdx, AddIdx, AddRowIdx, AddColumnIdx, ClassIdx,  };
 
 	int idx;
 
@@ -629,22 +630,14 @@ static int tableFunc ( ClientData data, Tcl_Interp *interp,
 	}
 	*/
 
-	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "command",
-							   TCL_EXACT, &idx ) != TCL_OK )
+	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "command", TCL_EXACT, &idx ) != TCL_OK )
+	{
 		return TCL_ERROR;
+	}
 
 	switch ( idx )
 	{
-		case CommandsIdx:
-			{
-				gnoclGetOptions ( interp, cmds );
-			}
-			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, tableOptions );
-			}
-			break;
+
 		case ClassIdx:
 			{
 				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "table", -1 ) );
@@ -682,9 +675,13 @@ static int tableFunc ( ClientData data, Tcl_Interp *interp,
 /**
 \brief
 **/
-int gnoclTableCmd ( ClientData data, Tcl_Interp *interp,
-					int objc, Tcl_Obj * const objv[] )
+int gnoclTableCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, tableOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
 	int            ret = TCL_OK;
 	GtkTable       *table;
 	GtkFrame       *frame = NULL;
@@ -693,8 +690,7 @@ int gnoclTableCmd ( ClientData data, Tcl_Interp *interp,
 	assert ( strcmp ( tableOptions[startFrameOpts].optName, "-label" ) == 0 );
 	assert ( strcmp ( tableOptions[startCommonOpts].optName, "-name" ) == 0 );
 
-	if ( gnoclParseOptions ( interp, objc, objv, tableOptions )
-			!= TCL_OK )
+	if ( gnoclParseOptions ( interp, objc, objv, tableOptions ) != TCL_OK )
 	{
 		gnoclClearOptions ( tableOptions );
 		return TCL_ERROR;

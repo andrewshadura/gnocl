@@ -380,6 +380,13 @@ static int cget ( Tcl_Interp *interp, ScaleParams *para,
 	return gnoclCgetNotImplemented ( interp, options + idx );
 }
 
+static const char *cmds[] =
+{
+	"delete", "configure",
+	"cget", "onValueChanged",
+	"class",
+	NULL
+};
 
 /**
 \brief
@@ -387,19 +394,13 @@ static int cget ( Tcl_Interp *interp, ScaleParams *para,
 int scaleFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 
 {
-	static const char *cmds[] =
-	{
-		"delete", "configure",
-		"cget", "onValueChanged",
-		"class", "options", "commands",
-		NULL
-	};
+
 
 	enum cmdIdx
 	{
 		DeleteIdx, ConfigureIdx,
 		CgetIdx, OnValueChangedIdx,
-		ClassIdx, OptionsIdx, CommandsIdx
+		ClassIdx
 	};
 
 	ScaleParams *para = ( ScaleParams * ) data;
@@ -412,29 +413,21 @@ int scaleFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const o
 		return TCL_ERROR;
 	}
 
-	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "command",
-							   TCL_EXACT, &idx ) != TCL_OK )
+	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "command", TCL_EXACT, &idx ) != TCL_OK )
 		return TCL_ERROR;
 
 	switch ( idx )
 	{
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, scaleOptions );
-			}
-			break;
-		case ClassIdx:
-			Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "scale", -1 ) );
-			break;
-		case DeleteIdx:
-			return gnoclDelete ( interp, widget, objc, objv );
 
+		case DeleteIdx:
+			{
+				return gnoclDelete ( interp, widget, objc, objv );
+			}
 		case ConfigureIdx:
 			{
 				int ret = TCL_ERROR;
 
-				if ( gnoclParseOptions ( interp, objc - 1, objv + 1,
-										 scaleOptions ) == TCL_OK )
+				if ( gnoclParseOptions ( interp, objc - 1, objv + 1, scaleOptions ) == TCL_OK )
 				{
 					ret = configure ( interp, para, scaleOptions );
 				}
@@ -478,9 +471,13 @@ int scaleFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const o
 /**
 \brief
 **/
-int gnoclScaleCmd ( ClientData data, Tcl_Interp *interp,
-					int objc, Tcl_Obj * const objv[] )
+int gnoclScaleCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, scaleOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
 	GtkOrientation orient = GTK_ORIENTATION_VERTICAL;
 	GtkAdjustment  *adjust;
 	ScaleParams    *para;
@@ -493,8 +490,7 @@ int gnoclScaleCmd ( ClientData data, Tcl_Interp *interp,
 
 	if ( scaleOptions[orientationIdx].status == GNOCL_STATUS_CHANGED )
 	{
-		if ( gnoclGetOrientationType ( interp,
-									   scaleOptions[orientationIdx].val.obj, &orient ) != TCL_OK )
+		if ( gnoclGetOrientationType ( interp, scaleOptions[orientationIdx].val.obj, &orient ) != TCL_OK )
 		{
 			gnoclClearOptions ( scaleOptions );
 			return TCL_ERROR;

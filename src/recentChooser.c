@@ -228,6 +228,8 @@ static int cget ( Tcl_Interp *interp, GtkWidget *widget, GnoclOption options[], 
 	return gnoclCgetNotImplemented ( interp, options + idx );
 }
 
+static const char *cmds[] = { "delete", "configure", "cget", "onClicked", "class",  NULL };
+
 /**
 \brief
 **/
@@ -235,8 +237,8 @@ int recentChooserFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *
 {
 	printf ( "widgetFunc\n" );
 
-	static const char *cmds[] = { "delete", "configure", "cget", "onClicked", "class", "options", "commands", NULL };
-	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, OnClickedIdx, ClassIdx, OptionsIdx, CommandsIdx };
+
+	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, OnClickedIdx, ClassIdx };
 	GtkWidget *widget = GTK_WIDGET ( data );
 	int idx;
 
@@ -253,16 +255,7 @@ int recentChooserFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *
 
 	switch ( idx )
 	{
-		case CommandsIdx:
-			{
-				gnoclGetOptions ( interp, cmds );
-			}
-			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, recentChooserOptions );
-			}
-			break;
+
 		case ClassIdx:
 			{
 
@@ -341,6 +334,10 @@ int recentChooserFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *
 **/
 int gnoclRecentChooserCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, recentChooserOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
 
 	int            ret = TCL_OK;
 	GtkWidget      *widget;

@@ -77,6 +77,8 @@ static int configure ( Tcl_Interp *interp, GtkTextBuffer *widget, GnoclOption op
 	return TCL_OK;
 }
 
+static const char *cmds[] = { "insert", "class", "delete", "configure", "cget", "show", "hide",  NULL };
+
 /**
 \brief
 \author     William J Giddings
@@ -87,8 +89,8 @@ int textBufferFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * co
 {
 
 	/* set list of valid commands for this widget */
-	static const char *cmds[] = { "insert", "class", "delete", "configure", "cget", "show", "hide", "options", "commands", NULL };
-	enum cmdIdx { InsertIdx, ClassIdx, DeleteIdx, ConfigureIdx, CgetIdx, ShowIdx, HideIdx, OptionsIdx, CommandsIdx };
+
+	enum cmdIdx { InsertIdx, ClassIdx, DeleteIdx, ConfigureIdx, CgetIdx, ShowIdx, HideIdx };
 
 	int idx;
 	GtkTextBuffer *widget;
@@ -111,16 +113,7 @@ int textBufferFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * co
 	/* respsond to the commands received */
 	switch ( idx )
 	{
-		case CommandsIdx:
-			{
-				gnoclGetOptions ( interp, cmds );
-			}
-			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, textBufferOptions );
-			}
-			break;
+
 			/* return class of widget */
 		case ClassIdx:
 			{
@@ -183,6 +176,10 @@ int textBufferFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * co
 **/
 int gnoclTextBufferCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, textBufferOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
 
 	int ret;
 	GtkTextBuffer *widget;

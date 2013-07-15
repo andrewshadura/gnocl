@@ -257,6 +257,14 @@ static int cget ( Tcl_Interp *interp, GtkWidget *widget, GnoclOption options[], 
 	return gnoclCgetNotImplemented ( interp, options + idx );
 }
 
+static const char *cmds[] =
+{
+	"add", "move", "remove",
+	"delete", "configure", "cget",
+	"class",
+	NULL
+};
+
 /**
 \brief
 **/
@@ -266,20 +274,11 @@ static int layoutFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *
 	listParameters ( objc, objv, "layoutFunc" );
 #endif
 
-
-	static const char *cmds[] =
-	{
-		"add", "move", "remove",
-		"delete", "configure", "cget",
-		"class", "options", "commands",
-		NULL
-	};
-
 	enum cmdIdx
 	{
 		AddIdx, MoveIdx, RemoveIdx,
 		DeleteIdx, ConfigureIdx, CgetIdx,
-		ClassIdx, OptionsIdx, CommandsIdx
+		ClassIdx
 	};
 
 	GtkScrolledWindow   *scrolled = GTK_SCROLLED_WINDOW ( data );
@@ -300,16 +299,7 @@ static int layoutFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *
 
 	switch ( idx )
 	{
-		case CommandsIdx:
-			{
-				gnoclGetOptions ( interp, cmds );
-			}
-			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, layoutOptions );
-			}
-			break;
+
 		case RemoveIdx:
 			{
 				/* remove but not delete the child widget */
@@ -487,6 +477,10 @@ static int layoutFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *
 **/
 int gnoclLayoutCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, layoutOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
 
 	int            ret = TCL_OK;
 	GtkLayout      *layout;

@@ -101,6 +101,14 @@ static int cget ( Tcl_Interp *interp, GtkWidget *widget, GnoclOption options[], 
 	return gnoclCgetNotImplemented ( interp, options + idx );
 }
 
+static const char *cmds[] =
+{
+	"set", "reset", "get",
+	"delete", "configure",
+	"cget", "class",
+	NULL
+};
+
 /**
 \brief
 \author     William J Giddings
@@ -110,20 +118,14 @@ static int cget ( Tcl_Interp *interp, GtkWidget *widget, GnoclOption options[], 
 static int tickerTapeFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
 #ifdef DEBUG_CURVE
-	listParameters ( objc, objv, "curveFunc" );
+	listParameters ( objc, objv, __FUNCTION__ );
 #endif
 
-	static const char *cmds[] =
-	{
-		"set", "reset", "get",
-		"delete", "configure",
-		"cget", "class", "options", "commands",
-		NULL
-	};
+
 	enum cmdIdx
 	{
 		DeleteIdx, ConfigureIdx,
-		CgetIdx, ClassIdx, OptionsIdx, CommandsIdx
+		CgetIdx, ClassIdx
 	};
 
 	GtkCurve *widget = GTK_WIDGET ( data );
@@ -143,19 +145,10 @@ static int tickerTapeFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_O
 
 	switch ( idx )
 	{
-		case CommandsIdx:
-			{
-				gnoclGetOptions ( interp, cmds );
-			}
-			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, tickerTapeOptions );
-			}
-			break;
+
 		case ClassIdx:
 			{
-				printf ( "Class\n" );
+
 				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "tickerTape", -1 ) );
 			}
 			break;
@@ -166,12 +159,12 @@ static int tickerTapeFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_O
 		case ConfigureIdx:
 			{
 				int ret = TCL_ERROR;
-				printf ( "Configure\n" );
+
 
 				if ( gnoclParseAndSetOptions ( interp, objc - 1, objv + 1, tickerTapeOptions, G_OBJECT ( widget ) ) == TCL_OK )
 				{
 
-					printf ( "Configure\n" );
+
 					ret = configure ( interp, widget, tickerTapeOptions );
 				}
 
@@ -217,6 +210,10 @@ static int tickerTapeFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_O
 **/
 int gnoclTickerTapeCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * const objv[] )
 {
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, tickerTapeOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
 
 	int            ret = TCL_OK;
 	GtkWidget      *tickerTape;
@@ -235,7 +232,7 @@ int gnoclTickerTapeCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj
 	fd = pango_font_description_from_string ( "Monospace 30" );
 	tickerTape = my_marquee_new() ;
 	gtk_widget_modify_font ( tickerTape, fd );
-	my_marquee_set_message ( MY_MARQUEE ( tickerTape ), "Gnocl 0.9.05" );
+	my_marquee_set_message ( MY_MARQUEE ( tickerTape ), "Gnocl Tcl/Gtk+ Bindings" );
 	my_marquee_set_speed ( MY_MARQUEE ( tickerTape ), 10 );
 	pango_font_description_free ( fd );
 

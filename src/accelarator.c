@@ -211,6 +211,11 @@ static int cget ( Tcl_Interp *interp, GtkWidget *accelarator, GnoclOption option
 	return gnoclCgetNotImplemented ( interp, options + idx );
 }
 
+static const char *cmds[] =
+{
+	"delete", "configure", "cget", "class", NULL
+};
+
 /**
 \brief
 **/
@@ -223,14 +228,11 @@ int accelaratorFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * c
 #endif
 
 
-	static const char *cmds[] =
-	{
-		"delete", "configure", "cget", "class", "options", "commands", NULL
-	};
+
 
 	enum cmdIdx
 	{
-		DeleteIdx, ConfigureIdx, CgetIdx, ClassIdx, OptionsIdx, CommandsIdx
+		DeleteIdx, ConfigureIdx, CgetIdx, ClassIdx
 	};
 
 	GtkAccelGroup *accelarator = GTK_ACCEL_GROUP ( data );
@@ -249,16 +251,7 @@ int accelaratorFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * c
 
 	switch ( idx )
 	{
-		case CommandsIdx:
-			{
-				gnoclGetOptions ( interp, cmds );
-			}
-			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, accGrpOptions );
-			}
-			break;
+
 		case ClassIdx:
 			Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "accelarator", -1 ) );
 			break;
@@ -307,6 +300,10 @@ int accelaratorFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * c
 **/
 int gnoclAcceleratorCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, accGrpOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
 
 #ifdef DEBUG_ACCELERATOR
 	g_print ( "gnoclAcceleratorCmd\n" );

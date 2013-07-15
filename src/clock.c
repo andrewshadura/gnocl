@@ -53,6 +53,14 @@ static int cget ( Tcl_Interp *interp, GtkWidget *widget, GnoclOption options[], 
 	return gnoclCgetNotImplemented ( interp, options + idx );
 }
 
+static const char *cmds[] =
+{
+	"set", "reset", "get",
+	"delete", "configure",
+	"cget", "class",
+	NULL
+};
+
 /**
 \brief
 \author     William J Giddings
@@ -65,17 +73,11 @@ static int clockFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * 
 	listParameters ( objc, objv, "clockFunc" );
 #endif
 
-	static const char *cmds[] =
-	{
-		"set", "reset", "get",
-		"delete", "configure",
-		"cget", "class", "options", "commands",
-		NULL
-	};
+
 	enum cmdIdx
 	{
 		DeleteIdx, ConfigureIdx,
-		CgetIdx, ClassIdx, OptionsIdx, CommandsIdx
+		CgetIdx, ClassIdx
 	};
 
 	GtkCurve *widget = GTK_WIDGET ( data );
@@ -95,15 +97,7 @@ static int clockFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * 
 
 	switch ( idx )
 	{
-		case CommandsIdx:
-			{
-				gnoclGetOptions ( interp, cmds );
-			}
-			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, clockOptions );
-			} break;
+
 		case ClassIdx:
 			{
 				//printf ( "Class\n" );
@@ -168,6 +162,10 @@ static int clockFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * 
 **/
 int gnoclClockCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * const objv[] )
 {
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, clockOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
 
 	int            ret = TCL_OK;
 	GtkWidget      *clock;

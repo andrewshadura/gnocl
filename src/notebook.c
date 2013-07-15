@@ -749,14 +749,16 @@ static int notebookNext ( GtkNotebook *notebook, Tcl_Interp *interp, int objc, T
 }
 
 
+static const char *cmds[] = { "delete", "configure", "addPage", "currentPage", "nextPage", "removePage", "class",  NULL };
+
 /**
 \brief
 **/
 int notebookFunc ( ClientData data,	Tcl_Interp *interp,	int objc, Tcl_Obj * const objv[] )
 {
 	/* TODO?: notebook insert pos child label ?menu? */
-	static const char *cmds[] = { "delete", "configure", "addPage", "currentPage", "nextPage", "removePage", "class", "options", "commands", NULL };
-	enum cmdIdx { DeleteIdx, ConfigureIdx, AddPageIdx, CurrentIdx, NextPageIdx, RemovePageIdx, ClassIdx, OptionsIdx, CommandsIdx };
+
+	enum cmdIdx { DeleteIdx, ConfigureIdx, AddPageIdx, CurrentIdx, NextPageIdx, RemovePageIdx, ClassIdx };
 
 	GtkNotebook *notebook = GTK_NOTEBOOK ( data );
 	int idx;
@@ -774,28 +776,22 @@ int notebookFunc ( ClientData data,	Tcl_Interp *interp,	int objc, Tcl_Obj * cons
 
 	switch ( idx )
 	{
-		case CommandsIdx:
-			{
-				gnoclGetOptions ( interp, cmds );
-			}
-			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, notebookOptions );
-			}
-			break;
+
 		case ClassIdx:
-			Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "notebook", -1 ) );
+			{
+				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "notebook", -1 ) );
+			}
 			break;
 		case DeleteIdx:
-			return gnoclDelete ( interp, GTK_WIDGET ( notebook ), objc, objv );
+			{
+				return gnoclDelete ( interp, GTK_WIDGET ( notebook ), objc, objv );
+			}
 
 		case ConfigureIdx:
 			{
 				int ret = TCL_ERROR;
 
-				if ( gnoclParseAndSetOptions ( interp, objc - 1, objv + 1,
-											   notebookOptions, G_OBJECT ( notebook ) ) == TCL_OK )
+				if ( gnoclParseAndSetOptions ( interp, objc - 1, objv + 1, notebookOptions, G_OBJECT ( notebook ) ) == TCL_OK )
 				{
 					ret = configure ( interp, notebook, notebookOptions );
 				}
@@ -833,7 +829,9 @@ int notebookFunc ( ClientData data,	Tcl_Interp *interp,	int objc, Tcl_Obj * cons
 
 		case CurrentIdx:
 		case NextPageIdx:
-			return notebookNext ( notebook, interp, objc, objv, idx == NextPageIdx );
+			{
+				return notebookNext ( notebook, interp, objc, objv, idx == NextPageIdx );
+			}
 		case RemovePageIdx:
 			{
 				int k;
@@ -862,11 +860,17 @@ int notebookFunc ( ClientData data,	Tcl_Interp *interp,	int objc, Tcl_Obj * cons
 **/
 int gnoclNotebookCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, notebookOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
+
+
 	int ret;
 	GtkWidget *widget;
 
-	if ( gnoclParseOptions ( interp, objc, objv, notebookOptions )
-			!= TCL_OK )
+	if ( gnoclParseOptions ( interp, objc, objv, notebookOptions ) != TCL_OK )
 	{
 		gnoclClearOptions ( notebookOptions );
 		return TCL_ERROR;

@@ -266,25 +266,27 @@ static int configure ( Tcl_Interp *interp, GtkPaned *paned, GnoclOption options[
 	return TCL_OK;
 }
 
+static const char *cmds[] =
+{
+	"cget",
+	"delete", "configure",
+	"class", "parent",
+	"pack",
+	NULL
+};
+
 /**
 \brief
 **/
 int panedFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-	static const char *cmds[] =
-	{
-		"cget",
-		"delete", "configure",
-		"class", "parent",
-		"pack", "options", "commands",
-		NULL
-	};
+
 	enum cmdIdx
 	{
 		CgetIdx,
 		DeleteIdx, ConfigureIdx,
 		ClassIdx, ParentIdx,
-		PackIdx, OptionsIdx, CommandsIdx
+		PackIdx
 	};
 	GtkPaned *paned = GTK_PANED ( data );
 	int idx;
@@ -296,16 +298,7 @@ int panedFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const o
 
 	switch ( idx )
 	{
-		case CommandsIdx:
-			{
-				gnoclGetOptions ( interp, cmds );
-			}
-			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, panedOptions );
-			}
-			break;
+
 		case PackIdx:
 			{
 				g_print ( "%s pack\n", __FUNCTION__ );
@@ -331,8 +324,6 @@ int panedFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const o
 				{
 					return TCL_ERROR;
 				}
-
-
 
 			}
 			break;
@@ -400,6 +391,13 @@ int panedFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const o
 **/
 int gnoclPanedCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, panedOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
+
 	int        ret;
 	GtkPaned  *paned;
 	GtkOrientation orient = GTK_ORIENTATION_HORIZONTAL;
@@ -413,8 +411,7 @@ int gnoclPanedCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * con
 
 	if ( panedOptions[orientationIdx].status == GNOCL_STATUS_CHANGED )
 	{
-		if ( gnoclGetOrientationType ( interp, panedOptions[orientationIdx].val.obj,
-									   &orient ) != TCL_OK )
+		if ( gnoclGetOrientationType ( interp, panedOptions[orientationIdx].val.obj, &orient ) != TCL_OK )
 		{
 			gnoclClearOptions ( panedOptions );
 			return TCL_ERROR;

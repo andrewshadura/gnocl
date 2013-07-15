@@ -35,20 +35,22 @@ static int configure ( Tcl_Interp *interp, GtkSpinner *spinner, GnoclOption opti
 	return TCL_OK;
 }
 
+static const char *cmds[] =
+{
+	"delete", "configure", "class", "start", "stop",
+	NULL
+};
+
 /**
 \brief
 **/
 int spinnerFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-	static const char *cmds[] =
-	{
-		"delete", "configure", "class", "start", "stop", "options", "commands",
-		NULL
-	};
+
 
 	enum cmdIdx
 	{
-		DeleteIdx, ConfigureIdx, ClassIdx, ParentIdx, StartIdx, StopIdx, OptionsIdx, CommandsIdx
+		DeleteIdx, ConfigureIdx, ClassIdx, ParentIdx, StartIdx, StopIdx
 	};
 
 	GtkSpinner *spinner = GTK_SPINNER ( data );
@@ -62,16 +64,6 @@ int spinnerFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const
 
 	switch ( idx )
 	{
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, spinnerOptions );
-			}
-			break;
-		case StartIdx:
-			{
-				gtk_spinner_start ( spinner );
-			}
-			break;
 		case StopIdx:
 			{
 				gtk_spinner_stop ( spinner );
@@ -112,6 +104,12 @@ int spinnerFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const
 **/
 int gnoclSpinnerCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, spinnerOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
+
 	int        ret;
 	GtkWidget *spinner;
 

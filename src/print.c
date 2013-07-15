@@ -125,24 +125,38 @@ static void doSettingsList ( const gchar *key, const gchar *value, gpointer user
 	g_print ( "%s %s\n", key, value );
 }
 
+static GnoclOption options[] =
+{
+	{ NULL, GNOCL_STRING, NULL },
+	{ NULL },
+};
+
+static const char *cmds[] =
+{
+	"widget", "file",
+	"preview", "configure",
+	"get", "cget",
+	NULL
+};
 
 /**
 \brief	Implement the the gnocl::print command
 **/
 int gnoclPrintCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, options, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
+
 #ifdef DEBUG_PRINT
 	debugStep ( __FUNCTION__, 1 );
 #endif
 
 
-	static const char *cmd[] =
-	{
-		"widget", "file",
-		"preview", "configure",
-		"get", "cget",
-		NULL
-	};
+
 
 	enum optIdx
 	{
@@ -195,7 +209,7 @@ int gnoclPrintCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * con
 
 	debugStep ( __FUNCTION__, 3 );
 
-	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmd, "command", TCL_EXACT, &idx ) != TCL_OK )
+	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "command", TCL_EXACT, &idx ) != TCL_OK )
 	{
 		Tcl_WrongNumArgs ( interp, 1, objv, "[widget | file | preview | settings | configure | get | cget]\n" );
 		return TCL_ERROR;

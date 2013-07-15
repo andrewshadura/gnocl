@@ -164,17 +164,15 @@ int gnoclOptBackgroundImage2 (
 
 }
 
+static const char *cmds[] = { "delete", "configure", "cget", "class", "options", "commands", NULL };
+
 /**
 \brief
 **/
-int eventBoxFunc (
-	ClientData data,
-	Tcl_Interp *interp,
-	int objc,
-	Tcl_Obj * const objv[] )
+int eventBoxFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-	static const char *cmds[] = { "delete", "configure", "cget", "class", "options", "commands", NULL };
-	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, ClassIdx, OptionsIdx, CommandsIdx };
+
+	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, ClassIdx };
 
 	GtkEventBox *box = GTK_EVENT_BOX ( data );
 	int idx;
@@ -191,26 +189,20 @@ int eventBoxFunc (
 
 	switch ( idx )
 	{
-		case CommandsIdx:
-			{
-				gnoclGetOptions ( interp, cmds );
-			}
-			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, boxOptions );
-			}
-			break;
+
 		case ClassIdx:
-			Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "eventBox", -1 ) );
+			{
+				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "eventBox", -1 ) );
+			}
 			break;
 		case DeleteIdx:
-			return gnoclDelete ( interp, GTK_WIDGET ( box ), objc, objv );
+			{
+				return gnoclDelete ( interp, GTK_WIDGET ( box ), objc, objv );
+			}
 
 		case ConfigureIdx:
 			{
-				int ret = gnoclParseAndSetOptions ( interp, objc - 1, objv + 1,
-													boxOptions, G_OBJECT ( box ) );
+				int ret = gnoclParseAndSetOptions ( interp, objc - 1, objv + 1,	boxOptions, G_OBJECT ( box ) );
 				gnoclClearOptions ( boxOptions );
 				return ret;
 			}
@@ -246,17 +238,20 @@ int eventBoxFunc (
 /**
 \brief
 **/
-int gnoclEventBoxCmd (
-	ClientData data,
-	Tcl_Interp *interp,
-	int objc,
-	Tcl_Obj * const objv[] )
+int gnoclEventBoxCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, boxOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
+
+
 	int         ret;
 	GtkEventBox *box;
 
-	if ( gnoclParseOptions ( interp, objc, objv, boxOptions )
-			!= TCL_OK )
+	if ( gnoclParseOptions ( interp, objc, objv, boxOptions ) != TCL_OK )
 	{
 		gnoclClearOptions ( boxOptions );
 		return TCL_ERROR;

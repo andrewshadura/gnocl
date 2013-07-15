@@ -75,13 +75,15 @@ static int configure (  Tcl_Interp *interp, GtkButton *button,  GnoclOption opti
 
 }
 
+static const char *cmds[] = { "delete", "configure", "cget", "onClicked", "class", NULL };
+
 /**
 \brief
 **/
 int clrButtonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-	static const char *cmds[] = { "delete", "configure", "cget", "onClicked", "class", "options", "commands", NULL };
-	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, OnClickedIdx, ClassIdx, OptionsIdx, CommandsIdx };
+
+	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, OnClickedIdx, ClassIdx };
 	GtkColorButton *button = GTK_COLOR_BUTTON ( data );
 	int idx;
 
@@ -97,20 +99,16 @@ int clrButtonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * con
 
 	switch ( idx )
 	{
-		case CommandsIdx:
+
+		case ClassIdx:
 			{
-				gnoclGetOptions ( interp, cmds );
+				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "colorButton", -1 ) );
 			}
 			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, colorButtonOptions );
-			} break;
-		case ClassIdx:
-			Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "colorButton", -1 ) );
-			break;
 		case DeleteIdx:
-			return gnoclDelete ( interp, GTK_WIDGET ( button ), objc, objv );
+			{
+				return gnoclDelete ( interp, GTK_WIDGET ( button ), objc, objv );
+			}
 		case ConfigureIdx:
 			{
 #ifdef DEBUG
@@ -165,9 +163,13 @@ int clrButtonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * con
 /**
 \brief
 **/
-int gnoclColorButtonCmd ( ClientData data, Tcl_Interp *interp,
-						  int objc, Tcl_Obj * const objv[] )
+int gnoclColorButtonCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, colorButtonOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
 	int       ret;
 	GtkColorButton *button;
 

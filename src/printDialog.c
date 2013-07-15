@@ -181,7 +181,7 @@ static int configure ( Tcl_Interp *interp, GtkWidget *dialog, GnoclOption option
 	return TCL_OK;
 }
 
-
+static const char *cmds[] =  { "delete", "configure", "cget",  "class", NULL};
 
 /**
 \brief
@@ -192,6 +192,8 @@ int printDialogFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * c
 #ifdef DEBUG_PRINTER_DIALOG
 	printf ( "%s\n", __FUNCTION__ );
 #endif
+
+	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, ClassIdx };
 
 	/*
 	case CommandsIdx:
@@ -226,6 +228,12 @@ int printDialogFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * c
 **/
 int gnoclPrintDialogCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, options, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
 
 #ifdef DEBUG_PRINTER_DIALOG
 	printf ( "%s\n", __FUNCTION__ );

@@ -276,6 +276,8 @@ static int configure ( Tcl_Interp *interp, GtkImage *image, GnoclOption options[
 	return TCL_OK;
 }
 
+static const char *cmds[] = { "turn", "flip", "delete", "configure", "class", NULL };
+
 /**
 \brief
 **/
@@ -293,8 +295,8 @@ int imageFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj* const ob
 
 #endif
 
-	static const char *cmds[] = { "turn", "flip", "delete", "configure", "class", "options", "commands", NULL };
-	enum cmdIdx { TurnIdx, FlipIdx, DeleteIdx, ConfigureIdx, ClassIdx, OptionsIdx, CommandsIdx };
+
+	enum cmdIdx { TurnIdx, FlipIdx, DeleteIdx, ConfigureIdx, ClassIdx };
 
 	int idx;
 	GtkImage *image = ( GtkImage* ) data;
@@ -313,16 +315,7 @@ int imageFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj* const ob
 
 	switch ( idx )
 	{
-		case CommandsIdx:
-			{
-				gnoclGetOptions ( interp, cmds );
-			}
-			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, imageOptions );
-			}
-			break;
+
 		case FlipIdx:
 			{
 				GdkPixbuf *pixbuf;
@@ -475,6 +468,10 @@ flipDone:
 **/
 int gnoclImageCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj* const objv[] )
 {
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, imageOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
 
 #ifdef DEBUG_IMAGE
 	g_printf ( "gnoclImageCmd\n" );

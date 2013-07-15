@@ -34,14 +34,15 @@ static GnoclOption separatorOptions[] =
 	{ NULL }
 };
 
+static const char *cmds[] = { "delete", "configure", "class", NULL };
 
 /**
 \brief
 **/
 static int menuSeparatorFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-	static const char *cmds[] = { "delete", "configure", "class", "options", "commands", NULL };
-	enum cmdIdx { DeleteIdx, ConfigureIdx, ClassIdx, OptionsIdx, CommandsIdx };
+
+	enum cmdIdx { DeleteIdx, ConfigureIdx, ClassIdx };
 
 	GtkSeparatorMenuItem *separator = GTK_SEPARATOR_MENU_ITEM ( data );
 	int idx;
@@ -52,30 +53,26 @@ static int menuSeparatorFunc ( ClientData data, Tcl_Interp *interp, int objc, Tc
 		return TCL_ERROR;
 	}
 
-	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "command",
-							   TCL_EXACT, &idx ) != TCL_OK )
+	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "command", TCL_EXACT, &idx ) != TCL_OK )
+	{
 		return TCL_ERROR;
+	}
 
 	switch ( idx )
 	{
-		case CommandsIdx:
-			{
-				gnoclGetOptions ( interp, cmds );
-			}
-			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, separatorOptions );
-			}
+
 		case ClassIdx:
-			Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "menuSeparator", -1 ) );
+			{
+				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "menuSeparator", -1 ) );
+			}
 			break;
 		case DeleteIdx:
-			return gnoclDelete ( interp, GTK_WIDGET ( separator ), objc, objv );
+			{
+				return gnoclDelete ( interp, GTK_WIDGET ( separator ), objc, objv );
+			}
 		case ConfigureIdx:
 			{
-				int ret = gnoclParseAndSetOptions ( interp, objc - 1, objv + 1,
-													separatorOptions, G_OBJECT ( separator ) );
+				int ret = gnoclParseAndSetOptions ( interp, objc - 1, objv + 1, separatorOptions, G_OBJECT ( separator ) );
 				gnoclClearOptions ( separatorOptions );
 				return ret;
 			}
@@ -89,9 +86,16 @@ static int menuSeparatorFunc ( ClientData data, Tcl_Interp *interp, int objc, Tc
 /**
 \brief
 **/
-int gnoclMenuSeparatorCmd ( ClientData data, Tcl_Interp *interp,
-							int objc, Tcl_Obj * const objv[] )
+int gnoclMenuSeparatorCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, separatorOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
+
+
 	int        ret;
 	GtkSeparatorMenuItem *separator;
 

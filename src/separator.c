@@ -36,13 +36,15 @@ static GnoclOption separatorOptions[] =
 
 static const int orientationIdx  = 0;
 
+static const char *cmds[] = { "delete", "configure", "class",  NULL };
+
 /**
 \brief
 **/
 int separatorFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-	static const char *cmds[] = { "delete", "configure", "class", "options", "commands", NULL };
-	enum cmdIdx { DeleteIdx, ConfigureIdx, ClassIdx, OptionsIdx, CommandsIdx };
+
+	enum cmdIdx { DeleteIdx, ConfigureIdx, ClassIdx };
 
 	GtkSeparator *separator = GTK_SEPARATOR ( data );
 	int idx;
@@ -60,16 +62,7 @@ int separatorFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * con
 
 	switch ( idx )
 	{
-		case CommandsIdx:
-			{
-				gnoclGetOptions ( interp, cmds );
-			}
-			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, separatorOptions );
-			}
-			break;
+
 		case ClassIdx:
 			Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "separator", -1 ) );
 			break;
@@ -110,9 +103,14 @@ int separatorFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * con
 /**
 \brief
 **/
-int gnoclSeparatorCmd ( ClientData data, Tcl_Interp *interp,
-						int objc, Tcl_Obj * const objv[] )
+int gnoclSeparatorCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, separatorOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
+
 	int            ret;
 	GtkOrientation orient = GTK_ORIENTATION_HORIZONTAL;
 	GtkSeparator   *separator;

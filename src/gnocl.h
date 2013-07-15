@@ -725,6 +725,7 @@ Tcl_ObjCmdProc gnoclPutsOb;
 Tcl_ObjCmdProc gnoclSignalStopCmd;
 Tcl_ObjCmdProc gnoclSignalEmitCmd;
 Tcl_ObjCmdProc gnoclBeepCmd;
+Tcl_ObjCmdProc gnoclCommandsCmd;
 Tcl_ObjCmdProc gnoclHsv2RgbCmd;
 Tcl_ObjCmdProc gnoclStringCmd;
 Tcl_ObjCmdProc gnoclBindCmd;

@@ -406,14 +406,14 @@ static int cget ( Tcl_Interp *interp, SpinButtonParams *para,
 
 	return gnoclCgetNotImplemented ( interp, options + idx );
 }
-
+static const char *cmds[] = { "delete", "configure", "cget", "onValueChanged", "class", NULL };
 /**
 \brief
 **/
 int spinButtonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-	static const char *cmds[] = { "delete", "configure", "cget", "onValueChanged", "class", "options", "commands", NULL };
-	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, OnValueChangedIdx, ClassIdx, OptionsIdx, CommandsIdx};
+
+	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, OnValueChangedIdx, ClassIdx };
 
 	SpinButtonParams *para = ( SpinButtonParams * ) data;
 	GtkWidget *widget = GTK_WIDGET ( para->spinButton );
@@ -431,28 +431,22 @@ int spinButtonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * co
 
 	switch ( idx )
 	{
-		case CommandsIdx:
-			{
-				gnoclGetOptions ( interp, cmds );
-			}
-			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, spinButtonOptions );
-			}
-			break;
+
 		case ClassIdx:
-			Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "spinButton", -1 ) );
+			{
+				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "spinButton", -1 ) );
+			}
 			break;
 		case DeleteIdx:
-			return gnoclDelete ( interp, widget, objc, objv );
+			{
+				return gnoclDelete ( interp, widget, objc, objv );
+			}
 
 		case ConfigureIdx:
 			{
 				int ret = TCL_ERROR;
 
-				if ( gnoclParseOptions ( interp, objc - 1, objv + 1,
-										 spinButtonOptions ) == TCL_OK )
+				if ( gnoclParseOptions ( interp, objc - 1, objv + 1, spinButtonOptions ) == TCL_OK )
 				{
 					ret = configure ( interp, para, spinButtonOptions );
 				}
@@ -497,9 +491,14 @@ int spinButtonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * co
 /**
 \brief
 **/
-int gnoclSpinButtonCmd ( ClientData data, Tcl_Interp *interp,
-						 int objc, Tcl_Obj * const objv[] )
+int gnoclSpinButtonCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, spinButtonOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
+
 	SpinButtonParams *para;
 
 	if ( gnoclParseOptions ( interp, objc, objv, spinButtonOptions ) != TCL_OK )

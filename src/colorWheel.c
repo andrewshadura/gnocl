@@ -339,6 +339,8 @@ static int cget ( Tcl_Interp *interp, GtkWidget *widget, GnoclOption options[], 
 	return gnoclCgetNotImplemented ( interp, options + idx );
 }
 
+static const char *cmds[] = { "delete", "configure", "cget", "onClicked", "class", NULL };
+
 /**
 \brief
 \author     William J Giddings
@@ -360,8 +362,8 @@ static int widgetFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *
 
 #endif
 
-	static const char *cmds[] = { "delete", "configure", "cget", "onClicked", "class", "options", "commands", NULL };
-	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, OnClickedIdx, ClassIdx, OptionsIdx, CommandsIdx };
+
+	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, OnClickedIdx, ClassIdx };
 
 	GtkWidget *widget = GTK_WIDGET ( data );
 	int idx;
@@ -379,21 +381,16 @@ static int widgetFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *
 
 	switch ( idx )
 	{
-		case CommandsIdx:
-			{
-				gnoclGetOptions ( interp, cmds );
-			}
-			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, colorWheelOptions );
-			}
-			break;
+
 		case ClassIdx:
-			Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "colorWheel", -1 ) );
+			{
+				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "colorWheel", -1 ) );
+			}
 			break;
 		case DeleteIdx:
-			return gnoclDelete ( interp, GTK_WIDGET ( widget ), objc, objv );
+			{
+				return gnoclDelete ( interp, GTK_WIDGET ( widget ), objc, objv );
+			}
 
 		case ConfigureIdx:
 			{
@@ -465,6 +462,10 @@ static int widgetFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *
 **/
 int gnoclColorWheelCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, colorWheelOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
 
 	int            ret = TCL_OK;
 	GtkWidget      *colorWheel;

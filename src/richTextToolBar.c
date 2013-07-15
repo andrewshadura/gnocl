@@ -449,21 +449,23 @@ static int configure ( Tcl_Interp *interp, RichTextToolbarParams *para, GnoclOpt
 	return TCL_OK;
 }
 
+static const char *cmds[] =
+{
+	"delete", "configure",
+	"class",
+	NULL
+};
+
 /**
 \brief
 **/
 int richTextToolBarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-	static const char *cmds[] =
-	{
-		"delete", "configure",
-		"class", "options", "commands",
-		NULL
-	};
+
 
 	enum cmdIdx
 	{
-		DeleteIdx, ConfigureIdx, ClassIdx, SetIdx, OptionsIdx, CommandsIdx
+		DeleteIdx, ConfigureIdx, ClassIdx, SetIdx
 	};
 
 	RichTextToolbarParams *para = ( RichTextToolbarParams * ) data;
@@ -478,16 +480,7 @@ int richTextToolBarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj
 
 	switch ( idx )
 	{
-		case CommandsIdx:
-			{
-				gnoclGetOptions ( interp, cmds );
-			}
-			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, richTextToolBarOptions );
-			}
-			break;
+
 		case ClassIdx:
 			{
 				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "richTextToolBar", -1 ) );
@@ -501,8 +494,7 @@ int richTextToolBarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj
 			{
 				int ret = TCL_ERROR;
 
-				if ( gnoclParseAndSetOptions ( interp, objc - 1, objv + 1,
-											   richTextToolBarOptions, G_OBJECT ( para->toolBar ) ) == TCL_OK )
+				if ( gnoclParseAndSetOptions ( interp, objc - 1, objv + 1, richTextToolBarOptions, G_OBJECT ( para->toolBar ) ) == TCL_OK )
 				{
 					ret = configure ( interp, para, richTextToolBarOptions );
 				}
@@ -524,6 +516,14 @@ int richTextToolBarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj
 **/
 int gnoclRichTextToolBarCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, richTextToolBarOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
+
+
 	int ret;
 
 	if ( gnoclParseOptions ( interp, objc, objv, richTextToolBarOptions ) != TCL_OK )

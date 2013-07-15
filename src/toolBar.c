@@ -1926,6 +1926,17 @@ static int addItem ( GtkToolbar *toolbar, Tcl_Interp *interp, int objc, Tcl_Obj 
 	return TCL_OK;
 }
 
+
+static const char *cmds[] =
+{
+	"flip", "add", "addBegin", "addEnd",
+	"class", "configure", "delete",
+	"insert", "nItems", "cget",
+	"parent",
+	NULL
+};
+
+
 /**
 \brief
 \note	Due to the deprecation of gtk_toolbar_prepend_item etc., the following command need to
@@ -1936,21 +1947,13 @@ static int addItem ( GtkToolbar *toolbar, Tcl_Interp *interp, int objc, Tcl_Obj 
 **/
 int toolBarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-	static const char *cmds[] =
-	{
-		"flip", "add", "addBegin", "addEnd",
-		"class", "configure", "delete",
-		"insert", "nItems", "cget",
-		"parent", "options", "commands",
-		NULL
-	};
 
 	enum cmdIdx
 	{
 		FlipIdx, AddIdx, BeginIdx, EndIdx,
 		ClassIdx, ConfigureIdx, DeleteIdx,
 		InsertIdx, NitemsIdx, CgetIdx,
-		ParentIdx, OptionsIdx, CommandsIdx
+		ParentIdx
 	};
 
 	GtkToolbar *toolBar = GTK_TOOLBAR ( data );
@@ -1969,16 +1972,7 @@ int toolBarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const
 
 	switch ( idx )
 	{
-		case CommandsIdx:
-			{
-				gnoclGetOptions ( interp, cmds );
-			}
-			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, toolBarOptions );
-			}
-			break;
+
 		case FlipIdx:
 			{
 
@@ -2089,6 +2083,13 @@ int toolBarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const
 **/
 int gnoclToolBarCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, toolBarOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
+
 	int        ret;
 	GtkToolbar *toolBar;
 

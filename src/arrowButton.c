@@ -171,6 +171,8 @@ static int cget ( Tcl_Interp *interp, GtkWidget *widget, GnoclOption options[], 
 	return gnoclCgetNotImplemented ( interp, options + idx );
 }
 
+static const char *cmds[] = { "delete", "configure", "cget", "onClicked", "class", NULL };
+
 /**
 \brief
 **/
@@ -180,8 +182,8 @@ int arrowButtonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * c
 	g_print ( "%s\n", __FUNCTION__, );
 #endif
 
-	static const char *cmds[] = { "delete", "configure", "cget", "onClicked", "class", "options", "commands", NULL };
-	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, OnClickedIdx, ClassIdx, OptionsIdx, CommandsIdx };
+
+	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, OnClickedIdx, ClassIdx };
 
 	GtkWidget *widget = GTK_WIDGET ( data );
 	int idx;
@@ -199,20 +201,16 @@ int arrowButtonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * c
 
 	switch ( idx )
 	{
-		case CommandsIdx:
+
+		case ClassIdx:
 			{
-				gnoclGetOptions ( interp, cmds );
+				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "arrowButton", -1 ) );
 			}
 			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, arrowOptions );
-			} break;
-		case ClassIdx:
-			Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "arrowButton", -1 ) );
-			break;
 		case DeleteIdx:
-			return gnoclDelete ( interp, GTK_WIDGET ( widget ), objc, objv );
+			{
+				return gnoclDelete ( interp, GTK_WIDGET ( widget ), objc, objv );
+			}
 
 		case ConfigureIdx:
 			{
@@ -281,6 +279,11 @@ int arrowButtonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * c
 **/
 int gnoclArrowButtonCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, arrowOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
 	int pos = 0;
 
 	int       ret;

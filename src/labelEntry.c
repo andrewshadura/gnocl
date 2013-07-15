@@ -830,6 +830,8 @@ static int cget ( Tcl_Interp *interp, LabelEntryParams *para, GnoclOption option
 	return gnoclCgetNotImplemented ( interp, options + idx );
 }
 
+static const char *cmds[] = { "delete", "configure", "cget", "class",  NULL };
+
 /**
 \brief
 **/
@@ -841,8 +843,8 @@ int labelEntryFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * co
 
 	LabelEntryParams *para = ( LabelEntryParams * ) data;
 
-	static const char *cmds[] = { "delete", "configure", "cget", "class", "options", "commands", NULL };
-	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, ClassIdx, OptionsIdx, CommandsIdx };
+
+	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, ClassIdx };
 
 	gint idx;
 
@@ -859,16 +861,7 @@ int labelEntryFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * co
 
 	switch ( idx )
 	{
-		case CommandsIdx:
-			{
-				gnoclGetOptions ( interp, cmds );
-			}
-			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, labelEntryOptions );
-			}
-			break;
+
 		case ClassIdx:
 			{
 				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "labelEntry", -1 ) );
@@ -944,6 +937,10 @@ static void alignDestroyFunc ( GtkWidget *widget, gpointer data )
 **/
 int gnoclLabelEntryCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, labelEntryOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
 
 	LabelEntryParams *para;
 	int ret = TCL_OK;

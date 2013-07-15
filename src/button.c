@@ -469,6 +469,15 @@ static int cget (   Tcl_Interp *interp,  ButtonParams *para,  GnoclOption option
 	return gnoclCgetNotImplemented ( interp, options + idx );
 }
 
+static const char *cmds[] =
+{
+	"delete", "configure", "cget",
+	"onClicked", "class", "parent",
+	"geometry", "toplevel",
+	"add",
+	NULL
+};
+
 
 /**
 \brief  Function associated with the widget.
@@ -477,21 +486,13 @@ static int cget (   Tcl_Interp *interp,  ButtonParams *para,  GnoclOption option
 int buttonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
 
-	static const char *cmds[] =
-	{
-		"delete", "configure", "cget",
-		"onClicked", "class", "parent",
-		"geometry", "toplevel",
-		"add", "options", "commands",
-		NULL
-	};
 
 	enum cmdIdx
 	{
 		DeleteIdx, ConfigureIdx, CgetIdx,
 		OnClickedIdx, ClassIdx, ParentIdx,
 		GeometryIdx, ToplevelIdx,
-		AddIdx, OptionsIdx, CommandsIdx
+		AddIdx
 	};
 
 	ButtonParams *para = ( ButtonParams * ) data;
@@ -512,16 +513,7 @@ int buttonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const 
 
 	switch ( idx )
 	{
-		case CommandsIdx:
-			{
-				gnoclGetOptions ( interp, cmds );
-			}
-			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, buttonOptions );
-			}
-			break;
+
 			/* button is a container, a pointless functionality */
 		case AddIdx:
 			{
@@ -643,6 +635,10 @@ int buttonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const 
 **/
 int gnoclButtonCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, buttonOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
 
 	ButtonParams *para;
 	para = g_new ( ButtonParams, 1 );

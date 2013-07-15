@@ -46,7 +46,7 @@ typedef struct
 } FontSelDialogParams;
 */
 
-
+static const char *cmds[] = { "delete", "configure", "class", "hide", "show",  NULL };
 
 /**
 \brief
@@ -56,7 +56,7 @@ int pageSetupDialogFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj
 {
 
 #if 0
-	static const char *cmds[] = { "delete", "configure", "class", "hide", "show", "options", "commands", NULL };
+
 	enum cmdIdx { DeleteIdx, ConfigureIdx, ClassIdx, HideIdx, ShowIdx, OptionsIdx, CommandsIdx };
 
 	GtkWidget *widget = GTK_WIDGET ( data );
@@ -74,16 +74,7 @@ int pageSetupDialogFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj
 
 	switch ( idx )
 	{
-		case CommandsIdx:
-			{
-				gnoclGetOptions ( interp, cmds );
-			}
-			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, options );
-			}
-			break;
+
 		case HideIdx:
 			{
 				gtk_widget_hide ( widget );
@@ -143,6 +134,10 @@ int pageSetupDialogFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj
 **/
 int gnoclPageSetupDialogCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, options, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
 
 	GtkWidget *mainWindow;
 	gint ret;

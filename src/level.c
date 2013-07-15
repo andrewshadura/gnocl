@@ -36,21 +36,23 @@ static int configure ( Tcl_Interp *interp, GtkLevel *level, GnoclOption options[
 	return TCL_OK;
 }
 
+static const char *cmds[] =
+{
+	"delete", "configure",
+	"class", "set",
+	NULL
+};
+
+
 /**
 \brief
 **/
 int levelFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-	static const char *cmds[] =
-	{
-		"delete", "configure",
-		"class", "set", "options", "commands",
-		NULL
-	};
 
 	enum cmdIdx
 	{
-		DeleteIdx, ConfigureIdx, ClassIdx, SetIdx, OptionsIdx, CommandsIdx
+		DeleteIdx, ConfigureIdx, ClassIdx, SetIdx
 	};
 
 	GtkLevel *level = GTK_WIDGET ( data );
@@ -64,16 +66,6 @@ int levelFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const o
 
 	switch ( idx )
 	{
-		case CommandsIdx:
-			{
-				gnoclGetOptions ( interp, cmds );
-			}
-			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, levelOptions );
-			}
-			break;
 		case SetIdx:
 			{
 				//g_print ("%s %s\n",__FUNCTION__,cmds[idx]);
@@ -129,6 +121,13 @@ int levelFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const o
 **/
 int gnoclLevelCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, levelOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
+
 	int        ret;
 	GtkWidget *level;
 	GtkAdjustment *adjustment;

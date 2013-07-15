@@ -155,12 +155,12 @@ static int cget ( Tcl_Interp *interp, GtkLabel *label,
 	return gnoclCgetNotImplemented ( interp, options + idx );
 }
 
-
+static const char *cmds[] = { "delete", "configure", "cget", "class", "hide", "show", NULL };
 int recentChooserDialogFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
 
-	static const char *cmds[] = { "delete", "configure", "cget", "class", "hide", "show", "options", "commands", NULL };
-	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, ClassIdx, HideIdx, ShowIdx, OptionsIdx, CommandsIdx };
+
+	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, ClassIdx, HideIdx, ShowIdx };
 
 	int idx;
 	GtkWidget *widget = GTK_WIDGET ( data );
@@ -171,22 +171,14 @@ int recentChooserDialogFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl
 		return TCL_ERROR;
 	}
 
-	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "command",
-							   TCL_EXACT, &idx ) != TCL_OK )
+	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "command", TCL_EXACT, &idx ) != TCL_OK )
+	{
 		return TCL_ERROR;
+	}
 
 	switch ( idx )
 	{
-		case CommandsIdx:
-			{
-				gnoclGetOptions ( interp, cmds );
-			}
-			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, recentChooserDialogOptions );
-			}
-			break;
+
 		case HideIdx:
 			{
 				gtk_widget_hide ( widget );
@@ -250,6 +242,11 @@ int recentChooserDialogFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl
  */
 int gnoclRecentChooserDialogCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, recentChooserDialogOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
 	int            ret;
 	GtkWidget     *dialog;
 	gchar*            open_file;

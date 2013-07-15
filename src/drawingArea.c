@@ -122,6 +122,14 @@ static int configure ( Tcl_Interp *interp, GtkDrawingArea *area, GnoclOption opt
 	return TCL_OK;
 }
 
+static const char *cmds[] =
+{
+	"draw", "cget", "configure",
+	"delete", "class", "erase",
+	"option",
+	NULL
+};
+
 /**
 /brief
 **/
@@ -131,18 +139,12 @@ int drawingAreaFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * c
 	listParameters ( objc, objv, "drawingAreaFunc" );
 #endif
 
-	static const char *cmds[] =
-	{
-		"draw", "cget", "configure",
-		"delete", "class", "erase",
-		"option", "options", "commands",
-		NULL
-	};
+
 	enum cmdIdx
 	{
 		DrawIdx, CgetIdx, ConfigureIdx,
 		DeleteIdx, ClassIdx, EraseIdx,
-		OptionIdx, OptionsIdx, CommandsIdx
+		OptionIdx
 	};
 
 	/*
@@ -177,16 +179,7 @@ int drawingAreaFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * c
 
 	switch ( idx )
 	{
-		case CommandsIdx:
-			{
-				gnoclGetOptions ( interp, cmds );
-			}
-			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, drawingAreaOptions );
-			}
-			break;
+
 		case OptionIdx:
 			{
 #ifdef DEBUG_DRAWING_AREA
@@ -964,6 +957,11 @@ int drawingAreaFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * c
 **/
 int gnoclDrawingAreaCmd ( ClientData data, Tcl_Interp *interp, int objc,	Tcl_Obj * const objv[] )
 {
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, drawingAreaOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
 	int       ret;
 	GtkWidget *widget;
 

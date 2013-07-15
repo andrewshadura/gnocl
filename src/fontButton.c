@@ -81,13 +81,15 @@ static int configure (  Tcl_Interp *interp, GtkButton *button,  GnoclOption opti
 
 }
 
+static const char *cmds[] = { "delete", "configure", "cget", "onClicked", "class",  NULL };
+
 /**
 \brief      This function is only concerned with the reconfiguration of the button, not the dialog.
 **/
 int fontButtonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-	static const char *cmds[] = { "delete", "configure", "cget", "onClicked", "class", "options", "commands", NULL };
-	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, OnClickedIdx, ClassIdx, OptionsIdx, CommandsIdx };
+
+	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, OnClickedIdx, ClassIdx };
 
 	GtkFontButton *button = GTK_FONT_BUTTON ( data );
 	int idx;
@@ -98,27 +100,23 @@ int fontButtonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * co
 		return TCL_ERROR;
 	}
 
-	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "command",
-							   TCL_EXACT, &idx ) != TCL_OK )
+	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "command", TCL_EXACT, &idx ) != TCL_OK )
+	{
 		return TCL_ERROR;
+	}
 
 	switch ( idx )
 	{
-		case CommandsIdx:
-			{
-				gnoclGetOptions ( interp, cmds );
-			}
-			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, fontButtonOptions );
-			}
-			break;
+
 		case ClassIdx:
-			Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "fontButton", -1 ) );
+			{
+				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "fontButton", -1 ) );
+			}
 			break;
 		case DeleteIdx:
-			return gnoclDelete ( interp, GTK_WIDGET ( button ), objc, objv );
+			{
+				return gnoclDelete ( interp, GTK_WIDGET ( button ), objc, objv );
+			}
 
 		case ConfigureIdx:
 			{
@@ -187,6 +185,13 @@ int fontButtonFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * co
 **/
 int gnoclFontButtonCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, fontButtonOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
+
 	int       ret;
 	GtkFontButton *button;
 

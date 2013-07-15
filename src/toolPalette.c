@@ -164,7 +164,12 @@ static int configure ( Tcl_Interp *interp, GtkWidget *palette_scroller, GnoclOpt
 	return TCL_OK;
 }
 
-
+static const char *cmds[] =
+{
+	"addGroup",
+	"delete", "configure", "class", "parent",
+	NULL
+};
 /**
 \brief
 **/
@@ -173,17 +178,12 @@ int toolPaletteFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * c
 
 	debugStep ( __FUNCTION__, 1 );
 
-	static const char *cmds[] =
-	{
-		"addGroup",
-		"delete", "configure", "class", "parent", "options", "commands",
-		NULL
-	};
+
 
 	enum cmdIdx
 	{
 		AddGroupIdx,
-		DeleteIdx, ConfigureIdx, ClassIdx, ParentIdx, OptionsIdx, CommandsIdx
+		DeleteIdx, ConfigureIdx, ClassIdx, ParentIdx
 	};
 
 	GtkWidget *palette_scroller = GTK_WIDGET ( data );
@@ -197,16 +197,7 @@ int toolPaletteFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * c
 
 	switch ( idx )
 	{
-		case CommandsIdx:
-			{
-				gnoclGetOptions ( interp, cmds );
-			}
-			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, options );
-			}
-			break;
+
 		case AddGroupIdx:
 			{
 
@@ -253,6 +244,11 @@ int toolPaletteFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * c
 **/
 int gnoclToolPaletteCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, options, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
 	int        ret;
 	GtkWidget  *group;
 

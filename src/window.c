@@ -990,21 +990,23 @@ static int cget (   Tcl_Interp *interp, GtkWindow *window, GnoclOption options[]
 	return gnoclCgetNotImplemented ( interp, options + idx );
 }
 
+static const char *cmds[] =
+{
+	"delete", "configure", "cget", "iconify",
+	"center", "centre", "beep", "class",
+	"reshow", "geometry", "pointer", "reposition",
+	"grab", "ungrab", "hide", "show", "jitter",
+	"hasFocus", "setFocus", "grabFocus", "present",
+	"children",
+	NULL
+};
+
 /**
 /brief
 **/
 int windowFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
-	static const char *cmds[] =
-	{
-		"delete", "configure", "cget", "iconify",
-		"center", "centre", "beep", "class",
-		"reshow", "geometry", "pointer", "reposition",
-		"grab", "ungrab", "hide", "show", "jitter",
-		"hasFocus", "setFocus", "grabFocus", "present",
-		"children", "options", "commands",
-		NULL
-	};
+
 
 	enum cmdIdx
 	{
@@ -1013,7 +1015,7 @@ int windowFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const 
 		ReshowIdx, GeometryIdx, PointerIdx, RepositionIdx,
 		GrabIdx, UngrabIdx, HideIdx, ShowIdx, JitterIdx,
 		HasFocusIdx, SetFocusIdx, GrabFocusIdx, PresentIdx,
-		ChildrenIdx, OptionsIdx, CommandsIdx
+		ChildrenIdx
 	};
 
 	GtkWindow *window = GTK_WINDOW ( data );
@@ -1032,16 +1034,7 @@ int windowFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const 
 
 	switch ( idx )
 	{
-		case CommandsIdx:
-			{
-				gnoclGetCommands ( interp, cmds );
-			}
-			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, windowOptions );
-			}
-			break;
+
 		case ChildrenIdx:
 			{
 				// GtkWidget *gnoclFindChild ( GtkWidget *widget, GtkType type )
@@ -1319,6 +1312,13 @@ int windowFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const 
 **/
 int gnoclWindowCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * const objv[] )
 {
+
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, windowOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
+
 	int        ret;
 	GtkWindow  *window;
 

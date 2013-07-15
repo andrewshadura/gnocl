@@ -3353,6 +3353,23 @@ static int addRow ( TreeListParams * para, Tcl_Interp * interp, int objc, Tcl_Ob
 
 }
 
+static	const char *cmds[] =
+{
+	"cget", "delete", "configure",
+	"add", "addBegin", "addEnd",  "insert",
+	"getSelection", "setSelection", "onSelectionChanged",
+	"columnConfigure", "columnCget", "get",
+
+	"getfulllist",
+
+	"cellConfigure", "erase", "scrollToPosition", "collapse",
+	"expand", "getNumChildren", "coordsToPath", "setCursor",
+	"getReference", "deleteReference", "referenceToPath", "class",
+	"search", "resize", "columns", "rows", "redraw",
+	NULL
+};
+
+
 /**
 \brief
 **/
@@ -3364,21 +3381,6 @@ int treeListFunc ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * con
 
 	/* TODO "rowConfigure", "sort", */
 
-	const char *cmds[] =
-	{
-		"cget", "delete", "configure",
-		"add", "addBegin", "addEnd",  "insert",
-		"getSelection", "setSelection", "onSelectionChanged",
-		"columnConfigure", "columnCget", "get",
-
-		"getfulllist",
-
-		"cellConfigure", "erase", "scrollToPosition", "collapse",
-		"expand", "getNumChildren", "coordsToPath", "setCursor",
-		"getReference", "deleteReference", "referenceToPath", "class",
-		"search", "resize", "columns", "rows", "redraw", "options", "commands",
-		NULL
-	};
 
 	enum cmdIdx
 	{
@@ -3392,7 +3394,7 @@ int treeListFunc ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * con
 		CellConfigureIdx, EraseIdx, ScrollToPosIdx, CollapseIdx,
 		ExpandIdx, GetNumChildren, CoordsToPathIdx, SetCursorIdx,
 		GetReferenceIdx, DeleteReferenceIdx, ReferenceToPathIdx, ClassIdx,
-		SearchIdx, ResizeIdx, ColumnsIdx, RowsIdx, RedrawIdx, OptionsIdx, CommandsIdx
+		SearchIdx, ResizeIdx, ColumnsIdx, RowsIdx, RedrawIdx
 	};
 
 	TreeListParams *para = ( TreeListParams * ) data;
@@ -3438,16 +3440,7 @@ int treeListFunc ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * con
 
 			}
 			break;
-		case CommandsIdx:
-			{
-				gnoclGetOptions ( interp, cmds );
-			}
-			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, treeListOptions );
-			}
-			break;
+
 		case RedrawIdx:
 			{
 
@@ -3806,6 +3799,10 @@ static int getGType ( Tcl_Interp * interp, Tcl_Obj * obj, GType * type, int * is
 **/
 static int gnoclTreeListCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * const objv[], int isTree )
 {
+
+
+
+
 #ifdef DEBUG_TREELIST
 	g_print ( "%s\n", __FUNCTION__ );
 #endif
@@ -4121,6 +4118,12 @@ int gnoclTreeCmd ( ClientData data, Tcl_Interp * interp,   int objc, Tcl_Obj * c
 	g_print ( "%s\n", __FUNCTION__ );
 #endif
 
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, treeListOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
+
 	return gnoclTreeListCmd ( data, interp, objc, objv, 1 );
 }
 
@@ -4132,6 +4135,11 @@ int gnoclListCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * con
 #ifdef DEBUG_TREELIST
 	g_print ( "%s\n", __FUNCTION__ );
 #endif
+
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, treeListOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
 
 	return gnoclTreeListCmd ( data, interp, objc, objv, 0 );
 }

@@ -63,21 +63,23 @@ static int configure ( Tcl_Interp *interp, GtkWidget *widget, GnoclOption handle
 	return TCL_OK;
 }
 
+static const char *cmds[] =
+{
+	"delete", "configure", "cget",
+	"class", "size", "paren",
+	NULL
+};
+
 /**
 \brief
 **/
 int handleBoxFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[]  )
 {
-	static const char *cmds[] =
-	{
-		"delete", "configure", "cget",
-		"class", "size", "paren", "options", "commands",
-		NULL
-	};
+
 	enum cmdIdx
 	{
 		DeleteIdx, ConfigureIdx, CgetIdx,
-		ClassIdx, SizeIdx, ParentIdx, OptionsIdx, CommandsIdx
+		ClassIdx, SizeIdx, ParentIdx
 	};
 	int idx;
 
@@ -104,16 +106,7 @@ int handleBoxFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * con
 
 	switch ( idx )
 	{
-		case CommandsIdx:
-			{
-				gnoclGetOptions ( interp, cmds );
-			}
-			break;
-		case OptionsIdx:
-			{
-				gnoclGetOptions ( interp, handleBoxOptions );
-			}
-			break;
+
 		case ParentIdx:
 			{
 
@@ -204,6 +197,12 @@ static const int alignDiff       = 3;
 **/
 int gnoclHandleBoxCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, handleBoxOptions, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
+
 	int       ret;
 	GtkWidget *widget;
 	GPtrArray *parray;
