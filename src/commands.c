@@ -239,6 +239,21 @@ int gnoclToggleCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * c
 int gnoclExecCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
 
+
+	static GnoclOption options[] =
+	{
+		{ NULL, GNOCL_STRING, NULL },
+		{ NULL },
+	};
+
+	static const char *cmds[] =  { NULL, NULL};
+
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, options, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
+
 	GPid cpid;
 	char *com[] = {"./ls"};
 	char str[6];
@@ -268,6 +283,24 @@ int gnoclExecCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * cons
 int gnoclShowUriCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
 
+	/*--------------------------------
+		NOT USED AT THE MOMENT
+	--------------------------------*/
+	static GnoclOption options[] =
+	{
+		{ NULL, GNOCL_STRING, NULL },
+		{ NULL },
+	};
+
+	static const char *cmds[] =  { NULL, NULL};
+
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, options, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
+	/*--------------------------------*/
+
 	gint ret = 0;
 	const char *uri = Tcl_GetString ( objv[1] );
 
@@ -293,7 +326,26 @@ int gnoclGetStockItem ( Tcl_Obj *obj, Tcl_Interp *interp, GtkStockItem *sp )
 int gnoclPointerCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * const objv[] )
 {
 
-	static const char *cmd[] = { "warp", "set", NULL };
+
+
+	/*--------------------------------------*/
+	static GnoclOption options[] =
+	{
+		{ NULL, GNOCL_STRING, NULL },
+		{ NULL },
+	};
+
+	static const char *cmds[] = { "warp", "set", NULL };
+
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, options, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
+	/*--------------------------------------*/
+
+
+
 	enum optIdx { WarpIdx, SetIdx };
 	int idx1;
 
@@ -303,7 +355,7 @@ int gnoclPointerCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * 
 		return TCL_ERROR;
 	}
 
-	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmd, "option", TCL_EXACT, &idx1 ) != TCL_OK )
+	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "option", TCL_EXACT, &idx1 ) != TCL_OK )
 	{
 		return TCL_ERROR;
 	}
@@ -504,6 +556,25 @@ int gnoclPointerCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * 
 int gnoclSignalStopCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * const objv[] )
 {
 
+	/*--------------------------------
+		NOT USED AT THE MOMENT
+	--------------------------------*/
+	static GnoclOption options[] =
+	{
+		{ "-widget", GNOCL_STRING, NULL },
+		{ "-signal", GNOCL_STRING, NULL },
+		{ NULL },
+	};
+
+	static const char *cmds[] =  { NULL, NULL};
+
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, options, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
+	/*--------------------------------*/
+
 	if ( objc != 3 )
 	{
 		Tcl_WrongNumArgs ( interp, 1, objv, "widget signal-type" );
@@ -541,7 +612,24 @@ int gnoclSignalStopCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj
 **/
 int gnoclSignalEmitCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * const objv[] )
 {
+	/*--------------------------------
+		NOT USED AT THE MOMENT
+	--------------------------------*/
+	static GnoclOption options[] =
+	{
+		{ "-widget", GNOCL_STRING, NULL },
+		{ "-signal", GNOCL_STRING, NULL },
+		{ NULL },
+	};
 
+	static const char *cmds[] =  { NULL, NULL};
+
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, options, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
+	/*--------------------------------*/
 	if ( objc != 3 )
 	{
 		Tcl_WrongNumArgs ( interp, 1, objv, "widget signal-type" );
@@ -649,6 +737,25 @@ int gnoclStringCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * c
 int gnoclToolTip ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * const objv[] )
 {
 
+	/* these are not used within the actual code, only for feeback purposes! */
+	static GnoclOption options[] =
+	{
+		{ "-window", GNOCL_STRING, NULL },
+		{ "-position", GNOCL_STRING, NULL },
+		{ NULL },
+	};
+
+	static const char *cmds[] =  { "trigger", NULL};
+
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, options, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
+	/*------------------*/
+
+	static const char *opts[] = { "-window", "-position", NULL};
+
 #ifdef DEBUG_COMMANDS
 	g_print ( "%s : objc = %d\n", __FUNCTION__, objc );
 #endif
@@ -658,13 +765,13 @@ int gnoclToolTip ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * con
 	GtkWidget *widget, *window;
 	GdkDisplay *display;
 
-	static const char *opts[] = { "-window", "-position", NULL};
+
 	enum optsIdx { WindowIdx, PositionIdx };
 
 
 	if ( objc < 1 )
 	{
-		Tcl_WrongNumArgs ( interp, 1, objv, "Wrong number of arguments. Must be trigger or widget-id -windown tooltip-id" );
+		Tcl_WrongNumArgs ( interp, 1, objv, "Wrong number of arguments. Must be trigger or widget-id -window tooltip-id" );
 		return TCL_ERROR;
 	}
 
@@ -740,6 +847,23 @@ int gnoclToolTip ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * con
 int gnoclHsv2RgbCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * const objv[] )
 {
 
+	/*--------------------------------------*/
+	static GnoclOption options[] =
+	{
+		{ NULL, GNOCL_STRING, NULL },
+		{ NULL },
+	};
+
+	static const char *cmds[] =  { NULL, NULL};
+
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, options, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
+	/*--------------------------------------*/
+
+
 #ifdef DEBUG_COMMANDS
 	g_print ( "%s %s\n", __FUNCTION__, Tcl_GetString ( objv[1] ) );
 #endif
@@ -774,6 +898,19 @@ int gnoclBeepCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * con
 #ifdef DEBUG_COMMANDS
 	g_print ( "%s\n", __FUNCTION__ );
 #endif
+
+	static GnoclOption options[] =
+	{
+		{ NULL, GNOCL_STRING, NULL },
+		{ NULL },
+	};
+
+	static const char *cmds[] =  { NULL, NULL};
+
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, options, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
 
 	gdk_beep;
 	return TCL_OK;
@@ -885,7 +1022,27 @@ int gnoclGrabCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * con
 **/
 int gnoclScreenCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * const objv[] )
 {
-	static const char *cmd[] = { "size", "geometry", "name", "screens", "composited", "windowList", "toplevels", NULL };
+
+
+
+	/*--------------------------------------*/
+	static GnoclOption options[] =
+	{
+		{ NULL, GNOCL_STRING, NULL },
+		{ NULL },
+	};
+
+	static const char *cmds[] = { "size", "geometry", "name", "screens", "composited", "windowList", "toplevels", NULL };
+
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, options, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
+	/*--------------------------------------*/
+
+
+
 	enum optIdx { SizeIdx, GeometryIdx, NameIdx, ScreensIdx, CompositedIdx, WindowListIdx, TopLevelsIdx };
 	int idx;
 
@@ -896,7 +1053,7 @@ int gnoclScreenCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * c
 		return TCL_ERROR;
 	}
 
-	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmd, "option", TCL_EXACT, &idx ) != TCL_OK )
+	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "option", TCL_EXACT, &idx ) != TCL_OK )
 	{
 		return TCL_ERROR;
 	}
@@ -1029,7 +1186,14 @@ int gnoclScreenCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * c
 **/
 int gnoclWinfoCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * const objv[] )
 {
-	static const char *cmd[] =
+
+	static GnoclOption options[] =
+	{
+		{ NULL, GNOCL_STRING, NULL },
+		{ NULL },
+	};
+
+	static const char *cmds[] =
 	{
 		"path", "parent", "toplevel", "geometry",
 		"style", "pointer", "notify", "exists",
@@ -1037,14 +1201,20 @@ int gnoclWinfoCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * co
 		NULL
 	};
 
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, options, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
+
 	enum optIdx
 	{
 		PathIdx, ParentIdx, ToplevelIdx, GeometryIdx,
 		StyleIdx, PointerIdx, NotifyIdx, ExistsIdx,
 		HasFocusIdx, IsFocusIdx
 	};
-	int idx;
 
+	int idx;
 
 	if ( objc < 3 )
 	{
@@ -1052,7 +1222,7 @@ int gnoclWinfoCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * co
 		return TCL_ERROR;
 	}
 
-	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmd, "option", TCL_EXACT, &idx ) != TCL_OK )
+	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "option", TCL_EXACT, &idx ) != TCL_OK )
 	{
 		return TCL_ERROR;
 	}
@@ -1326,12 +1496,30 @@ int gnoclParseColorCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj
 **/
 int gnoclInfoCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * const objv[] )
 {
-	static const char *cmd[] =
+
+
+	/*--------------------------------------*/
+	static GnoclOption options[] =
+	{
+		{ NULL, GNOCL_STRING, NULL },
+		{ NULL },
+	};
+
+	static const char *cmds[] =
 	{
 		"version", "gtkVersion", "hasGnomeSupport",
 		"allStockItems", "breakpoint", "fonts",
 		NULL
 	};
+
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, options, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
+	/*--------------------------------------*/
+
+
 	enum optIdx
 	{
 		VersionIdx, GtkVersionIdx, HasGnomeIdx,
@@ -1345,7 +1533,7 @@ int gnoclInfoCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * con
 		return TCL_ERROR;
 	}
 
-	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmd, "option", TCL_EXACT, &idx ) != TCL_OK )
+	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "option", TCL_EXACT, &idx ) != TCL_OK )
 	{
 		return TCL_ERROR;
 	}
@@ -1490,6 +1678,23 @@ int gnoclInfoCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * con
 **/
 int gnoclUpdateCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * const objv[] )
 {
+
+
+	static GnoclOption options[] =
+	{
+		{ NULL, GNOCL_STRING, NULL },
+		{ NULL },
+	};
+
+	static const char *cmds[] =  { NULL, NULL};
+
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, options, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
+
+
 	int nMax = 500;
 	int n;
 
@@ -1598,7 +1803,21 @@ static int createStockItem ( Tcl_Interp * interp, GnoclStringType type, gchar * 
 int gnoclStockItemCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * const objv[] )
 {
 
-	g_print ( "%s\n", __FUNCTION__ );
+
+	static GnoclOption options[] =
+	{
+		{ "-label", GNOCL_STRING, NULL },
+		{  "-icon", GNOCL_STRING, NULL },
+		{ NULL },
+	};
+
+	static const char *cmds[] =  { NULL, NULL};
+
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, options, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
 
 #ifdef DEBUG_COMMANDS
 	listParameters ( objc, objv, "gnoclStockItemCmd" );
@@ -1699,6 +1918,21 @@ int gnoclStockItemCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj 
 **/
 int gnoclSetStyleCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+	/*--------------------------------------*/
+	static GnoclOption options[] =
+	{
+		{ NULL, GNOCL_STRING, NULL },
+		{ NULL },
+	};
+
+	static const char *cmds[] =  { NULL, NULL};
+
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, options, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
+	/*--------------------------------------*/
 
 	char *id = Tcl_GetString ( objv[1] );
 	char *style = Tcl_GetString ( objv[2] );
@@ -1882,12 +2116,23 @@ int gnoclGetStyleCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj *
 /**
 \brief	Load and configure widget styles using a resource (.rsc) file.
 **/
-int gnoclResourceFileCmd (
-	ClientData data,
-	Tcl_Interp * interp,
-	int objc,
-	Tcl_Obj * const objv[] )
+int gnoclResourceFileCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * const objv[] )
 {
+	/*--------------------------------------*/
+	static GnoclOption options[] =
+	{
+		{ NULL, GNOCL_STRING, NULL },
+		{ NULL },
+	};
+
+	static const char *cmds[] =  { NULL, NULL};
+
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, options, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
+	/*--------------------------------------*/
 
 	int nMax = 500;
 	int n;
@@ -1912,13 +2157,34 @@ int gnoclResourceFileCmd (
 **/
 int gnoclConfigureCmd (	ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * const objv[] )
 {
+
+
+
+	/*--------------------------------------*/
 	GnoclOption options[] =
 	{
 		{ "-tooltip", GNOCL_BOOL, NULL },
 		{ "-defaultIcon", GNOCL_OBJ, NULL },
 		{ NULL }
 	};
+
+	static const char *cmds[] =  { NULL, NULL};
+
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, options, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
+	/*--------------------------------------*/
+
+
+	if ( gnoclGetCmdsAndOpts ( interp, NULL, options, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
 	const int tooltipIdx     = 0;
+
 	const int defaultIconIdx = 1;
 
 	int ret = TCL_ERROR;
@@ -1928,8 +2194,7 @@ int gnoclConfigureCmd (	ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj 
 
 	if ( options[defaultIconIdx].status == GNOCL_STATUS_CHANGED )
 	{
-		GnoclStringType type = gnoclGetStringType (
-								   options[defaultIconIdx].val.obj );
+		GnoclStringType type = gnoclGetStringType ( options[defaultIconIdx].val.obj );
 
 		switch ( type )
 		{
@@ -1984,26 +2249,26 @@ cleanExit:
 /**
 \author     Peter G. Baum
 **/
-int gnoclClipboardCmd (
-	ClientData data,
-	Tcl_Interp * interp,
-	int objc,
-	Tcl_Obj * const objv[] )
+int gnoclClipboardCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * const objv[] )
 {
-	GnoclOption options[] =
+	GnoclOption options[] = { { "-primary", GNOCL_BOOL, NULL }, { NULL } };
+	static const char *cmds[] = { "hasText", "setText", "getText", "clear",  NULL };
+
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, options, objv, objc ) == TCL_OK )
 	{
-		{ "-primary", GNOCL_BOOL, NULL },
-		{ NULL }
-	};
+		return TCL_OK;
+	}
+
 	const int usePrimaryIdx = 0;
 
-	static const char *cmd[] = { "hasText", "setText", "getText", "clear",
-								 NULL
-							   };
 	enum optIdx { HasTextIdx, SetTextIdx, GetTextIdx, ClearIdx };
+
 	int idx;
+
 	int optNum;
+
 	GtkClipboard *clip;
+
 	int usePrimary = 0;
 
 	if ( objc < 2 )
@@ -2012,7 +2277,7 @@ int gnoclClipboardCmd (
 		return TCL_ERROR;
 	}
 
-	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmd, "option", TCL_EXACT, &idx ) != TCL_OK )
+	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "option", TCL_EXACT, &idx ) != TCL_OK )
 	{
 		return TCL_ERROR;
 	}
@@ -2084,3 +2349,5 @@ int gnoclClipboardCmd (
 
 	return TCL_OK;
 }
+
+

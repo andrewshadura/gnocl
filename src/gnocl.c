@@ -225,9 +225,26 @@ int gnoclForgetWidgetFromName ( const char *path )
 const char *gnoclGetInventory ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
 
-	gint _i;
+	/*--------------------------------------*/
+	static GnoclOption options[] =
+	{
+		{ NULL, GNOCL_STRING, NULL },
+		{ NULL },
+	};
 
 	static const char *cmds[] = { "widget", "pixBuf", NULL };
+
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, options, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
+	/*--------------------------------------*/
+
+
+	gint _i;
+
+
 	enum optIdx { WidgetIdx, PixBufIdx };
 	int idx;
 
@@ -1091,12 +1108,26 @@ static gint tclTimerFunc ( gpointer data )
 /**
 \brief
 **/
-int gnoclMainLoop (
-	ClientData data,
-	Tcl_Interp *interp,
-	int objc,
-	Tcl_Obj * const objv[] )
+int gnoclMainLoop (	ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
+
+	/*--------------------------------------*/
+	static GnoclOption options[] =
+	{
+		{ "-timeout", GNOCL_STRING, NULL },
+		{ NULL },
+	};
+
+	static const char *cmds[] =  { NULL, NULL};
+
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, options, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
+	/*--------------------------------------*/
+
+
 	guint32 timeout = 100;
 
 	/* TODO? flag for not looping in tclTimerFunc? */
@@ -1117,8 +1148,7 @@ int gnoclMainLoop (
 		/* beware of problems with casting signed -> unsigned! */
 		if ( val < 0 )
 		{
-			Tcl_SetResult ( interp,
-							"Timeout value must be greater or equal zero.", TCL_STATIC );
+			Tcl_SetResult ( interp, "Timeout value must be greater or equal zero.", TCL_STATIC );
 			return TCL_ERROR;
 		}
 
