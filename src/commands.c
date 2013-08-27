@@ -2251,8 +2251,12 @@ cleanExit:
 **/
 int gnoclClipboardCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * const objv[] )
 {
-	GnoclOption options[] = { { "-primary", GNOCL_BOOL, NULL }, { NULL } };
-	static const char *cmds[] = { "hasText", "setText", "getText", "clear",  NULL };
+	GnoclOption options[] =
+	{
+		{ "-primary", GNOCL_BOOL, NULL },
+		{ NULL }
+	};
+	static const char *cmds[] = { "hasText", "setText", "getText", "clear", NULL };
 
 	if ( gnoclGetCmdsAndOpts ( interp, cmds, options, objv, objc ) == TCL_OK )
 	{
@@ -2326,7 +2330,9 @@ int gnoclClipboardCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj 
 
 			break;
 		case SetTextIdx:
-			gtk_clipboard_set_text ( clip, Tcl_GetString ( objv[2] ), -1 );
+			{
+				gtk_clipboard_set_text ( clip, Tcl_GetString ( objv[2] ), -1 );
+			}
 			break;
 		case GetTextIdx:
 			{
@@ -2341,6 +2347,7 @@ int gnoclClipboardCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj 
 				/* FIXME? else error? */
 			}
 
+			break;
 			break;
 		case ClearIdx:
 			gtk_clipboard_clear ( clip );

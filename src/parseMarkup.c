@@ -23,10 +23,46 @@
 
 */
 
-#include "gnocl.h"exist
+#include "gnocl.h"
 
 /* list to hold names of applied tags */
 static GSList *tagList = NULL;
+
+
+/* remove range of characters from string */
+char * strcremove ( char *str, char *dest, int first, int last )
+{
+
+	g_print ( "%s 1 first = %d ; last = %d\n", __FUNCTION__, first, last );
+
+	int j = 0;
+	char *ptr;
+	ptr = str;
+
+	while ( j < strlen ( str ) )
+	{
+		g_print ( "j = %d\n", j );
+
+		if ( j >= first && j <= last )
+		{
+			g_print ( "remove %c\n", *str + j );
+			//*str++;
+		}
+
+		else
+		{
+			//*dest++ =
+			//*ptr++;
+		}
+
+		j++;
+
+	}
+
+	*dest = '/0';
+
+	return dest;
+}
 
 
 /* insert character in string, return new string */
@@ -146,26 +182,31 @@ static int contains ( char character, char * list )
 	return 0;
 }
 
-/* removes all chars from string */
-static char * _strip_chars ( const char * string, const char * chars )
+
+
+char * removeChar ( char *str, char garbage )
 {
 
-	char * newstr = malloc ( strlen ( string ) );
-	int counter = 0;
+#if 1
+	g_print ( "FUNC: %s\n", __FUNCTION__ );
+#endif
 
-	while ( *string )
+	char *src, *dst;
+
+	for ( src = dst = str; *src != '\0'; src++ )
 	{
-		if ( contains ( *string, chars ) != 1 )
-		{
-			newstr[ counter ] = *string;
-			++ counter;
-		}
+		*dst = *src;
 
-		++ string;
+		if ( *dst != garbage ) dst++;
 	}
 
-	return newstr;
+	*dst = '\0';
+
+	g_print ( "%s\n", dst );
+
+	return dst;
 }
+
 
 /**
 \brief
@@ -260,7 +301,9 @@ static char *strrng ( char *dest, const char *src, int a, int b )
 	j = 0;
 
 	for ( i = a; i < b; i++ )
+	{
 		dest[j++] = src[i];
+	}
 
 	dest[j] = '\0';
 	return dest;
@@ -278,26 +321,7 @@ char *strcpy(char *dest, const char *src)
 }
 */
 
-/**
-    gettag
-    get name of next tag in string, starting at position i
-**/
-static int _getTag ( char *str, char *tag, int i )
-{
 
-	int a, b;
-
-	a = strnfrst ( str, "</", i );
-
-	if ( a )
-		a = strnfrst ( str, "<", i );
-
-	b = strnfrst ( str, ">", a + 1 );
-
-	strrng ( tag, str, a, b + 1 );
-
-	return a;
-}
 
 
 /**
@@ -310,19 +334,21 @@ static int _getTag ( char *str, char *tag, int i )
 **/
 static int getTag ( char *str, char *tag, int i )
 {
-
+#if 1
+	g_print ( "%s\n", __FUNCTION__ );
+#endif
 	int j;
 
-	if ( strcmp ( str + i, "<" ) )
+	if ( strcmp ( str , "<" ) )
 	{
 		/* handle a tag */
 		j = strnfrst ( str, ">", i );
 		//strrng ( tag, str, ++i, j );
-		strrng ( tag, str, i, ++j );
+		strrng ( tag, str, i, j+1  );
 		return j;
 	}
 
-	return ++i;
+	return i;
 }
 
 
@@ -333,9 +359,25 @@ static int getText ( char *str, char *txt, int i )
 {
 
 	int j;
-
+	g_print ( "%s 1 ", __FUNCTION__ );
 	j = strnfrst ( str, "<", i );
-	strrng ( txt, str, i, j );
+	g_print ( "2 %d", j );
+
+	if ( j < 0 )
+	{
+		j = strlen ( str );
+
+		g_print ( "3 %d", j );
+		strrng ( txt, str, i, strlen ( str ) );
+
+	}
+
+	else
+	{
+		strrng ( txt, str, i, j );
+	}
+
+	g_print ( "4 " );
 	return j;
 }
 
@@ -354,56 +396,40 @@ int gnoclMarkupInsertTest ( GtkTextBuffer *buffer, GtkTextIter *iter )
 }
 
 /**
-\brief	Remove tag from list of active tags.
+\brief	Add tag from list of active tags.
 **/
-void removeTag ( const char *tag )
+void addTag ( gchar *tag )
 {
-	GSList *p = NULL;
-
-#ifdef DEBUG_PANGO_MARKUP
+#if 1
 	g_print ( "FUNC: %s\n", __FUNCTION__ );
 #endif
 
-	int i, j, k;
-	i = 0;
-	j = 0;
-	k = strlen ( tag );
-
-	gchar str[k];
-
-	g_print ( "\t1 %d\n", k );
-
-	//for ( i = 0; i < k; i++ )
-	while ( i < k )
+	if ( g_slist_find ( tagList, tag ) == NULL )
 	{
-		if ( tag[i] != '/' )
-		{
-			str[j++] = tag[i++];
-		}
-
-		else
-		{
-			i++;
-		}
-
+		g_print ( "\tAdded %s\n", tag );
+		tagList = g_slist_prepend ( tagList, tag );
+		g_print ( "list length = %d\n", g_slist_length ( tagList ) );
 	}
+}
 
-	str[j] = '\0';
+/**
+\brief	Remove tag from list of active tags.
+**/
+void removeTag ( gchar *tag )
+{
+#if 1
+	g_print ( "FUNC: %s\n", __FUNCTION__ );
+#endif
 
-	g_print ( "\ttag = %s\n", str );
+	gchar *tmp;
+	tmp = tag;
 
-	g_print ( "\t2\n" );
+	tagList = g_slist_remove_all  ( tagList, tmp );
+	tmp= str_replace ( tag, "/", "" );
 
-
-
-	/* iterate through tagList */
-
-	for ( p = ( GSList * ) tagList; p != NULL; p = p->next )
-	{
-		g_print ( "\t iterate tag = %s\n", p->data );
-
-	}
-
+	g_print ( "\tRemoved %s\n", tmp );
+	tagList = g_slist_remove_all  ( tagList, tmp );
+	g_print ( "list length = %d\n", g_slist_length ( tagList ) );
 
 }
 
@@ -413,147 +439,106 @@ void removeTag ( const char *tag )
 /**
 \brief
 **/
-int _gnoclInsertMarkup ( GtkTextBuffer *buffer, GtkTextIter *iter, char *markup_text )
+void handleTag ( gchar tag[] )
 {
-#ifdef DEBUG_PANGO_MARKUP
-	g_print ( "FUNC: %s\n", __FUNCTION__ );
+#if 1
+	g_print ( "FUNC: %s %s\n", __FUNCTION__, tag );
 #endif
 
-	/* interate through pango string, determine, text or markup */
-	int i, start, end;
-	start = 0;
-	end = strlen ( markup_text );
 
-	const char tag[256];
-	char txt[end];
-
-	const char *tags = " ";
-
-	i = start;
-
-	while ( *markup_text != '\0' )
+	if ( tag[1] == '/' )
 	{
-		g_print ( "========== %c\n" , *markup_text );
-
-		if ( *markup_text == '<' )
-		{
-			g_print ( "tag <\n" , *markup_text );
-			//getTag ( char *str, char *tag, int i )
-		}
-
-		if ( *markup_text == '>' )
-		{
-			g_print ( "tag >\n" , *markup_text );
-		}
-
-		++markup_text;
+		g_print ( "\tremove tag\n" );
+		removeTag ( tag );
 	}
 
-	g_print ( "==========\n" );
-	return 0;
+	else
+	{
+		g_print ( "\tadd tag\n" );
+		addTag ( tag );
+	}
+
+
 }
-
-
 
 /**
 \brief
 \todo	test the legality of the markup string.
 		swap &gtl; for ">" etc..
 **/
-int gnoclInsertMarkup ( GtkTextBuffer *buffer, GtkTextIter *iter, char *markup_text )
+int gnoclInsertMarkup ( GtkTextBuffer *buffer, GtkTextIter *iter, gchar markup_text[] )
 {
-#ifdef DEBUG_PANGO_MARKUP
+#if 1
 	g_print ( "FUNC: %s\n", __FUNCTION__ );
 #endif
 
+	GtkTextMark *tagStart, *tagEnd;
+	GSList *lptr = NULL;
+GtkTextIter *tagIter;
+
 	/* interate through pango string, determine, text or markup */
-	int i, j, start, end;
-	start = 0;
-
-
-	end = strlen ( markup_text );
+	int i, j;
 
 
 	const char tag[256];
-	char txt[end];
+	char txt[10];
+	gchar *ch1, *ch2;
 
-	const char *tags = " ";
+	//gchar tmp[strlen ( markup_text ) ];
+	//sprintf ( tmp, "%s", markup_text );
 
-	i = start;
 
-	while ( i < end )
+	i = 0;
+
+	/* initialize the text */
+	while ( i < strlen ( markup_text ) )
 	{
-		i = getTag ( markup_text, tag, i );
+		//ch1 = tmp[i];
+		//ch2 = tmp[i+1];
 
-		g_print ( "i = %d ; onTag = %s\n", i, tag );
-
-
-#if 1
-
-		/* add or remove tag from taglist */
-		if ( strstr ( tag, "/" ) != NULL  )
+		if ( markup_text[i] == '<' )
 		{
-			g_print ( "\ttagOff %s\n", tag );
-
-
-			/* remove matching tag from the list */
-			//strip_chars ( tags, tag );
-			removeTag ( tag );
-
+			g_print ("1-1 %d\n",i);
+			i = getTag ( markup_text, tag, i );
+			handleTag ( tag );
+			g_print ("1-2 %d\n",i);
 		}
 
 		else
 		{
-			g_print ( "\ttagOn %s\n", tag );
-			/* add new tag to the list */
-			//tags = sconcat ( tags, tag );
-			//tags = sconcat ( tags, " " );
+			g_print ("2\n");
+			//sprintf ( txt, "%c", ch1 );
+			ch2 = &markup_text[i];
+			tagIter = gtk_text_iter_copy (iter);
+			
+			//applyTags ( buffer,  iter );
+			gtk_text_buffer_insert  ( buffer, iter, &markup_text[i], 1 );
 
-			/* Notice that these are initialized to the empty list. */
+			//gtk_text_iter_forward_char (iter);
 
-			if ( g_slist_find ( tagList, tag ) != NULL )
-			{
-				g_print ( "tag %s already exists!\n", tag );
-			}
+			/* problems occuring here */
+			applyTags ( buffer,  iter );
 
-			else
-			{
-				g_print ( "adding tag %sn", tag );
-				/* This is a list of strings. */
-				tagList = g_slist_prepend ( tagList, tag );
-			}
+			g_print ( "ch = %c\n",  markup_text[i] );
 
 		}
 
-#endif
+		i++;
 
-		if ( i == end )
-			break; /* prevent error */
+	for ( lptr = ( GSList * ) tagList; lptr != NULL; lptr = lptr->next )
+	{
+		g_print ("tagList\n-----tag = %s\n-----\n",lptr->data);
+	}
 
-		i = getText ( markup_text, txt, i );
-		g_print ( "\ttext = %s\n", txt );
-
-		GtkTextMark *tagStart, *tagEnd;
-		GtkTextIter start, end;
-
-		tagStart  = gtk_text_buffer_create_mark ( buffer, "tagStart", iter, 1 );
-
-		gtk_text_buffer_insert  ( buffer, iter, txt, -1 );
-
-		tagEnd = gtk_text_buffer_get_insert ( buffer );
-
-		applyTags ( buffer, tagStart, tagEnd );
 
 
 	}
 
-	//g_print ( "taglist= %s\n", tags );	gchar tmp[32];
-	//strcinsert ( "helloword", tmp, "~~~", 4 );
-	//g_print ( "mytest %s\n", tmp );
-
-
 	/* free memory */
-	//g_slist_free (tagList);
+	//g_slist_free ( tagList );
+
+	
+
 
 	g_print ( "==========\n" );
 	return 0;
@@ -561,12 +546,12 @@ int gnoclInsertMarkup ( GtkTextBuffer *buffer, GtkTextIter *iter, char *markup_t
 
 /**
 **/
-void applyTags ( GtkTextBuffer *buffer, GtkTextMark *tagStart, GtkTextMark *tagEnd )
+void applyTags ( GtkTextBuffer *buffer, GtkTextIter *iter )
 {
-#ifdef DEBUG_PANGO_MARKUP
+#if 0
 	g_print ( "FUNC: %s\n", __FUNCTION__ );
 #endif
-	GtkTextIter start, end;
+	GtkTextIter *end;
 	GSList *p = NULL;
 	gint i;
 
@@ -574,22 +559,26 @@ void applyTags ( GtkTextBuffer *buffer, GtkTextMark *tagStart, GtkTextMark *tagE
 
 	table = gtk_text_buffer_get_tag_table ( buffer );
 
-	i = 1;
+	end =  gtk_text_iter_copy ( iter );
+	gtk_text_iter_set_offset  ( end, 1 );
 
-	gtk_text_buffer_get_iter_at_mark ( buffer, &start, tagStart );
-	gtk_text_buffer_get_iter_at_mark ( buffer, &end, tagEnd );
-	//gtk_text_buffer_apply_tag_by_name  (buffer,tag, &start,&end);
+	i = 1;
 
 	/* iterate through tagList */
 	for ( p = ( GSList * ) tagList; p != NULL; p = p->next )
 	{
-		g_print ( "\ttag = %s (%d)\n", p->data, i++ );
+
 
 		if ( gtk_text_tag_table_lookup ( table, p->data ) != NULL )
 		{
-			gtk_text_buffer_apply_tag_by_name  ( buffer, p->data, &start, &end );
+
+			if ( strncmp ( p->data, "</", 2 ) != 0 )
+			{
+				g_print ( "\t applying tag = %s (%d)\n", p->data, i++ );
+				gtk_text_buffer_apply_tag_by_name  ( buffer, p->data, iter, end );
+			}
 		}
 	}
 
-	g_print ( "----------\n" );
 }
+

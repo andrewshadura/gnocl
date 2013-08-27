@@ -1,3 +1,7 @@
+2013-08:
+	gnocl::label
+		o new options
+			-onPopulatePopup, -onCopyClipboard, -onMoveCursor
 2013-07:
    new command
 		gnocl::commands

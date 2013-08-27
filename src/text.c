@@ -318,7 +318,7 @@ gchar *stripMarkup ( GtkTextBuffer *buffer, GtkTextIter *start, GtkTextIter *end
 **/
 Tcl_Obj *getMarkUpString ( Tcl_Interp *interp, GtkTextBuffer *buffer, GtkTextIter *start, GtkTextIter *end )
 {
-#ifdef DEBUG_TEXT
+#if 1
 	g_print ( "%s usemarkup = %d\n", __FUNCTION__, usemarkup );
 #endif
 
@@ -369,7 +369,7 @@ Tcl_Obj *getMarkUpString ( Tcl_Interp *interp, GtkTextBuffer *buffer, GtkTextIte
 
 				if ( strncmp ( tagName, "<span", 5 ) == 0 )
 				{
-					tagName = "<span>";
+					tagName = "span";
 				}
 
 				Tcl_AppendStringsToObj ( res, str_replace ( tagName, "<", "</" ), ( char * ) NULL );
@@ -628,6 +628,7 @@ static Tcl_Obj *dumpAll ( Tcl_Interp *interp, GtkTextBuffer *buffer, GtkTextIter
 	gchar *onTag = NULL;
 	gchar *offTag = NULL;
 
+	gint l;
 
 	res = Tcl_NewStringObj ( "", 0 );
 
@@ -641,16 +642,21 @@ static Tcl_Obj *dumpAll ( Tcl_Interp *interp, GtkTextBuffer *buffer, GtkTextIter
 		for ( p = offList; p != NULL; p = p->next )
 		{
 			tagName = ( GTK_TEXT_TAG ( p->data )->name );
-			Tcl_AppendStringsToObj ( res, "</", tagName, ">", ( char * ) NULL );
+			l = strlen ( tagName );
+			char str[l-2];
+			strncpy ( str, tagName + 2, l - 1 );
+			Tcl_AppendStringsToObj ( res, tagName, ( char * ) NULL );
 		}
 
 		/* process tagOn */
+
+
 		onList = gtk_text_iter_get_toggled_tags ( iter, 1 );
 
 		for ( p = onList; p != NULL; p = p->next )
 		{
 			tagName = ( GTK_TEXT_TAG ( p->data )->name );
-			Tcl_AppendStringsToObj ( res, "<", tagName, ">", ( char * ) NULL );
+			Tcl_AppendStringsToObj ( res, tagName, ( char * ) NULL );
 		}
 
 		/* get character */
@@ -3732,15 +3738,14 @@ static int signalEmit ( Tcl_Interp * interp, Tcl_Obj * obj, int cmdNo, GtkTextBu
 
 static	const char *cmds[] =
 {
-	"getMarkup", "getAttributes",
-	"insertMarkup",
+	"getMarkup", "getAttributes", "insertMarkup",
 
 	"delete", "configure", "scrollToPosition", "scrollToMark",
 	"parent",
 	"getIndex", "getCoords", "getRect",
 	"undo", "redo", "grabFocus", "resetUndo", "getPos",
 
-	"set", "erase", "select", "get", "cut", "copy", "paste",
+	"set", "erase", "select", "get", "cut", "copy", "paste", "pasteRichText_",
 	"cget", "getLineCount", "getWordLength", "getLength",
 	"getLineLength", "setCursor", "getCursor", "insert", "tag",
 	"dump", "signalEmit", "mark", "gotoWordStart",
@@ -3767,16 +3772,14 @@ int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl
 
 	enum cmdIdx
 	{
-		GetMarkupIdx, GetAttributesIdx,
-		InsertMarkupIdx,
-
+		GetMarkupIdx, GetAttributesIdx, InsertMarkupIdx,
 
 		DeleteIdx, ConfigureIdx, ScrollToPosIdx, ScrollToMarkIdx,
 		ParentIdx,
 		GetIndexIdx, GetCoordsIdx, GetRectIdx,
 		UndoIdx, RedoIdx, GrabFocusIdx, ResetUndoIdx, GetPosIdx,
 
-		SetIdx, EraseIdx, SelectIdx, GetIdx, CutIdx, CopyIdx, PasteIdx,
+		SetIdx, EraseIdx, SelectIdx, GetIdx, CutIdx, CopyIdx, PasteIdx, PasteRichTextIdx,
 		CgetIdx, GetLineCountIdx, GetWordLengthIdx, GetLengthIdx,
 		GetLineLengthIdx, SetCursorIdx, GetCursorIdx, InsertIdx, TagIdx,
 		DumpIdx, SignalEmitIdx, MarkIdx, GotoWordStartIdx,
@@ -3830,12 +3833,50 @@ int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl
 		case HasGlobalFocusIdx:	return 14;
 		case IsToplevelFocusIdx:	return 15;
 
+			/*
+			guint8 * gtk_clipboard_wait_for_rich_text (GtkClipboard *clipboard, GtkTextBuffer *buffer, GdkAtom *format, gsize *length);
+			gtk_clipboard_request_rich_text (GtkClipboard *clipboard, GtkTextBuffer *buffer, GtkClipboardRichTextReceivedFunc callback, gpointer user_data);
+			*/
+#if 0
+		case PasteRichTextIdx:
+			{
+#if 0
+				GtkClipboard *clipboard;
+				GdkAtom	 format;
+				gsize length;
+				guint8 *data;
 
+				g_print ( "1\n" );
+				clipboard = gtk_clipboard_get ( GDK_NONE );
+				g_print ( "2\n" );
+				//format = gtk_text_buffer_register_deserialize_tagset ( buffer, "default" );
+				g_print ( "3\n" );
+				//gtk_clipboard_request_rich_text (clipboard, buffer, NULL, NULL);
+				data = gtk_clipboard_wait_for_rich_text  ( clipboard, buffer, format, &length );
+				gtk_text_buffer_deserialize ( buffer, buffer, format, &iter, data, length, NULL ); //??
+				g_print ( "4\n" );
+				g_free ( data );
+#endif
+				GtkClipboard *clipboard;
+				GdkAtom *targets;
+				clipboard = gtk_clipboard_get (  GDK_SELECTION_PRIMARY );
+				gint n_targets;
+//gboolean gtk_clipboard_wait_for_targets  (GtkClipboard *clipboard, GdkAtom **targets, gint *n_targets);
+				gtk_clipboard_wait_for_targets  ( clipboard, &targets, &n_targets );
+				g_print ( "n_targets = %d\n", n_targets );
+				g_print ( "targets  %s\n", gdk_atom_name ( targets ) );
+
+
+//GtkSelectionData *  gtk_clipboard_wait_for_contents     (clipboard, targets);
+
+			}
+			break;
+#endif
 			/* these are GtkTextBuffer operations */
 		case InsertMarkupIdx:
 			{
 				GtkTextIter iter;
-				//g_print ( "InsertMarkupIdx\n" );
+				g_print ( "InsertMarkupIdx %s\n", Tcl_GetString ( objv[cmdNo+2] ) );
 
 				if ( posToIter ( interp, objv[cmdNo+1], buffer, &iter ) != TCL_OK )
 				{
@@ -3896,7 +3937,7 @@ int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl
 
 		case GetMarkupIdx:
 			{
-				//g_print ( "%s getMarkup\n",__FUNCTION__);
+				g_print ( "%s getMarkup\n", __FUNCTION__ );
 
 				GtkTextIter startIter, endIter;
 
@@ -4048,7 +4089,7 @@ int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl
 				GtkTextIter iter;
 				GdkAtom de_format;
 
-#if 1 	// binary file
+#if 0 	// binary file
 				input = fopen ( Tcl_GetString ( objv[cmdNo+1] ), "r" );
 
 				// Return with error message if the file is not found.
@@ -4066,7 +4107,6 @@ int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl
 				data = malloc ( sizeof ( guint8 ) * length );
 				fread ( data, sizeof ( guint8 ), length, input );
 				fclose ( input );
-
 
 				de_format = gtk_text_buffer_register_deserialize_tagset ( buffer, "default" );
 				gtk_text_buffer_get_iter_at_offset ( buffer, &iter, 0 );
@@ -4748,7 +4788,7 @@ int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl
 					return TCL_ERROR;
 				}
 
-#ifdef DEBUG_TAGS
+#if 0
 				g_print ( "-----HERE\n" );
 #endif
 
@@ -4763,6 +4803,10 @@ int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl
 				{
 					case AllIdx:
 						{
+#if 0
+							g_print ( "-----AllIdx\n" );
+#endif
+
 							Tcl_Obj *res;
 							res = dumpAll ( interp,  buffer, &startIter, &endIter ) ;
 							Tcl_SetObjResult ( interp, res );

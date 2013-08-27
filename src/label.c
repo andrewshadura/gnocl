@@ -13,6 +13,12 @@
 
 /*
    History:
+   * 
+   * 
+   "activate-current-link"                          : Action
+   "activate-link"                                  : Run Last
+   * 
+   2013-08: added options -onPopulatePopup, -onCopyClipboard, -onMoveCursor
    2013-07:	added commands, options, commands
    2013-05: added -foreground, -background
 			bugfix in cget
@@ -138,6 +144,9 @@ static GnoclOption labelOptions[] =
 	/* set base attributes */
 	//{ "-atrributes", GNOCL_OBJ, "", gnoclOptAttributes },
 
+	{ "-onPopulatePopup", GNOCL_OBJ, "populate-popup", gnoclOptOnPopulatePopup},
+	{ "-onCopyClipboard", GNOCL_OBJ, "C", gnoclOptOnClipboard},
+	{ "-onMoveCursor", GNOCL_OBJ, "", gnoclOptOnMoveCursor},
 	{ NULL }
 };
 
@@ -534,7 +543,7 @@ static int cget ( Tcl_Interp *interp, LabelParams *para, GnoclOption options[], 
 	return gnoclCgetNotImplemented ( interp, options + idx );
 }
 
-static const char *cmds[] = { "delete", "configure", "cget", "onChanged", "class", NULL };
+static const char *cmds[] = { "delete", "configure", "cget", "onChanged", "class", "popup", NULL };
 
 /**
 \brief
@@ -542,7 +551,7 @@ static const char *cmds[] = { "delete", "configure", "cget", "onChanged", "class
 int labelFunc (	ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
 
-	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, OnChangedIdx, ClassIdx};
+	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, OnChangedIdx, ClassIdx, PopupIdx};
 
 	LabelParams *para = ( LabelParams * ) data;
 	GtkWidget *widget = GTK_WIDGET ( para->label );
@@ -561,6 +570,58 @@ int labelFunc (	ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const o
 
 	switch ( idx )
 	{
+
+case PopupIdx:
+			{
+				// 0   1     2       3       4
+				// $id popup item    <path>
+				// $id popup subMenu <path1> <path2>
+#if 1
+				g_print ( "objc %d\n", objc );
+				g_print ( "PopupIdx 1 %s\n", Tcl_GetString ( objv[1] ) );
+				g_print ( "PopupIdx 2 %s\n", Tcl_GetString ( objv[2] ) );
+				g_print ( "PopupIdx 3 %s\n", Tcl_GetString ( objv[3] ) );
+				g_print ( "PopupIdx 4 %s\n", Tcl_GetString ( objv[4] ) );
+#endif
+
+				static char *popupOptions[] =
+				{
+					"item", "subMenu", "separator",
+					NULL
+				};
+
+				static enum  popupOptionsIdx
+				{
+					ItemIdx, SubMenuIdx, SeparatorIdx
+				};
+
+				gint idx;
+
+				getIdx ( popupOptions,  Tcl_GetString ( objv[2] ), &idx );
+
+				switch ( idx )
+				{
+					case SeparatorIdx:
+						{
+							gnoclPopupMenuAddSeparator ( interp );
+						}
+						break;
+					case ItemIdx:
+						{
+							gnoclPopupMenuAddItem ( interp, Tcl_GetString ( objv[3] ) );
+						} break;
+					case SubMenuIdx:
+						{
+							gnoclPopupMenuAddSubMenu ( interp, Tcl_GetString ( objv[3] ),  Tcl_GetString ( objv[4] ) );
+						} break;
+					default: {}
+				}
+
+
+			}
+
+			break;
+
 
 		case ClassIdx:
 			{
