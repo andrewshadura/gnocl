@@ -303,6 +303,8 @@ gnoclOptFunc gnoclOptOnPreEditChanged;
 gnoclOptFunc gnoclOptOnQueryToolTip;
 gnoclOptFunc gnoclOptMoveHandle;
 gnoclOptFunc gnoclOptHeightRequest;
+gnoclOptFunc gnoclOptOnActivateCurrentLink;
+gnoclOptFunc gnoclOptOnActivateLink;
 
 int gnoclClearOptions ( GnoclOption *opts );
 int gnoclGetOptions ( Tcl_Interp *interp, GnoclOption *options );

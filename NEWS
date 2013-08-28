@@ -1,7 +1,10 @@
 2013-08:
 	gnocl::label
+		o new commands
+			popup, getSelectionBounds
 		o new options
-			-onPopulatePopup, -onCopyClipboard, -onMoveCursor
+			-onPopulatePopup, -onCopyClipboard, -onMoveCursor 
+			-onActivateCurrentLink, -onActivateLink
 2013-07:
    new command
 		gnocl::commands

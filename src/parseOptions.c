@@ -2962,6 +2962,80 @@ static int doOnMoveCursor ( GtkWidget *widget, GtkMovementStep step, gint count,
 }
 
 /**
+\brief      Handler function for a GtkTextView "backspace" signal.
+\note
+**/
+static void doOnActivateCurrentLink ( GtkWidget *widget, gpointer data )
+{
+
+	GnoclCommandData *cs = ( GnoclCommandData * ) data;
+
+	GnoclPercSubst ps[] =
+	{
+		{ 'w', GNOCL_STRING },  /* widget */
+		{ 'g', GNOCL_STRING },  /* glade name */
+		{ 0 }
+	};
+
+	ps[0].val.str = gnoclGetNameFromWidget ( widget );
+	ps[1].val.str = gtk_widget_get_name ( widget );
+
+	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
+
+}
+
+/**
+\brief      Handler function for a GtkTextView "backspace" signal.
+\note
+**/
+static void doOnActivateLink ( GtkWidget *widget, gchar *uri, gpointer data )
+{
+
+	GnoclCommandData *cs = ( GnoclCommandData * ) data;
+
+	GnoclPercSubst ps[] =
+	{
+		{ 'w', GNOCL_STRING },  /* widget */
+		{ 'g', GNOCL_STRING },  /* glade name */
+		{ 'u', GNOCL_STRING },  /* glade name */
+		{ 0 }
+	};
+
+	ps[0].val.str = gnoclGetNameFromWidget ( widget );
+	ps[1].val.str = gtk_widget_get_name ( widget );
+	ps[2].val.str = uri;
+
+	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
+
+}
+
+
+/**
+\author     William J Giddings
+\date       28/08/13
+\note		Called by gnocl::label widget
+* 			A keybinding signal which gets emitted when the user activates a link in the label.
+**/
+int gnoclOptOnActivateCurrentLink ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
+{
+
+	return gnoclConnectOptCmd ( interp, obj, "activate-current-link" , G_CALLBACK ( doOnActivateCurrentLink ), opt, NULL, ret );
+}
+
+
+/**
+\author     William J Giddings
+\date       28/08/13
+\note		Called by gnocl::label widget
+**/
+int gnoclOptOnActivateLink ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
+{
+
+	return gnoclConnectOptCmd ( interp, obj, "activate-link", G_CALLBACK ( doOnActivateLink ), opt, NULL, ret );
+}
+
+
+/**
 \author     William J Giddings
 \date       02/06/08
 \note		Used by both text, entry and treeview widgets, other widgets will have their own handler, e.g. iconview.
@@ -6289,7 +6363,7 @@ int gnoclCgetOne ( 	Tcl_Interp *interp,	Tcl_Obj *obj, GObject *gObj, GnoclOption
 /**
 \brief	"populate-popup" signal handler.
 **/
-static void doOnPopulatePopup ( GtkTextView *textview, GtkMenu *menu, gpointer user_data )
+static void doOnPopulatePopup ( GtkWidget *widget, GtkMenu *menu, gpointer user_data )
 {
 	GnoclCommandData *cs = ( GnoclCommandData * ) user_data;
 
@@ -6300,11 +6374,13 @@ static void doOnPopulatePopup ( GtkTextView *textview, GtkMenu *menu, gpointer u
 	{
 		{ 'w', GNOCL_STRING },  /* name of widget */
 		{ 'g', GNOCL_STRING },  /* glade name */
+		{ 'd', GNOCL_STRING },  /* data */
 		{ 0 }
 	};
 
-	ps[0].val.str = gnoclGetNameFromWidget ( textview );
-	ps[1].val.str = gtk_widget_get_name ( GTK_WIDGET ( textview ) );
+	ps[0].val.str = gnoclGetNameFromWidget ( widget );
+	ps[1].val.str = gtk_widget_get_name ( GTK_WIDGET ( widget ) );
+	ps[2].val.str = g_object_get_data ( widget, "gnocl::data" );
 
 	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
 

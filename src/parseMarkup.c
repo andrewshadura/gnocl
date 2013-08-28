@@ -344,7 +344,7 @@ static int getTag ( char *str, char *tag, int i )
 		/* handle a tag */
 		j = strnfrst ( str, ">", i );
 		//strrng ( tag, str, ++i, j );
-		strrng ( tag, str, i, j+1  );
+		strrng ( tag, str, i, j + 1  );
 		return j;
 	}
 
@@ -425,7 +425,7 @@ void removeTag ( gchar *tag )
 	tmp = tag;
 
 	tagList = g_slist_remove_all  ( tagList, tmp );
-	tmp= str_replace ( tag, "/", "" );
+	tmp = str_replace ( tag, "/", "" );
 
 	g_print ( "\tRemoved %s\n", tmp );
 	tagList = g_slist_remove_all  ( tagList, tmp );
@@ -474,7 +474,7 @@ int gnoclInsertMarkup ( GtkTextBuffer *buffer, GtkTextIter *iter, gchar markup_t
 
 	GtkTextMark *tagStart, *tagEnd;
 	GSList *lptr = NULL;
-GtkTextIter *tagIter;
+	GtkTextIter *tagIter;
 
 	/* interate through pango string, determine, text or markup */
 	int i, j;
@@ -498,19 +498,19 @@ GtkTextIter *tagIter;
 
 		if ( markup_text[i] == '<' )
 		{
-			g_print ("1-1 %d\n",i);
+			g_print ( "1-1 %d\n", i );
 			i = getTag ( markup_text, tag, i );
 			handleTag ( tag );
-			g_print ("1-2 %d\n",i);
+			g_print ( "1-2 %d\n", i );
 		}
 
 		else
 		{
-			g_print ("2\n");
+			g_print ( "2\n" );
 			//sprintf ( txt, "%c", ch1 );
 			ch2 = &markup_text[i];
-			tagIter = gtk_text_iter_copy (iter);
-			
+			tagIter = gtk_text_iter_copy ( iter );
+
 			//applyTags ( buffer,  iter );
 			gtk_text_buffer_insert  ( buffer, iter, &markup_text[i], 1 );
 
@@ -525,10 +525,10 @@ GtkTextIter *tagIter;
 
 		i++;
 
-	for ( lptr = ( GSList * ) tagList; lptr != NULL; lptr = lptr->next )
-	{
-		g_print ("tagList\n-----tag = %s\n-----\n",lptr->data);
-	}
+		for ( lptr = ( GSList * ) tagList; lptr != NULL; lptr = lptr->next )
+		{
+			g_print ( "tagList\n-----tag = %s\n-----\n", lptr->data );
+		}
 
 
 
@@ -537,7 +537,7 @@ GtkTextIter *tagIter;
 	/* free memory */
 	//g_slist_free ( tagList );
 
-	
+
 
 
 	g_print ( "==========\n" );

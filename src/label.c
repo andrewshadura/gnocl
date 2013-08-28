@@ -13,12 +13,9 @@
 
 /*
    History:
-   * 
-   * 
-   "activate-current-link"                          : Action
-   "activate-link"                                  : Run Last
-   * 
-   2013-08: added options -onPopulatePopup, -onCopyClipboard, -onMoveCursor
+   2013-08: added options
+			-onPopulatePopup, -onCopyClipboard,
+			-onMoveCursor, -onActivateCurrentLink, -onActivateLink
    2013-07:	added commands, options, commands
    2013-05: added -foreground, -background
 			bugfix in cget
@@ -74,6 +71,7 @@ static const int mnemonicIdx = 6;
 static const int resizableIdx = 7;
 static const int dataIdx = 8;
 // static const int useMarkupIdx = 9;
+
 
 static GnoclOption labelOptions[] =
 {
@@ -147,6 +145,10 @@ static GnoclOption labelOptions[] =
 	{ "-onPopulatePopup", GNOCL_OBJ, "populate-popup", gnoclOptOnPopulatePopup},
 	{ "-onCopyClipboard", GNOCL_OBJ, "C", gnoclOptOnClipboard},
 	{ "-onMoveCursor", GNOCL_OBJ, "", gnoclOptOnMoveCursor},
+
+	{ "-onActivateCurrentLink", GNOCL_OBJ, "", gnoclOptOnActivateCurrentLink},
+	{ "-onActivateLink", GNOCL_OBJ, "", gnoclOptOnActivateLink},
+
 	{ NULL }
 };
 
@@ -543,7 +545,7 @@ static int cget ( Tcl_Interp *interp, LabelParams *para, GnoclOption options[], 
 	return gnoclCgetNotImplemented ( interp, options + idx );
 }
 
-static const char *cmds[] = { "delete", "configure", "cget", "onChanged", "class", "popup", NULL };
+static const char *cmds[] = { "delete", "configure", "cget", "onChanged", "class", "popup", "getSelectionBounds", "get", NULL };
 
 /**
 \brief
@@ -551,7 +553,7 @@ static const char *cmds[] = { "delete", "configure", "cget", "onChanged", "class
 int labelFunc (	ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
 
-	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, OnChangedIdx, ClassIdx, PopupIdx};
+	enum cmdIdx { DeleteIdx, ConfigureIdx, CgetIdx, OnChangedIdx, ClassIdx, PopupIdx, GetSelectionBoundsIdx, GetIdx};
 
 	LabelParams *para = ( LabelParams * ) data;
 	GtkWidget *widget = GTK_WIDGET ( para->label );
@@ -570,8 +572,43 @@ int labelFunc (	ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const o
 
 	switch ( idx )
 	{
+		case GetIdx:
+			{
 
-case PopupIdx:
+				Tcl_Obj *obj = NULL;
+
+				obj = Tcl_NewStringObj ( gtk_label_get_text ( widget  ), -1 );
+
+				if ( obj != NULL )
+				{
+					Tcl_SetObjResult ( interp, obj );
+					return TCL_OK;
+				}
+
+			}
+			break;
+		case GetSelectionBoundsIdx:
+			{
+
+				gint start, end;
+
+				if  ( gtk_label_get_selection_bounds ( widget, &start, &end ) )
+				{
+
+					gchar str[24];
+					sprintf ( str, "%d %d",  start, end - 1 );
+					Tcl_SetObjResult ( interp, Tcl_NewStringObj ( str, -1 ) );
+
+				}
+
+				else
+				{
+					return TCL_OK;
+				}
+
+			}
+			break;
+		case PopupIdx:
 			{
 				// 0   1     2       3       4
 				// $id popup item    <path>
