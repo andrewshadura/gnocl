@@ -12,6 +12,7 @@
 
 /*
    History:
+   2013-08  added command cget
    2013-07	new option
 			-data
 			added extra percentage subtitution strings to -onPageAdded, -onPageRemoved
@@ -355,6 +356,7 @@ static const int onSelectPageIdx = 8;
 static const int startWidgetIdx = 9;
 static const int endWidgetIdx = 10;
 static const int onChangeCurrentPageIdx = 11;
+static const int dataIdx = 12;
 
 static GnoclOption notebookOptions[] =
 {
@@ -371,8 +373,7 @@ static GnoclOption notebookOptions[] =
 	{ "-startWidget", GNOCL_OBJ, NULL },     /* 9 */
 	{ "-endWidget", GNOCL_OBJ, NULL },     /* 10 */
 	{ "-onChangeCurrentPage", GNOCL_OBJ, NULL },     /* 11 */
-
-	{ "-data", GNOCL_OBJ, "", gnoclOptData },
+	{ "-data", GNOCL_OBJ, "", gnoclOptData }, /* 12 */
 
 	/* GtkNoteBook soecific properties */
 	{ "-enablePopup", GNOCL_BOOL, "enable-popup" },
@@ -400,6 +401,7 @@ static GnoclOption notebookOptions[] =
 
 	/* respond to widget destruction */
 	{ "-onDestroy", GNOCL_OBJ, "destroy", gnoclOptCommand },
+
 
 	{ NULL }
 
@@ -748,8 +750,32 @@ static int notebookNext ( GtkNotebook *notebook, Tcl_Interp *interp, int objc, T
 	return TCL_OK;
 }
 
+/**
+\brief
+\author     William J Giddings
+\date       31-Aug-2013
+\since      0.9.96
+**/
+static int cget ( Tcl_Interp *interp, GtkWidget *widget, GnoclOption options[], int idx )
+{
+	Tcl_Obj *obj = NULL;
 
-static const char *cmds[] = { "delete", "configure", "addPage", "currentPage", "nextPage", "removePage", "class",  NULL };
+	if ( idx == dataIdx )
+	{
+		obj = Tcl_NewStringObj ( g_object_get_data ( widget, "gnocl::data" ), -1 );
+	}
+
+	if ( obj != NULL )
+	{
+		Tcl_SetObjResult ( interp, obj );
+		return TCL_OK;
+	}
+
+	return gnoclCgetNotImplemented ( interp, options + idx );
+}
+
+
+static const char *cmds[] = { "delete", "configure", "addPage", "currentPage", "nextPage", "removePage", "class", "cget", NULL };
 
 /**
 \brief
@@ -758,7 +784,7 @@ int notebookFunc ( ClientData data,	Tcl_Interp *interp,	int objc, Tcl_Obj * cons
 {
 	/* TODO?: notebook insert pos child label ?menu? */
 
-	enum cmdIdx { DeleteIdx, ConfigureIdx, AddPageIdx, CurrentIdx, NextPageIdx, RemovePageIdx, ClassIdx };
+	enum cmdIdx { DeleteIdx, ConfigureIdx, AddPageIdx, CurrentIdx, NextPageIdx, RemovePageIdx, ClassIdx, CgetIdx };
 
 	GtkNotebook *notebook = GTK_NOTEBOOK ( data );
 	int idx;
@@ -776,7 +802,28 @@ int notebookFunc ( ClientData data,	Tcl_Interp *interp,	int objc, Tcl_Obj * cons
 
 	switch ( idx )
 	{
+		case CgetIdx:
+			{
+				int     idx;
 
+				switch ( gnoclCget ( interp, objc, objv, G_OBJECT ( notebook ), notebookOptions, &idx ) )
+				{
+					case GNOCL_CGET_ERROR:
+						{
+							return TCL_ERROR;
+						}
+
+					case GNOCL_CGET_HANDLED:
+						{
+							return TCL_OK;
+						}
+
+					case GNOCL_CGET_NOTHANDLED:
+						{
+							return cget ( interp, notebook, notebookOptions, idx );
+						}
+				}
+			}
 		case ClassIdx:
 			{
 				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "notebook", -1 ) );
