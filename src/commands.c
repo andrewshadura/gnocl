@@ -12,6 +12,8 @@
 
 /*
    History:
+   2013-09: added gnocl::pango
+				validate markup strings
    2013-03: bug-fixed gnocl::setStyle
    2013-02: added utility command, gnocl::toggle
    2012-01: gnocl::winfo
@@ -95,13 +97,72 @@
 #include "gnocl.h"
 #include <ctype.h>
 
-/*
- * Modify this callback to present data to the Tcl interpreter
- */
+
+/**
+\brief	Interface to basic pango related functions.
+\date	07/Sep/13
+**/
+int gnoclPangoCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * const objv[] )
+{
+
+#if 0
+	g_print ( "%s %s %s\n", __FUNCTION__,  Tcl_GetString ( objv[1] ) , Tcl_GetString ( objv[2] ) );
+#endif
+
+	static const char *types[] =
+	{
+		"validate", "strip",
+		NULL
+	};
+
+	enum typesIdx
+	{
+		ValidateIdx, StripIdx
+	};
+
+	gint idx;
+	gchar *text = NULL;
+
+	getIdx ( types, Tcl_GetString ( objv[1] ), &idx );
+
+	switch ( idx )
+	{
+			/* return string, original if valid, stripped if not */
+		case ValidateIdx :
+			{
+				if (  pango_parse_markup ( Tcl_GetStringFromObj ( objv[2], NULL ), -1 , NULL, NULL, &text, NULL, NULL ) == 0 )
+				{
+					Tcl_SetResult ( interp, text , TCL_STATIC );
+				}
+
+				else
+				{
+					Tcl_SetResult ( interp,  Tcl_GetString ( objv[2] ) , TCL_STATIC );
+				}
+			}
+			break;
+			/* return string stripped of all markup */
+		case StripIdx:
+			{
+				pango_parse_markup ( Tcl_GetStringFromObj ( objv[2], NULL ), -1 , NULL, NULL, &text, NULL, NULL );
+				Tcl_SetResult ( interp, text , TCL_STATIC );
+			}
+
+			break;
+	}
+
+	return TCL_OK;
+}
+
+
+/**
+\brief Modify this callback to present data to the Tcl interpreter
+**/
 static void post_process ( GPid pid, int status, gpointer data )
 {
 	printf ( "---------------------->Child is done\n" );
 }
+
 
 /**
 \brief	block create a set of values, stripping away leading '
@@ -665,7 +726,7 @@ int gnoclBindCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * con
 int gnoclStringCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * const objv[] )
 {
 
-#ifdef DEBUG_COMMANDS
+#if 1
 	g_print ( "%s %s %s\n", __FUNCTION__,  Tcl_GetString ( objv[1] ) , Tcl_GetString ( objv[2] ) );
 #endif
 
@@ -698,7 +759,6 @@ int gnoclStringCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * c
 	*/
 	switch ( idx )
 	{
-
 
 		case unichar_to_utf8_Idx:
 			{

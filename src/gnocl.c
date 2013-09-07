@@ -799,6 +799,7 @@ static GnoclCmd commands[] =
 	{ "showURI", gnoclShowUriCmd },
 	{ "signalEmit", gnoclSignalEmitCmd },
 	{ "beep", gnoclBeepCmd },
+	{ "pango", gnoclPangoCmd },
 	{ "Hsv2Rgb", gnoclHsv2RgbCmd },
 //	{ "string", gnoclStringCmd },
 	{ "inventory", gnoclGetInventory },

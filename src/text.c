@@ -26,6 +26,7 @@
 */
 /*
    History:
+   2013-09: added -length (chars) option to lorem command.
    2013-07: added command, options
    2013-05: added -onDragEnd
    2013-04: resolved problem with tag sub-command "ranges"
@@ -3762,13 +3763,11 @@ static	const char *cmds[] =
 **/
 int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl_Obj *  const objv[], int cmdNo, int isTextWidget )
 {
-#ifdef DEBUG_TEXT
+#if 0
 	g_print ( "gnoclTextCommand %s %s\n", Tcl_GetString ( objv[cmdNo] ), Tcl_GetString ( objv[cmdNo+1] ) );
 #endif
 
 	GtkTextBuffer  *buffer = gtk_text_view_get_buffer ( textView );
-
-
 
 	enum cmdIdx
 	{
@@ -3971,9 +3970,24 @@ int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl
 		case LoremIdx:
 			{
 
-				gchar lorem[] = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas sed eleifend sem. Aenean at convallis ante. Etiam venenatis massa vitae nisl pretium sed pretium velit vehicula. Morbi vitae magna justo. Nullam ultricies rutrum felis rutrum tristique. Quisque orci mauris, cursus at dapibus quis, faucibus et nibh. Etiam posuere scelerisque libero eu rutrum. Nulla vel metus ut purus tempus adipiscing. Aenean lacus nunc, luctus sed tempor ac, semper vitae massa. Nunc et augue vitae ligula facilisis pulvinar a vestibulum magna. Quisque convallis rutrum vehicula. Morbi pulvinar nunc quis dui pharetra faucibus. Fusce sapien metus, varius eget fringilla quis, tristique vitae augue. Duis accumsan aliquet diam sed pretium. Nunc ipsum neque, auctor et convallis eget, molestie vitae libero. Integer eget velit at leo aliquam lobortis vel eu erat. Suspendisse sed orci neque. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Ut lobortis arcu gravida sapien vestibulum venenatis. In quis diam tellus.";
+				/* source http://www.lipsum.com/ */
+				gchar lorem[] = "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
 
-				gtk_text_buffer_insert_at_cursor ( buffer, lorem, strlen ( lorem ) );
+				gint len;
+
+				len = strlen ( lorem );
+
+				if ( strcmp ( Tcl_GetString ( objv[cmdNo +1] ), "-length" ) == 0 )
+				{
+					Tcl_GetIntFromObj ( interp, objv[cmdNo +2], &len );
+				}
+
+				if ( len > strlen ( lorem ) )
+				{
+					len = -1;
+				}
+
+				gtk_text_buffer_insert_at_cursor ( buffer, lorem, len );
 
 			}
 			break;

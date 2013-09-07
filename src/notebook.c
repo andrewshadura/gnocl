@@ -741,7 +741,9 @@ static int notebookNext ( GtkNotebook *notebook, Tcl_Interp *interp, int objc, T
 	}
 
 	else if ( objc == 3 ) /* current val */
+	{
 		gtk_notebook_set_current_page ( notebook, num );
+	}
 
 	cur = gtk_notebook_get_current_page ( notebook );
 
@@ -749,6 +751,22 @@ static int notebookNext ( GtkNotebook *notebook, Tcl_Interp *interp, int objc, T
 
 	return TCL_OK;
 }
+
+/*
+static const int childrenIdx     = 0;
+static const int onSwitchPageIdx = 1; // X
+static const int onCreateWindowIdx = 2; // X
+static const int onFocusTabIdx = 3; // X
+static const int onFocusMoveIdx = 4; // X
+static const int onPageAddedIdx = 5; // X
+static const int onPageRemovedIdx = 6; //X
+static const int onReorderTabIdx = 7; // X
+static const int onSelectPageIdx = 8;
+static const int startWidgetIdx = 9;
+static const int endWidgetIdx = 10;
+static const int onChangeCurrentPageIdx = 11;
+static const int dataIdx = 12;
+*/
 
 /**
 \brief
@@ -759,6 +777,61 @@ static int notebookNext ( GtkNotebook *notebook, Tcl_Interp *interp, int objc, T
 static int cget ( Tcl_Interp *interp, GtkWidget *widget, GnoclOption options[], int idx )
 {
 	Tcl_Obj *obj = NULL;
+
+	if ( idx == childrenIdx )
+	{
+		//obj = Tcl_NewStringObj ( "TBD", -1 );
+	}
+
+	if ( idx == onSwitchPageIdx )
+	{
+		//obj = Tcl_NewStringObj ( "TBD", -1 );
+	}
+
+	if ( idx == onCreateWindowIdx )
+	{
+		//obj = Tcl_NewStringObj ( "TBD", -1 );
+	}
+
+	if ( idx == onFocusTabIdx )
+	{
+		//obj = Tcl_NewStringObj ( "TBD", -1 );
+	}
+
+	if ( idx == onFocusMoveIdx )
+	{
+		//obj = Tcl_NewStringObj ( "TBD", -1 );
+	}
+
+	if ( idx == onPageRemovedIdx )
+	{
+		//obj = Tcl_NewStringObj ( "TBD", -1 );
+	}
+
+	if ( idx == onReorderTabIdx )
+	{
+		//obj = Tcl_NewStringObj ( "TBD", -1 );
+	}
+
+	if ( idx == onSelectPageIdx )
+	{
+		//obj = Tcl_NewStringObj ( "TBD", -1 );
+	}
+
+	if ( idx == startWidgetIdx )
+	{
+		obj = Tcl_NewStringObj ( gnoclGetNameFromWidget ( gtk_notebook_get_action_widget ( widget, GTK_PACK_START ) ), -1 );
+	}
+
+	if ( idx == endWidgetIdx )
+	{
+		obj = Tcl_NewStringObj ( gnoclGetNameFromWidget ( gtk_notebook_get_action_widget ( widget, GTK_PACK_END ) ), -1 );
+	}
+
+	if ( idx == onChangeCurrentPageIdx )
+	{
+		//obj = Tcl_NewStringObj ( g_object_get_data ( widget, "gnocl::data" ), -1 );
+	}
 
 	if ( idx == dataIdx )
 	{

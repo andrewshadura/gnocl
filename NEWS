@@ -1,3 +1,9 @@
+2013-09: 
+	gnocl::text
+		o added -length (chars) option to lorem command.
+	new command
+		o gnocl::pango, validate markup strings
+		
 2013-08:
 	gnocl::notebook
 		o new command
