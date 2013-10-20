@@ -17,7 +17,6 @@
  * 		$w get start end -markup 1
  **/
 
-
 /*
 	to do
 		document
@@ -26,7 +25,10 @@
 */
 /*
    History:
+   2013-10: added -rollOverFgColor and tag option -rollover
    2013-09: added -length (chars) option to lorem command.
+			added command modified
+			popup command, added subcommands insert, append, prepend
    2013-07: added command, options
    2013-05: added -onDragEnd
    2013-04: resolved problem with tag sub-command "ranges"
@@ -119,7 +121,6 @@ static int cget ( Tcl_Interp *interp, GtkTextView *text, GnoclOption options[], 
 static void gnoclGetTagRanges ( Tcl_Interp * interp, GtkTextBuffer * buffer, gchar * tagName );
 static void getTagName ( GtkTextTag *tag, gpointer data );
 static void gnoclGetTagProperties ( GtkTextTag * tag, Tcl_Obj *resList );
-
 static int setTextVariable ( TextParams *para, const char *val );
 static void changedFunc ( GtkWidget *widget, gpointer data );
 static void destroyFunc ( GtkWidget *widget, gpointer data );
@@ -127,8 +128,18 @@ static int setVal ( GtkTextBuffer *buffer, const char *txt );
 static char *traceFunc ( ClientData data, Tcl_Interp *interp, const char *name1, const char *name2,	int flags );
 static int doCommand ( TextParams *para, const char *val, int background );
 
+/* static variables */
 static gint usemarkup = 0;
 
+/* tag rollover variables */
+GList *rollOverTags = NULL;
+GtkTextTag *lastRollOverTag = NULL;
+
+GdkColor lastRollOverTagFgClr;
+GdkColor lastRollOverTagBgClr;
+
+GdkColor rollOverTagFgClr;
+GdkColor rollOverTagBgClr;
 
 /***********************************************************************
  * trace funcs
@@ -158,6 +169,7 @@ static void destroyFunc ( GtkWidget *widget, gpointer data )
 	g_free ( para->textVariable );
 	g_free ( para->name );
 	g_free ( para );
+	g_slist_free ( rollOverTags );
 }
 
 /**
@@ -302,182 +314,6 @@ gchar *stripMarkup ( GtkTextBuffer *buffer, GtkTextIter *start, GtkTextIter *end
 
 	return str;
 }
-
-/**
-\brief	Return text with Pango markup
-\notes	Pango has a weight markup format compared to HTML or the textBuff
-		Basically, it means there are problems when overlapping markup tags.
-		Whatever is opened has to be closed, and then the overlap re-opened.
-
-		eg: this will work
-		The buffer will return this..
-		<b>aaa<i> bbb</b> <u>ccc</u></i> ddd</u>
-		But this is pango!
-		<b>aaa<i> bbb</i></b><i> <u>ccc</u></i><u> ddd</u>
-
-\date	23/06/13
-**/
-Tcl_Obj *getMarkUpString ( Tcl_Interp *interp, GtkTextBuffer *buffer, GtkTextIter *start, GtkTextIter *end )
-{
-#if 1
-	g_print ( "%s usemarkup = %d\n", __FUNCTION__, usemarkup );
-#endif
-
-	Tcl_Obj *res;
-
-	GtkTextIter *iter;
-	gunichar ch;
-	GList *q;
-	GList *onList = NULL, *offList = NULL, *revList = NULL;
-	gchar *tagName = NULL;
-
-	res = Tcl_NewStringObj ( "", 0 );
-	iter = gtk_text_iter_copy ( start );
-
-	/* parse each position in the selection */
-	while ( gtk_text_iter_equal ( iter, end ) == 0 )
-	{
-
-		/* process tagOff before any subsequent tagOn */
-		offList = gtk_text_iter_get_toggled_tags ( iter, 0 );
-		onList = gtk_text_iter_get_toggled_tags ( iter, 1 );
-
-		if ( onList != NULL )
-		{
-			/* get a reverse list */
-			for ( q = onList ; q != NULL; q = q->next )
-			{
-				tagName = ( GTK_TEXT_TAG ( q->data )->name );
-				Tcl_AppendStringsToObj ( res, tagName, ( char * ) NULL );
-			}
-		}
-
-		if ( offList != NULL )
-		{
-			/* get off tags */
-			onList = gtk_text_iter_get_tags ( iter );
-
-			for ( q = onList ; q != NULL; q = q->next )
-			{
-				tagName = ( GTK_TEXT_TAG ( q->data )->name );
-				revList = g_slist_prepend ( revList, tagName );
-			}
-
-			/* turn off tags in order of priority, ie reverse the list */
-			for ( q = revList ; q != NULL; q = q->next )
-			{
-				tagName = q->data ;
-
-				if ( strncmp ( tagName, "<span", 5 ) == 0 )
-				{
-					tagName = "span";
-				}
-
-				Tcl_AppendStringsToObj ( res, str_replace ( tagName, "<", "</" ), ( char * ) NULL );
-			}
-
-			for ( q = offList ; q != NULL; q = q->next )
-			{
-				tagName = ( GTK_TEXT_TAG ( q->data )->name );
-
-				if ( strncmp ( tagName, "<span", 5 ) == 0 )
-				{
-					tagName = "<span>";
-				}
-
-				Tcl_AppendStringsToObj ( res, str_replace ( tagName, "<", "</" ), ( char * ) NULL );
-			}
-
-			for ( q = onList ; q != NULL; q = q->next )
-			{
-				tagName = ( GTK_TEXT_TAG ( q->data )->name );
-				Tcl_AppendStringsToObj ( res, tagName, ( char * ) NULL );
-			}
-
-			g_slist_free ( onList );  onList = NULL;
-			g_slist_free ( revList ); revList = NULL;
-			g_slist_free ( offList ); offList = NULL;
-
-		}
-
-		/* end of markup block */
-
-		/* get character */
-		ch = gtk_text_iter_get_char ( iter );
-		Tcl_AppendStringsToObj ( res, &ch, ( char * ) NULL );
-
-		/* turnOff span? */
-		gtk_text_iter_forward_cursor_position ( iter ); //OK
-	}
-
-	/* terminate tags at end of line */
-	if ( gtk_text_iter_backward_to_tag_toggle ( iter, NULL ) )
-	{
-		offList = gtk_text_iter_get_tags ( iter );
-
-		if ( 1 )
-		{
-			for ( q = offList ; q != NULL; q = q->next )
-			{
-				tagName = ( GTK_TEXT_TAG ( q->data )->name );
-				revList = g_slist_prepend ( revList, tagName );
-			}
-
-
-			for ( q = revList ; q != NULL; q = q->next )
-			{
-				tagName = q->data ;
-
-				if ( strncmp ( tagName, "<span", 5 ) == 0 )
-				{
-					tagName = "<span>";
-				}
-
-				Tcl_AppendStringsToObj ( res, str_replace ( tagName, "<", "</" ), ( char * ) NULL );
-			}
-		}
-
-		else
-		{
-			for ( q = offList ; q != NULL; q = q->next )
-			{
-				tagName = ( GTK_TEXT_TAG ( q->data )->name );
-
-				if ( strncmp ( tagName, "<span", 5 ) == 0 )
-				{
-					tagName = "<span>";
-				}
-
-				Tcl_AppendStringsToObj ( res, str_replace ( tagName, "<", "</" ), ( char * ) NULL );
-			}
-		}
-	}
-
-	gtk_text_iter_free ( iter );
-
-	g_slist_free ( onList );  onList = NULL;
-	g_slist_free ( revList ); revList = NULL;
-	g_slist_free ( offList ); offList = NULL;
-
-#ifdef DEBUG_TEXT
-	g_print ( "done!\n" );
-#endif
-
-	//g_print ( "TEXT = %s\n", Tcl_GetStringFromObj ( res, NULL ) );
-
-	gchar *text = NULL;
-
-	if (  pango_parse_markup ( Tcl_GetStringFromObj ( res, NULL ), -1 , NULL, NULL, &text, NULL, NULL ) == 0 )
-	{
-		g_print ( "WARNING! Malformed Pango Strings: %s\n", text );
-		Tcl_SetStringObj ( res, "", 0 );
-		Tcl_AppendStringsToObj ( res, gtk_text_buffer_get_text ( buffer, start, end, 0 ), ( char * ) NULL );
-
-	}
-
-	return res;
-}
-
 
 
 /**
@@ -1029,10 +865,155 @@ static int gnoclOptTagBackgroundStipple ( Tcl_Interp *interp, GnoclOption *opt, 
 	GtkWidget *container;
 	container =  gtk_widget_get_parent ( obj );
 
-#ifdef DEBUG_TEXT
+#if 1
 	debugStep ( __FUNCTION__, 1.0 );
 	g_print ( "Feature not yet implemented\n" );
 #endif
+
+	return TCL_OK;
+}
+
+/**
+\brief      Called from gnoclOptOnEvent, this is handles how event signals are processed and
+            values substituted into % values for further processing by Tcl scripts.
+\author     William J Giddings
+\date       01/11/2009
+\note		Events only apply to windows and not object such as tags. <--- WRONG
+**/
+static void doOnEvent (	GtkTextTag *texttag, GObject *widget, GdkEvent *event, GtkTextIter *arg2, gpointer data )
+{
+
+#if 0
+	g_print ( "event = %d\n", event->type );
+#endif
+
+	GnoclCommandData *cs = ( GnoclCommandData * ) data;
+
+	GnoclPercSubst ps[] =
+	{
+
+		{ 'w', GNOCL_STRING },  /* 0 */
+		{ 't', GNOCL_STRING },  /* 1 */
+		{ 'x', GNOCL_INT },     /* 2 */
+		{ 'y', GNOCL_INT },     /* 3 */
+		{ 's', GNOCL_INT },     /* 4 */
+		{ 'b', GNOCL_INT },     /* 5 */
+		{ 'n', GNOCL_STRING },  /* 6 */
+		{ 'X', GNOCL_INT },     /* 7 */
+		{ 'Y', GNOCL_INT },     /* 8 */
+		{ 'g', GNOCL_STRING },  /* 9 glade name */
+		{ 'd', GNOCL_STRING },  /* 10 */
+		{ 0 }
+	};
+
+	/* initialize with default values */
+	ps[0].val.str = gnoclGetNameFromWidget ( widget );
+	ps[6].val.str = texttag->name;
+	ps[9].val.str = gtk_widget_get_name ( GTK_WIDGET ( widget ) );
+	ps[10].val.str = g_object_get_data ( texttag, "gnocl::data" );
+
+	/* most of these events are not reported by the tag */
+
+	/*
+	 * _eventType_ ( event->type );
+	 */
+
+	/* set some initial values */
+	switch ( event->type )
+	{
+			/* these are not reported, it would be useful if they were, could do roll-over effects */
+		case GDK_ENTER_NOTIFY:
+			{
+				ps[1].val.str = "enterNotify";
+			}
+			break;
+		case GDK_LEAVE_NOTIFY:
+			{
+				ps[1].val.str = "leaveNotify";
+			}
+			break;
+			/* this is reported */
+		case GDK_MOTION_NOTIFY:
+			{
+				ps[1].val.str = "motionNotify";
+				ps[2].val.i = event->motion.x;
+				ps[3].val.i = event->motion.y;
+				ps[4].val.i = event->motion.state;
+				ps[7].val.i = event->motion.x_root;
+				ps[8].val.i = event->motion.y_root;
+			}
+			break;
+		case GDK_BUTTON_PRESS:
+		case GDK_2BUTTON_PRESS:
+		case GDK_3BUTTON_PRESS:
+		case GDK_BUTTON_RELEASE:
+			{
+				switch ( event->type )
+				{
+					case GDK_BUTTON_PRESS:      ps[1].val.str = "buttonPress"; break;
+					case GDK_2BUTTON_PRESS:     ps[1].val.str = "button2Press"; break;
+					case GDK_3BUTTON_PRESS:     ps[1].val.str = "button3Press"; break;
+					case GDK_BUTTON_RELEASE:    ps[1].val.str = "buttonRelease"; break;
+					default: 					assert ( 0 ); break;
+				}
+
+				ps[2].val.i = event->button.x;
+				ps[3].val.i = event->button.y;
+				ps[4].val.i = event->button.state;
+				ps[5].val.i = event->button.button;
+				ps[7].val.i = event->button.x_root;
+				ps[8].val.i = event->button.y_root;
+			}
+			break;
+
+		default:
+			{
+				// assert( 1 );
+				ps[1].val.str = "unknownEvent";
+			}
+
+	}
+
+	/* assign values to remaining elements of the array */
+	ps[2].val.i = event->button.x;
+	ps[3].val.i = event->button.y;
+	ps[4].val.i = event->button.state;
+	ps[5].val.i = event->button.button;
+	ps[7].val.i = event->button.x_root;
+	ps[8].val.i = event->button.y_root;
+
+
+
+	/* other settings, mouse pointer etc can be obtained from the window structure */
+	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
+}
+
+/**
+\brief
+\author
+\date
+\note	Only called to handle textTag events
+**/
+static int gnoclOptOnEvent ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
+{
+	assert ( strcmp ( opt->optName, "-onEvent" ) == 0 );
+	return gnoclConnectOptCmd ( interp, obj, "event", G_CALLBACK ( doOnEvent ), opt, NULL, ret );
+}
+
+
+/**
+\brief	Set text tag attribute.
+**/
+static int gnoclOptTagRollOver ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
+{
+#if 0
+	debugStep ( __FUNCTION__, 1.0 );
+#endif
+
+	GtkTextTag *tag;
+
+	tag = GTK_TEXT_TAG ( obj );
+	rollOverTags = g_slist_append ( rollOverTags, tag );
 
 	return TCL_OK;
 }
@@ -1043,7 +1024,7 @@ static int gnoclOptTagBackgroundStipple ( Tcl_Interp *interp, GnoclOption *opt, 
 static int gnoclOptTagTextDirection ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
 
-#ifdef DEBUG_TEXT
+#if 0
 	debugStep ( __FUNCTION__, 1.0 );
 #endif
 
@@ -1081,8 +1062,8 @@ static int gnoclOptTextTagForegroundStipple ( Tcl_Interp * interp, GnoclOption *
 	GtkWidget *container;
 	container =  gtk_widget_get_parent ( obj );
 
-#ifdef DEBUG_TEXT
-	debugStep ( __FUNCTION__, 1.0 );
+#if 1
+	//debugStep ( __FUNCTION__, 1.0 );
 	g_print ( "Feature not yet implemented\n" );
 #endif
 
@@ -1425,6 +1406,8 @@ static const int variableIdx = 6;
 static const int onChangedIdx = 7;
 static const int baseFontIdx = 8;
 static const int tooltipIdx = 9;
+static const int rollOverColorFgIdx = 10;
+static const int rollOverColorBgIdx = 11;
 
 static GnoclOption textOptions[] =
 {
@@ -1441,6 +1424,8 @@ static GnoclOption textOptions[] =
 	{ "-onChanged", GNOCL_STRING, NULL },
 	{ "-baseFont", GNOCL_OBJ, "Sans 14", gnoclOptGdkBaseFont },
 	{ "-tooltip", GNOCL_OBJ, "", gnoclOptTooltip },
+	{ "-rollOverFgColor", GNOCL_OBJ, "fg", gnoclOptGdkColorRollOver},
+	{ "-rollOverBgColor", GNOCL_OBJ, "bg", gnoclOptGdkColorRollOver},
 
 	/* GtkTextView properties
 	"accepts-tab"              gboolean              : Read / Write
@@ -2345,6 +2330,7 @@ int tagCmd ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, Tcl_Obj *  c
 
 		/* new options added 30/04/11, may need some revision */
 
+		{"-rollOver", GNOCL_OBJ, "", gnoclOptTagRollOver },
 		{"-marginAccumulate", GNOCL_BOOL, "accumulative-margin"},
 		{"-backgroundFullHeight", GNOCL_BOOL, "background-full-height"},
 		{"-backgroundStipple", GNOCL_OBJ, gnoclOptTagBackgroundStipple},
@@ -2362,6 +2348,7 @@ int tagCmd ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, Tcl_Obj *  c
 		{"-tabs", GNOCL_OBJ, "tabs", gnoclOptTextTagTabs},
 		{"-variant", GNOCL_OBJ, "variant", gnoclOptTextTagVariant},
 		{"-weight", GNOCL_INT, "weight"},
+
 
 		/*--------------- existing options ---------------*/
 
@@ -3693,7 +3680,7 @@ static void gnoclGetTagProperties ( GtkTextTag *tag, Tcl_Obj *resList )
 
 
 /**
-\brief      Return list of tag name
+\brief      Return list of tag name, what does this do?
 **/
 static void gnoclGetTagNames ( GtkTextTag * tag, gpointer data )
 {
@@ -3785,7 +3772,7 @@ int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl
 		GotoWordEndIdx, SearchIdx, ClassIdx, SpawnIdx, ReplaceIdx,
 		SerializeIdx, DeSerializeIdx, SaveIdx, LoadIdx, PrintIdx, LoremIdx,
 		ClearIdx, PopupIdx, GetSelectionBounds,
-		HasGlobalFocusIdx, IsToplevelFocusIdx
+		HasGlobalFocusIdx, IsToplevelFocusIdx, ModifiedIdx
 	};
 
 
@@ -3831,6 +3818,7 @@ int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl
 		case GetPosIdx: 		return 13;
 		case HasGlobalFocusIdx:	return 14;
 		case IsToplevelFocusIdx:	return 15;
+		case ModifiedIdx:		return 16;
 
 			/*
 			guint8 * gtk_clipboard_wait_for_rich_text (GtkClipboard *clipboard, GtkTextBuffer *buffer, GdkAtom *format, gsize *length);
@@ -4004,13 +3992,13 @@ int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl
 
 				static char *popupOptions[] =
 				{
-					"item", "subMenu", "separator",
+					"item", "subMenu", "separator", "append", "prepend", "insert",
 					NULL
 				};
 
 				static enum  popupOptionsIdx
 				{
-					ItemIdx, SubMenuIdx, SeparatorIdx
+					ItemIdx, SubMenuIdx, SeparatorIdx, AppendIdx, PrependIdx, InsertIdx
 				};
 
 				gint idx;
@@ -4024,10 +4012,23 @@ int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl
 							gnoclPopupMenuAddSeparator ( interp );
 						}
 						break;
+					case AppendIdx:
 					case ItemIdx:
 						{
 							gnoclPopupMenuAddItem ( interp, Tcl_GetString ( objv[cmdNo+2] ) );
 						} break;
+					case PrependIdx:
+						{
+							gnoclPopupMenuPrependItem ( interp, Tcl_GetString ( objv[cmdNo+2] ) );
+						}
+						break;
+					case InsertIdx:
+						{
+							gint pos;
+							Tcl_GetIntFromObj ( interp, objv[cmdNo+3], &pos );
+							gnoclPopupMenuInsertItem ( interp, Tcl_GetString ( objv[cmdNo+2] ), pos );
+						}
+						break;
 					case SubMenuIdx:
 						{
 							gnoclPopupMenuAddSubMenu ( interp, Tcl_GetString ( objv[cmdNo+2] ),  Tcl_GetString ( objv[cmdNo+3] ) );
@@ -4802,9 +4803,6 @@ int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl
 					return TCL_ERROR;
 				}
 
-#if 0
-				g_print ( "-----HERE\n" );
-#endif
 
 //getIdx ( cmds, objv[cmdNo+1], &idx );
 
@@ -5137,6 +5135,19 @@ static int textFunc ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * 
 			}
 
 
+		case 16: /* set modified */
+			{
+
+				gboolean setting = 1;
+
+				if ( objc == 3 )
+				{
+					Tcl_GetIntFromObj ( interp, objv[2], &setting ) ;
+				}
+
+				gtk_text_buffer_set_modified  ( buffer, setting );
+			}
+
 		default:
 			{
 				return TCL_ERROR;
@@ -5244,6 +5255,10 @@ int gnoclTextCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj *  co
 	para->onChanged = NULL;
 	para->inSetVar = 0;
 	para->useMarkup = FALSE;
+
+	/* set default rollover colours */
+	gdk_color_parse ( "red", &rollOverTagFgClr );
+	gdk_color_parse ( "yellow", &rollOverTagBgClr );
 
 
 	if ( gnoclParseOptions ( interp, objc, objv, textOptions ) != TCL_OK )

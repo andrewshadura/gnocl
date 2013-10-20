@@ -82,7 +82,9 @@ typedef struct
 	char              *textVariable;
 	char              *onChanged;
 	int               inSetVar;
+	/* check usage of these in the module */
 	gboolean          useMarkup;
+	GList 			  *rollOverTags;
 } TextParams;
 
 

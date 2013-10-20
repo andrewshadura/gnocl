@@ -148,8 +148,7 @@ Tcl_Obj *gnoclCgetMenuItemText ( Tcl_Interp *interp, GtkMenuItem *item )
 /**
 \brief
 **/
-int gnoclMenuItemHandleText ( Tcl_Interp *interp, GtkMenuItem *item,
-							  Tcl_Obj *textObj )
+int gnoclMenuItemHandleText ( Tcl_Interp *interp, GtkMenuItem *item, Tcl_Obj *textObj )
 {
 	GnoclStringType type = gnoclGetStringType ( textObj );
 	GtkStockItem  stockItem;
@@ -159,28 +158,35 @@ int gnoclMenuItemHandleText ( Tcl_Interp *interp, GtkMenuItem *item,
 	if ( type & GNOCL_STR_STOCK )
 	{
 		if ( gnoclGetStockItem ( textObj, interp, &stockItem ) != TCL_OK )
+		{
 			return TCL_ERROR;
+		}
 
 		text = stockItem.label;
 	}
 
 	else
+	{
 		text = gnoclGetString ( textObj );
+	}
 
 	label = GTK_LABEL ( gtk_bin_get_child ( GTK_BIN ( item ) ) );
 
 	if ( type & ( GNOCL_STR_STOCK | GNOCL_STR_UNDERLINE ) )
+	{
 		gtk_label_set_text_with_mnemonic ( label, text );
+	}
+
 	else
+	{
 		gtk_label_set_text ( label, text );
+	}
 
 	if ( type & GNOCL_STR_STOCK )
 	{
-		GtkWidget *image = gtk_image_new_from_stock ( stockItem.stock_id,
-						   GTK_ICON_SIZE_MENU );
+		GtkWidget *image = gtk_image_new_from_stock ( stockItem.stock_id, GTK_ICON_SIZE_MENU );
 		gtk_widget_show ( GTK_WIDGET ( image ) );
-		gtk_image_menu_item_set_image ( GTK_IMAGE_MENU_ITEM ( item ),
-										image );
+		gtk_image_menu_item_set_image ( GTK_IMAGE_MENU_ITEM ( item ), image );
 
 		if ( stockItem.keyval )
 		{

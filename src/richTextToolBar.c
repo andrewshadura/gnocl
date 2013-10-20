@@ -13,11 +13,13 @@
 #include "gnoclparams.h"
 
 static const int textIdx = 0;
+static const int textAcceleratorsIdx = 1;
 
 static GnoclOption richTextToolBarOptions[] =
 {
 	/* widget specific options */
 	{ "-text", GNOCL_OBJ, NULL },
+	{ "-textAccelerators", GNOCL_OBJ, NULL },
 
 	/* general options */
 	{ "-name", GNOCL_STRING, "name" },
@@ -123,6 +125,21 @@ static void applyTag ( GtkTextBuffer *buffer, gchar *tagName )
 	gtk_text_buffer_apply_tag_by_name ( buffer, tagName, &start, &end );
 }
 
+
+
+/**
+\brief	Remove **ALL** tags from selected text range.
+**/
+static void clearTag ( GtkTextTag * tag, GtkTextBuffer  *buffer )
+{
+	GtkTextIter start;
+	GtkTextIter end;
+
+	gtk_text_buffer_get_selection_bounds ( buffer, &start, &end );
+	gtk_text_buffer_remove_tag_by_name  ( buffer, tag->name, &start, &end );
+
+}
+
 /**
 \brief
 **/
@@ -132,20 +149,8 @@ static void doClear ( GtkToolButton *toolbutton, gpointer user_data )
 	RichTextToolbarParams *para = ( RichTextToolbarParams * ) user_data;
 	GtkTextBuffer  *buffer = gtk_text_view_get_buffer ( GTK_TEXT_VIEW ( para->textView ) );
 
-	GtkTextIter start;
-	GtkTextIter end;
-
-	gtk_text_buffer_get_selection_bounds ( buffer, &start, &end );
-
-	gtk_text_buffer_remove_tag_by_name  ( buffer, "<b>", &start, &end );
-	gtk_text_buffer_remove_tag_by_name  ( buffer, "<u>", &start, &end );
-	gtk_text_buffer_remove_tag_by_name  ( buffer, "<i>", &start, &end );
-	gtk_text_buffer_remove_tag_by_name  ( buffer, "<s>", &start, &end );
-
-	gtk_text_buffer_remove_tag_by_name  ( buffer, "<sub>", &start, &end );
-	gtk_text_buffer_remove_tag_by_name  ( buffer, "<sup>", &start, &end );
-	gtk_text_buffer_remove_tag_by_name  ( buffer, "<big>", &start, &end );
-	gtk_text_buffer_remove_tag_by_name  ( buffer, "<small>", &start, &end );
+	GtkTextTagTable *tagtable = gtk_text_buffer_get_tag_table ( buffer );
+	gtk_text_tag_table_foreach ( tagtable, clearTag , buffer );
 
 }
 
@@ -432,6 +437,78 @@ static void doFg ( GtkToolButton *toolbutton, gpointer user_data )
 
 
 
+/**
+\brief	Check for specific key presses -own widget keybindings
+**/
+gboolean key_pressed ( GtkWidget * window, GdkEventKey* event, RichTextToolbarParams *para ) // GtkTextBuffer *buffer )
+{
+
+	g_print ( "%s\n", __FUNCTION__ );
+
+
+	GtkTextIter sel_start, sel_end;
+
+
+	GtkTextBuffer *buffer = gtk_text_view_get_buffer ( para->textView );
+
+
+	if ( strcmp ( para->fgClr, "" ) == 0 )
+	{
+		para->fgClr = "<span foreground='red'>";
+	}
+
+
+	if ( gtk_text_buffer_get_selection_bounds ( buffer, &sel_start, &sel_end ) )
+	{
+
+
+		switch ( event->keyval )
+		{
+
+			case GDK_b:
+				{
+					gtk_text_buffer_apply_tag_by_name ( buffer, "<b>", &sel_start, &sel_end );
+					break;
+				}
+
+			case GDK_i:
+				{
+					gtk_text_buffer_apply_tag_by_name ( buffer, "<i>", &sel_start, &sel_end );
+				}
+				break;
+			case GDK_u:
+				{
+					gtk_text_buffer_apply_tag_by_name ( buffer, "<u>", &sel_start, &sel_end );
+				}
+				break;
+			case GDK_minus:
+				{
+					gtk_text_buffer_apply_tag_by_name ( buffer, "<s>", &sel_start, &sel_end );
+				}
+				break;
+			case GDK_bracketleft:
+				{
+					gtk_text_buffer_apply_tag_by_name ( buffer, para->bgClr, &sel_start, &sel_end );
+				}
+				break;
+			case GDK_bracketright:
+				{
+					gtk_text_buffer_apply_tag_by_name ( buffer, para->fgClr, &sel_start, &sel_end );
+				}
+				break;
+			default:
+				{
+#if 0
+					g_print ( "MISSED IT!\n" );
+#endif
+				}
+		}
+
+	}
+
+	return FALSE;
+}
+
 
 /**
 \brief
@@ -445,9 +522,27 @@ static int configure ( Tcl_Interp *interp, RichTextToolbarParams *para, GnoclOpt
 		para->textView = GTK_TEXT_VIEW ( gtk_bin_get_child ( GTK_BIN ( scrolled ) ) );
 	}
 
+	if ( options[textAcceleratorsIdx].status == GNOCL_STATUS_CHANGED )
+	{
+
+		g_print ( "ADD ACCELERATORS\n" );
+
+		GtkScrolledWindow *scrolled = gnoclGetWidgetFromName ( Tcl_GetString ( options[textIdx].val.obj ), interp );
+
+		GtkTextView *textView;
+		textView = GTK_TEXT_VIEW ( gtk_bin_get_child ( GTK_BIN ( scrolled ) ) );
+
+		gtk_widget_add_events ( textView, GDK_BUTTON_PRESS_MASK );
+
+		g_signal_connect ( G_OBJECT ( textView ), "key-release-event", G_CALLBACK ( key_pressed ), para );
+
+	}
 
 	return TCL_OK;
 }
+
+
+
 
 static const char *cmds[] =
 {
@@ -522,8 +617,6 @@ int gnoclRichTextToolBarCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl
 		return TCL_OK;
 	}
 
-
-
 	int ret;
 
 	if ( gnoclParseOptions ( interp, objc, objv, richTextToolBarOptions ) != TCL_OK )
@@ -535,12 +628,13 @@ int gnoclRichTextToolBarCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl
 	RichTextToolbarParams *para;
 	para = g_new ( RichTextToolbarParams, 1 );
 
-	para->fgClr = "";
+	para->fgClr = "<span foreground='red'>";
 	para->bgClr = "<span background='yellow'>";
 
 
-	GtkToolItem *clear, *bold, *italic, *underline, *strikethrough,
-				*superscript, *subscript, *bigger, *smaller;
+	GtkToolItem *clear, *bold, *italic, *underline,
+				*strikethrough, *superscript, *subscript,
+				*bigger, *smaller;
 
 	GtkWidget *bgclrs, *fgclrs;
 	GtkAccelGroup *group;
@@ -580,6 +674,12 @@ int gnoclRichTextToolBarCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl
 
 	gtk_widget_modify_bg ( bold, GTK_STATE_NORMAL, &color );
 
+
+	/*
+	 *  IMPORT THESE GRAPHICS INTO THEIR OWN INCLUDE FILE
+	 *
+	 *
+	*/
 
 	GtkWidget *italicImg = gtk_image_new_from_file ( "./italic.png" );
 	italic = gtk_tool_button_new  ( italicImg, "" );
@@ -727,6 +827,7 @@ int gnoclRichTextToolBarCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl
 	gtk_toolbar_set_icon_size ( GTK_TOOLBAR ( para->toolBar ), GTK_ICON_SIZE_MENU );
 
 	gtk_toolbar_insert ( GTK_TOOLBAR ( para->toolBar ), clear, -1 );
+	gtk_toolbar_insert ( GTK_TOOLBAR ( para->toolBar ), gtk_separator_tool_item_new(), -1 );
 	gtk_toolbar_insert ( GTK_TOOLBAR ( para->toolBar ), bold, -1 );
 	gtk_toolbar_insert ( GTK_TOOLBAR ( para->toolBar ), italic, -1 );
 	gtk_toolbar_insert ( GTK_TOOLBAR ( para->toolBar ), underline, -1 );
@@ -741,8 +842,6 @@ int gnoclRichTextToolBarCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl
 	gtk_toolbar_insert ( GTK_TOOLBAR ( para->toolBar ), gtk_separator_tool_item_new(), -1 );
 	gtk_toolbar_insert ( GTK_TOOLBAR ( para->toolBar ), para->bg, -1 );
 	gtk_toolbar_insert ( GTK_TOOLBAR ( para->toolBar ), para->fg, -1 );
-
-
 
 	/* event handlers */
 	g_signal_connect ( G_OBJECT ( clear ), "clicked", G_CALLBACK ( doClear ), ( gpointer ) para );

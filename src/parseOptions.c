@@ -12,6 +12,7 @@
 
 /*
    History:
+   2013-09: added prepend, append and insert options to popup menu options.
    2013-11: renamed doOnButtonClicked to doOnToolButtonClicked
    2011-11: -onIconPress %t now returns entry text content. Added %b to review mouse button info.
    2009-12: added %g to those callback with %w substitutions, returns 'glade name'
@@ -29,7 +30,13 @@
 /* global used to store a pointer to the text/entry popupmenu */
 GtkMenu *popupMenu;
 
-
+/* defined in text.c */
+extern rollOverTags;
+extern lastRollOverTag;
+extern lastRollOverTagFgClr;
+extern lastRollOverTagBgClr;
+extern rollOverTagFgClr;
+extern rollOverTagBgClr;
 /* add to parseOptions */
 
 /**
@@ -721,8 +728,7 @@ int gnoclOptScale ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj 
 
 		int idx;
 
-		if ( Tcl_GetIndexFromObj ( NULL, opt->val.obj, txt, NULL,
-								   TCL_EXACT, &idx ) != TCL_OK )
+		if ( Tcl_GetIndexFromObj ( NULL, opt->val.obj, txt, NULL, TCL_EXACT, &idx ) != TCL_OK )
 		{
 			Tcl_AppendResult ( interp, "Unknown scale \"",
 							   Tcl_GetString ( opt->val.obj ),
@@ -1343,8 +1349,6 @@ int gnoclOptTooltip ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Ob
 	return TCL_OK;
 }
 
-
-
 /**
 **/
 int modifyWidgetGdkColor ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, void ( *func ) ( GtkWidget *, GtkStateType, const GdkColor * ), glong offset, Tcl_Obj **ret )
@@ -1419,6 +1423,30 @@ int gnoclOptGdkColorFg ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl
 int gnoclOptGdkColorText ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
 	return modifyWidgetGdkColor ( interp, opt, obj, gtk_widget_modify_text, G_STRUCT_OFFSET ( GtkStyle, text ), ret );
+}
+
+/**
+\brief	Change the gnocl::text widget rollover foreground colour.
+\todo 	Allow background colour change.
+**/
+int gnoclOptGdkColorRollOver ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
+{
+
+#if 0
+	g_print ( "%s type %s %s\n", __FUNCTION__, Tcl_GetString ( opt->val.obj ), opt->propName );
+#endif
+
+	if ( strcmp ( opt->propName, "fg" ) == 0 )
+	{
+		gdk_color_parse ( Tcl_GetStringFromObj ( opt->val.obj, NULL ), &rollOverTagFgClr );
+	}
+
+	if ( strcmp ( opt->propName, "bg" ) == 0 )
+	{
+		gdk_color_parse ( Tcl_GetStringFromObj ( opt->val.obj, NULL ), &rollOverTagBgClr );
+	}
+
+	return TCL_OK;
 }
 
 /**
@@ -1533,8 +1561,7 @@ static int addSizeGroup (   GtkWidget *widget,  GtkSizeGroupMode mode,  const ch
 
 	gtk_size_group_add_widget ( group, widget );
 
-	g_object_set_data_full ( G_OBJECT ( widget ), "gnocl::sizeGroup",
-							 g_strdup ( name ), g_free );
+	g_object_set_data_full ( G_OBJECT ( widget ), "gnocl::sizeGroup", g_strdup ( name ), g_free );
 
 	if ( new )
 		g_object_unref ( group );
@@ -2597,9 +2624,29 @@ int gnoclOptOnShowHelp ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl
 /**
 \brief
 \todo    gnocl::buttonStateToList -> {MOD1 MOD3 BUTTON2...}
+\notes	 rollover 1 fg, 2 bg, 3 both
+
+		switch (rollover) {
+			case 1: {
+				g_object_set ( lastRollOverTag, "foreground-gdk", lastRollOverTagFgClr, NULL );
+				} break;
+			case 2: {
+				g_object_set ( lastRollOverTag, "background-gdk", lastRollOverTagBgClr, NULL );
+				} break;
+			case 3: {
+				g_object_set ( lastRollOverTag, "foreground-gdk", lastRollOverTagFgClr,"background-gdk", lastRollOverTagBgClr, NULL );
+				} break;
+			default: {};
+			}
 **/
-static void doOnMotion ( GtkWidget *widget, GdkEventMotion *event, gpointer data )
+void doOnMotion ( GtkWidget *widget, GdkEventMotion *event, gpointer data )
 {
+
+	GtkTextIter iter;
+	gint bx, by; /* buffer coordinates */
+	gint line, row;
+	GSList *q = NULL, *p = NULL;
+
 	GnoclCommandData *cs = ( GnoclCommandData * ) data;
 
 	GnoclPercSubst ps[] =
@@ -2618,6 +2665,88 @@ static void doOnMotion ( GtkWidget *widget, GdkEventMotion *event, gpointer data
 		{ 0 }
 	};
 
+
+#if 0
+	g_print ( "%s\n", __FUNCTION__ );
+#endif
+
+	/* turn-off roll-over tags
+	 * store local copy of pointer to list of rollover tags
+	 * could check widget type, get tagtable and compare lists
+	 * but, how to get access to parameters structure for gnocltext object?
+	 */
+
+	//g_print ( "Turn-off any text rollover tags\n" );
+
+	/* get list of tags at that point */
+
+	gtk_text_view_window_to_buffer_coords ( widget, GTK_TEXT_WINDOW_WIDGET, event->x, event->y, &bx, &by );
+	gtk_text_view_get_iter_at_location ( widget, &iter, bx, by );
+
+	p = gtk_text_iter_get_tags ( &iter );
+
+	for ( ; p != NULL; p = p->next )
+	{
+		for ( q = rollOverTags; q != NULL; q = q->next )
+		{
+			if ( strcmp ( GTK_TEXT_TAG ( q->data )->name, GTK_TEXT_TAG ( p->data )->name ) == 0 )
+			{
+				if ( lastRollOverTag == GTK_TEXT_TAG ( q->data )  )
+				{
+					goto skip;
+				}
+				else
+				{
+					/* change colour of last tag, set colour of new tag */
+					if ( lastRollOverTag == NULL )
+					{
+						/* first entry, get copy of existing colour settings */
+						//g_object_get ( q->data, "foreground-gdk", &lastRollOverTagFgClr, NULL );
+
+						//g_object_get ( q->data, "background-gdk", &lastRollOverTagBgClr, NULL );
+						g_object_set ( lastRollOverTag, "background-gdk", NULL, NULL );
+					}
+					else
+					{
+						/* change colours as required */
+						//g_object_set ( lastRollOverTag, "foreground-gdk", lastRollOverTagFgClr, NULL );
+
+						//g_object_set ( lastRollOverTag, "background-gdk", lastRollOverTagBgClr, NULL );
+						g_object_set ( lastRollOverTag, "background-gdk", NULL, NULL );
+					}
+
+					/* change colours to new active rollover colours*/
+					//g_object_get ( q->data, "foreground-gdk", &lastRollOverTagFgClr, NULL );
+					//g_object_set ( q->data, "foreground-gdk", &rollOverTagFgClr, NULL );
+
+
+					g_object_get ( q->data, "background-gdk", &lastRollOverTagBgClr, NULL );
+					g_object_set ( q->data, "background-gdk", &rollOverTagBgClr, NULL );
+
+					lastRollOverTag = GTK_TEXT_TAG ( q->data );
+					//g_print ( "\t GOTIT! MATCH ROLLOVER tag = %s\n", GTK_TEXT_TAG ( q->data )->name );
+					goto skip;
+				}
+			}
+
+		}
+	}
+
+	if ( lastRollOverTag != NULL  )
+	{
+		/* rollover activity ended, restore default colours */
+		//g_object_set ( lastRollOverTag, "foreground-gdk", lastRollOverTagFgClr, NULL );
+		//lastRollOverTagFgClr = NULL;
+
+		//g_object_set ( lastRollOverTag, "background-gdk", lastRollOverTagBgClr, NULL );
+		g_object_set ( lastRollOverTag, "background-gdk", NULL, NULL );
+		lastRollOverTagBgClr = NULL;
+
+		lastRollOverTag = NULL;
+	}
+
+skip:
+
 	ps[0].val.str = gnoclGetNameFromWidget ( widget );
 	ps[1].val.i = event->x;
 	ps[2].val.i = event->y;
@@ -2634,11 +2763,8 @@ static void doOnMotion ( GtkWidget *widget, GdkEventMotion *event, gpointer data
 
 	if ( strcmp ( type, "GtkUndoView" ) == 0 || strcmp ( type, "GtkTextView" ) == 0 )
 	{
-		GtkTextIter iter;
-		gint bx, by; /* buffer coordinates */
-		gint line, row;
-		gtk_text_view_window_to_buffer_coords ( widget, GTK_TEXT_WINDOW_WIDGET, event->x, event->y, &bx, &by );
-		gtk_text_view_get_iter_at_location ( widget, &iter, bx, by );
+		//gtk_text_view_window_to_buffer_coords ( widget, GTK_TEXT_WINDOW_WIDGET, event->x, event->y, &bx, &by );
+		//gtk_text_view_get_iter_at_location ( widget, &iter, bx, by );
 		ps[7].val.i = gtk_text_iter_get_line ( &iter );
 		ps[8].val.i = gtk_text_iter_get_line_offset ( &iter );
 	}
@@ -3396,7 +3522,8 @@ int gnoclOptOnButtonMotion ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj,
 \brief
 \author
 \date
-\note
+\note	Called by drawingArea, eventBox, imageViewer, text and window.
+		Create branch for the text object to implement rollover tag turn-off
 **/
 int gnoclOptOnMotion ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
@@ -4062,115 +4189,7 @@ static void doOnLinkButton ( GtkWidget *widget, gpointer data )
 
 }
 
-/**
-\brief      Called from gnoclOptOnEvent, this is handles how event signals are processed and
-            values substituted into % values for further processing by Tcl scripts.
-\author     William J Giddings
-\date       01/11/2009
-\note		Events only apply to windows and not object such as tags. <--- WRONG
-**/
-static void doOnEvent (	GtkTextTag *texttag, GObject *widget, GdkEvent *event, GtkTextIter *arg2, gpointer data )
-{
 
-	GnoclCommandData *cs = ( GnoclCommandData * ) data;
-
-	GnoclPercSubst ps[] =
-	{
-
-		{ 'w', GNOCL_STRING },  /* 0 */
-		{ 't', GNOCL_STRING },  /* 1 */
-		{ 'x', GNOCL_INT },     /* 2 */
-		{ 'y', GNOCL_INT },     /* 3 */
-		{ 's', GNOCL_INT },     /* 4 */
-		{ 'b', GNOCL_INT },     /* 5 */
-		{ 'n', GNOCL_STRING },  /* 6 */
-		{ 'X', GNOCL_INT },     /* 7 */
-		{ 'Y', GNOCL_INT },     /* 8 */
-		{ 'g', GNOCL_STRING },  /* 9 glade name */
-		{ 'd', GNOCL_STRING },  /* 10 */
-		{ 0 }
-	};
-
-	/* initialize with default values */
-	ps[0].val.str = gnoclGetNameFromWidget ( widget );
-	ps[9].val.str = gtk_widget_get_name ( GTK_WIDGET ( widget ) );
-	ps[10].val.str = g_object_get_data ( texttag, "gnocl::data" );
-
-	/* most of these events are not reported by the tag */
-
-	/*
-	 * _eventType_ ( event->type );
-	 */
-
-	/* set some initial values */
-	switch ( event->type )
-	{
-			/* these are not reported, it would be useful if they were, could do roll-over effects */
-		case GDK_ENTER_NOTIFY:
-			{
-				ps[1].val.str = "enterNotify";
-			}
-			break;
-		case GDK_LEAVE_NOTIFY:
-			{
-				ps[1].val.str = "leaveNotify";
-			}
-			break;
-			/* this is reported */
-		case GDK_MOTION_NOTIFY:
-			{
-				ps[1].val.str = "motionNotify";
-				ps[2].val.i = event->motion.x;
-				ps[3].val.i = event->motion.y;
-				ps[4].val.i = event->motion.state;
-				ps[7].val.i = event->motion.x_root;
-				ps[8].val.i = event->motion.y_root;
-			}
-			break;
-		case GDK_BUTTON_PRESS:
-		case GDK_2BUTTON_PRESS:
-		case GDK_3BUTTON_PRESS:
-		case GDK_BUTTON_RELEASE:
-			{
-				switch ( event->type )
-				{
-					case GDK_BUTTON_PRESS:      ps[1].val.str = "buttonPress"; break;
-					case GDK_2BUTTON_PRESS:     ps[1].val.str = "button2Press"; break;
-					case GDK_3BUTTON_PRESS:     ps[1].val.str = "button3Press"; break;
-					case GDK_BUTTON_RELEASE:    ps[1].val.str = "buttonRelease"; break;
-					default:                    assert ( 0 ); break;
-				}
-
-				ps[2].val.i = event->button.x;
-				ps[3].val.i = event->button.y;
-				ps[4].val.i = event->button.state;
-				ps[5].val.i = event->button.button;
-				ps[7].val.i = event->button.x_root;
-				ps[8].val.i = event->button.y_root;
-			}
-			break;
-
-		default:
-			{
-				// assert( 1 );
-				ps[1].val.str = "unknownEvent";
-			}
-
-	}
-
-	/* assign values to remaining elements of the array */
-	ps[2].val.i = event->button.x;
-	ps[3].val.i = event->button.y;
-	ps[4].val.i = event->button.state;
-	ps[5].val.i = event->button.button;
-	ps[7].val.i = event->button.x_root;
-	ps[8].val.i = event->button.y_root;
-
-	ps[6].val.str = texttag->name;
-
-	/* other settings, mouse pointer etc can be obtained from the window structure */
-	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
-}
 
 /**
 \brief
@@ -4182,18 +4201,6 @@ int gnoclOptOnScroll ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_O
 {
 	assert ( strcmp ( opt->optName, "-onScroll" ) == 0 );
 	return gnoclConnectOptCmd ( interp, obj, "scroll-event", G_CALLBACK ( doOnScroll ), opt, NULL, ret );
-}
-
-/**
-\brief
-\author
-\date
-\note
-**/
-int gnoclOptOnEvent ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
-{
-	assert ( strcmp ( opt->optName, "-onEvent" ) == 0 );
-	return gnoclConnectOptCmd ( interp, obj, "event", G_CALLBACK ( doOnEvent ), opt, NULL, ret );
 }
 
 /**
@@ -5760,7 +5767,6 @@ int gnoclOptLabelFull ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_
 
 		/* TODO? pango_parse_markup for error message */
 		g_object_set ( obj, "use-markup", ( gboolean ) ( ( type & GNOCL_STR_MARKUP ) != 0 ), NULL );
-
 		g_object_set ( obj, "use-underline", ( gboolean ) ( ( type & GNOCL_STR_UNDERLINE ) != 0 ), NULL );
 	}
 
@@ -5785,7 +5791,9 @@ int gnoclOptLabelFull ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_
 		}
 
 		else
+		{
 			*ret = txtObj;
+		}
 	}
 
 	return TCL_OK;
@@ -5810,9 +5818,13 @@ int gnoclOptDnDTargets ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl
 		if ( no == 0 )
 		{
 			if ( isSource )
+			{
 				gtk_drag_source_unset ( GTK_WIDGET ( obj ) );
+			}
 			else
+			{
 				gtk_drag_dest_unset ( GTK_WIDGET ( obj ) );
+			}
 		}
 
 		else
@@ -5844,11 +5856,13 @@ int gnoclOptDnDTargets ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl
 			}
 
 			if ( isSource )
-				gtk_drag_source_set ( GTK_WIDGET ( obj ), GDK_BUTTON1_MASK,
-									  targets, no, GDK_ACTION_COPY );
+			{
+				gtk_drag_source_set ( GTK_WIDGET ( obj ), GDK_BUTTON1_MASK, targets, no, GDK_ACTION_COPY );
+			}
 			else
-				gtk_drag_dest_set ( GTK_WIDGET ( obj ), GTK_DEST_DEFAULT_ALL,
-									targets, no, GDK_ACTION_COPY );
+			{
+				gtk_drag_dest_set ( GTK_WIDGET ( obj ), GTK_DEST_DEFAULT_ALL, targets, no, GDK_ACTION_COPY );
+			}
 
 			g_free ( targets );
 		}
@@ -5859,9 +5873,13 @@ int gnoclOptDnDTargets ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl
 		GtkTargetList *targets;
 
 		if ( isSource )
+		{
 			return TCL_OK;         /* FIXME: how to retrieve source targets? */
+		}
 		else
+		{
 			targets = gtk_drag_dest_get_target_list ( GTK_WIDGET ( obj ) );
+		}
 
 		*ret = Tcl_NewListObj ( 0, NULL );
 
@@ -5873,8 +5891,7 @@ int gnoclOptDnDTargets ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl
 			{
 				GtkTargetPair *pair = p->data;
 				char *name = gdk_atom_name ( pair->target );
-				Tcl_ListObjAppendElement ( interp, *ret,
-										   Tcl_NewStringObj ( name, -1 ) );
+				Tcl_ListObjAppendElement ( interp, *ret, Tcl_NewStringObj ( name, -1 ) );
 				g_free ( name );
 			}
 		}
@@ -6419,6 +6436,44 @@ void gnoclPopupMenuAddItem ( Tcl_Interp *interp, gchar *str )
 	gtk_widget_show ( item );
 }
 
+
+/**
+\brief	Add menuitem to the popup menu.
+**/
+void gnoclPopupMenuPrependItem ( Tcl_Interp *interp, gchar *str )
+{
+#ifdef DEBUG_TEXT
+	g_print ( "%s\n", __FUNCTION__ );
+#endif
+
+
+	GtkWidget *item;
+
+	item = gnoclGetWidgetFromName ( str, interp );
+
+	gtk_menu_shell_prepend ( GTK_MENU_SHELL ( popupMenu ), item );
+	gtk_widget_show ( item );
+}
+
+
+/**
+\brief	Add menuitem to the popup menu.
+**/
+void gnoclPopupMenuInsertItem ( Tcl_Interp *interp, gchar *str,  gint position )
+{
+#if 0
+	g_print ( "%s\n", __FUNCTION__ );
+#endif
+
+
+	GtkWidget *item;
+
+	item = gnoclGetWidgetFromName ( str, interp );
+
+	gtk_menu_shell_insert ( GTK_MENU_SHELL ( popupMenu ), item, position );
+	gtk_widget_show ( item );
+}
+
 /**
 \brief	Add a submenu to an existing popup menu item.
 **/
@@ -6443,16 +6498,17 @@ void gnoclPopupMenuAddSubMenu ( Tcl_Interp *interp, gchar *str1, gchar *str2 )
 /**
 \brief	Add separator to the popup menu.
 **/
-void gnoclPopupMenuAddSeparator ( Tcl_Interp *interp )
+void gnoclPopupMenuAddSeparator ( Tcl_Interp *interp, gint position )
 {
-#ifdef DEBUG_TEXT
+#if 1
 	g_print ( "%s\n", __FUNCTION__ );
 #endif
 
 	GtkWidget *item;
 
 	item = gtk_separator_menu_item_new();
-	gtk_menu_shell_append ( GTK_MENU_SHELL ( popupMenu ), item );
+	//gtk_menu_shell_append ( GTK_MENU_SHELL ( popupMenu ), item );
+	gtk_menu_shell_insert ( GTK_MENU_SHELL ( popupMenu ), item, position );
 	gtk_widget_show ( item );
 
 }

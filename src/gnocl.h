@@ -167,7 +167,8 @@ typedef struct GnoclOption_
 int gnoclOptWindowCenter ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret );
 int gnoclOptGdkBaseFont ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret );
 
-gnoclOptFunc gnoclOptOnEvent;
+/* moved into text.c, perhaps rename to gnoclOptOnTagEvent */
+// gnoclOptFunc gnoclOptOnEvent;
 gnoclOptFunc gnoclOptOnScroll;
 
 /* WJG STUFF ENDS */
@@ -194,6 +195,7 @@ gnoclOptFunc gnoclOptFrameLabelWidget;
 gnoclOptFunc gnoclOptToolButtonLabelWidget;
 gnoclOptFunc gnoclOptToolButtonIconWidget;
 gnoclOptFunc gnoclOptGdkColorText;
+gnoclOptFunc gnoclOptGdkColorRollOver;
 gnoclOptFunc gnoclOptHalign;
 gnoclOptFunc gnoclOptIcon;
 gnoclOptFunc gnoclOptJustification;
@@ -214,6 +216,8 @@ gnoclOptFunc gnoclOptOnEnterLeave;
 gnoclOptFunc gnoclOptOnKeyPress;
 gnoclOptFunc gnoclOptOnKeyRelease;
 gnoclOptFunc gnoclOptOnMotion;
+void doOnMotion ( GtkWidget *widget, GdkEventMotion *event, gpointer data );
+
 gnoclOptFunc gnoclOptOnButtonMotion;
 gnoclOptFunc gnoclOptCharWidth;
 gnoclOptFunc gnoclOptOnBackSpace;
@@ -296,6 +300,7 @@ gnoclOptFunc gnoclOptOpacity;
 gnoclOptFunc gnoclOptStick;
 gnoclOptFunc gnoclOptFullScreen;
 gnoclOptFunc gnoclGetParent;
+
 gnoclOptFunc gnoclOptOnBackspace;
 gnoclOptFunc gnoclOptOnDeleteFromCursor;
 gnoclOptFunc gnoclOptOnEntryInsert;
