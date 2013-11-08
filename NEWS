@@ -1,8 +1,21 @@
+2013-10:
+	gnocl::radioButon
+		o added %d, data subsitution to -onToggle option
+	gnocl::entry
+		o added %d, data subsitution to -onIconPress option
+		
+2013-09:
+	gnocl::text
+		o implemented tag rollover effects using -rollOverColor and tag option -rollover
+		
 2013-09: 
 	gnocl::text
 		o added -length (chars) option to lorem command.
+		o new widget command modified
 	new command
 		o gnocl::pango, validate markup strings
+	popup command
+		o added subcommands insert, append, prepend
 		
 2013-08:
 	gnocl::notebook
@@ -14,6 +27,7 @@
 		o new options
 			-onPopulatePopup, -onCopyClipboard, -onMoveCursor 
 			make 
+			
 2013-07:
    new command
 		gnocl::commands

@@ -2,6 +2,8 @@
 \brief
 \todo	add getColumn and getRow widget commands
 \history
+   2013-11: began working on problems with boolean widgets in trees
+			moved toggling functionality into core
    2013-07: added commands, options, commands
    2013-01: added insert
    2012-12: fixed problem with -wrapMode failing to set to option word
@@ -2596,25 +2598,60 @@ static void defaultToggledFunc ( GtkCellRendererToggle * cell, gchar * arg1, gpo
 }
 
 /**
-\brief
+\brief	handle cell toggle click
 **/
-static void toggledFunc ( GtkCellRendererToggle * cell, gchar * arg1, gpointer data )
+static void toggledFunc ( GtkCellRendererToggle * cell, gchar * path_string, gpointer data )
 {
+
+#if 0
+	g_print ( "%s : path = %s\n", __FUNCTION__, path_string );
+#endif
+
 	GnoclCommandData *cs = ( GnoclCommandData * ) data;
 	TreeListParams   *para = ( TreeListParams * ) cs->data;
+
+	GtkTreeIter iter;
+	GtkTreeModel *model;
+	gint n;
+	gint colNo;
+	GValue value = { 0 };
+
+	colNo = getColumn ( GTK_CELL_RENDERER ( cell ) );
+	model = gtk_tree_view_get_model ( GTK_TREE_VIEW ( para->view ) );
+	gtk_tree_model_get_iter_from_string ( model, &iter, path_string );
+	gtk_tree_model_get ( model, &iter, colNo, &n, -1 );
+
+	n = ( n == 1 ) ? 0 : 1;
+
+#if 1
+	g_value_init ( &value, G_TYPE_UINT );
+	g_value_set_uint ( &value, n );
+#else
+	// doesn't seem to work for some reason!
+	g_value_init ( &value, G_TYPE_BOOLEAN );
+	g_value_set_boolean ( &value, n );
+
+#endif
+
+	gtk_tree_store_set_value ( GTK_TREE_STORE ( model ), &iter, colNo, &value );
 
 	GnoclPercSubst ps[] =
 	{
 		{ 'w', GNOCL_STRING },  /* widget */
 		{ 'p', GNOCL_STRING },  /* path */
 		{ 'c', GNOCL_INT },     /* col no */
+		{ 'v', GNOCL_INT },     /* value */
 		{ 0 }
 	};
+
 	ps[0].val.str = para->name;
-	ps[1].val.str = stringPathToTclPath ( arg1 );
+	ps[1].val.str = stringPathToTclPath ( path_string );
 	ps[2].val.i = getColumn ( GTK_CELL_RENDERER ( cell ) );
+	ps[3].val.i = n;
 
 	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
+
+	g_value_unset ( &value );
 	g_free ( ( char * ) ps[1].val.str );
 }
 
@@ -3021,8 +3058,7 @@ static int getValue ( TreeListParams * para, Tcl_Interp * interp, int objc, Tcl_
 	/*
 	if( gtk_list_get_text( para->list, row, column, &text ) == 0 )
 	{
-	   Tcl_SetResult( interp, "text could not be retrieved.",
-	         TCL_STATIC );
+	   Tcl_SetResult( interp, "text could not be retrieved.", TCL_STATIC );
 	   return TCL_ERROR;
 	}
 	*/

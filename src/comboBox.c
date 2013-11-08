@@ -346,8 +346,7 @@ static int addItem ( GtkTreeModel *model, const char *val, const char *txt )
 {
 	GtkTreeIter iter;
 	gtk_list_store_append ( GTK_LIST_STORE ( model ), &iter );
-	gtk_list_store_set ( GTK_LIST_STORE ( model ), &iter,
-						 VALUE_COLUMN, val, TEXT_COLUMN, txt, -1 );
+	gtk_list_store_set ( GTK_LIST_STORE ( model ), &iter, VALUE_COLUMN, val, TEXT_COLUMN, txt, -1 );
 
 	return TCL_OK;
 }
@@ -563,8 +562,7 @@ static int cget ( Tcl_Interp *interp, ComboParams *para, GnoclOption options[], 
 			{
 				const char *val, *txt;
 				Tcl_Obj *ll = Tcl_NewListObj ( 0, NULL );
-				gtk_tree_model_get ( model, &iter, VALUE_COLUMN, &val,
-									 TEXT_COLUMN, &txt, -1 );
+				gtk_tree_model_get ( model, &iter, VALUE_COLUMN, &val, TEXT_COLUMN, &txt, -1 );
 				Tcl_ListObjAppendElement ( NULL, ll, Tcl_NewStringObj ( txt, -1 ) );
 				Tcl_ListObjAppendElement ( NULL, ll, Tcl_NewStringObj ( val, -1 ) );
 				Tcl_ListObjAppendElement ( NULL, obj, ll );

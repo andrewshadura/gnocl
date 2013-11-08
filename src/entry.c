@@ -12,6 +12,7 @@
 
 /*
    History:
+   2013-10: added %d, data subsitution to -onIconPress option
    2013-07:	added commands, options, commands
    2012-10-15: added -onDestroy
    2012-08-23: added substitution parameter %d

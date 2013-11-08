@@ -3397,7 +3397,7 @@ static void doOnToggleOverWrite ( GtkTextView *text_view, gpointer user_data )
 
 	ps[0].val.str = gnoclGetNameFromWidget ( text_view );
 	ps[1].val.str = gtk_widget_get_name ( GTK_WIDGET ( text_view ) );
-	ps[1].val.str = gtk_text_view_get_overwrite ( text_view );
+	ps[2].val.i = gtk_text_view_get_overwrite ( text_view );
 
 	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
 }
@@ -3955,6 +3955,7 @@ static void doOnIconPress ( GtkWidget *entry, GtkEntryIconPosition icon_pos, Gdk
 		{ 'p', GNOCL_STRING },  /* icon position */
 		{ 'g', GNOCL_STRING },  /* glade name */
 		{ 't', GNOCL_STRING },  /* glade name */
+		{ 'd', GNOCL_STRING },  /* data */
 		{ 0 }
 	};
 
@@ -3983,6 +3984,7 @@ static void doOnIconPress ( GtkWidget *entry, GtkEntryIconPosition icon_pos, Gdk
 	ps[3].val.str = gtk_widget_get_name ( GTK_WIDGET ( entry ) );
 
 	ps[4].val.str = gtk_entry_get_text  ( GTK_WIDGET ( entry ) );
+	ps[5].val.str = g_object_get_data ( entry, "gnocl::data" );
 
 	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
 }
