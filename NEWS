@@ -1,3 +1,11 @@
+2013-11: 
+	gnocl::tree and gnocl::list
+		o boolean columns
+			automatically toggle when clicked
+			added %v to substution paramaters for -onToggled
+		o cget
+			now works properly again
+			
 2013-10:
 	gnocl::radioButon
 		o added %d, data subsitution to -onToggle option

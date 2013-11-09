@@ -2,8 +2,11 @@
 \brief
 \todo	add getColumn and getRow widget commands
 \history
-   2013-11: began working on problems with boolean widgets in trees
-			moved toggling functionality into core
+   2013-11: boolean columns
+				automatically toggle when clicked
+				added %v to substution paramaters for -onToggled
+			cget
+				now works properly again
    2013-07: added commands, options, commands
    2013-01: added insert
    2012-12: fixed problem with -wrapMode failing to set to option word
@@ -123,6 +126,7 @@ static const int onRowExpandedIdx      = 8;
 static const int onRowCollapsedIdx     = 9;
 static const int treeLinePatternIdx    = 10;
 static const int dataIdx			   = 11;
+static const int searchColumnIdx       = 39;
 //static const int reorderableIdx        = 11;
 
 static GnoclOption treeListOptions[] =
@@ -143,49 +147,47 @@ static GnoclOption treeListOptions[] =
 	*/
 
 	{ "-data", GNOCL_STRING, NULL }, /* 11 */
-	{"-onInteractiveSearch", GNOCL_OBJ, "", gnoclOptOnInteractiveSearch},
-	{"-onMoveCursor", GNOCL_OBJ, "", gnoclOptOnMoveCursor},
+	{ "-onInteractiveSearch", GNOCL_OBJ, "", gnoclOptOnInteractiveSearch}, /* 12 */
+	{ "-onMoveCursor", GNOCL_OBJ, "", gnoclOptOnMoveCursor},
 
-	{ "-tooltip", GNOCL_OBJ, "", gnoclOptTooltip },
-	{ "-hasFocus", GNOCL_BOOL, "has-focus" },
-	{ "-headersClickable", GNOCL_BOOL, "headers-clickable" },
-	{ "-headersVisible", GNOCL_BOOL, "headers-visible" },
-	{ "-heightGroup", GNOCL_OBJ, "h", gnoclOptSizeGroup },
-	{ "-heightRequest", GNOCL_INT, "height-request" },
-	{ "-name", GNOCL_STRING, "name" },
-	{ "-onButtonPress", GNOCL_OBJ, "P", gnoclOptOnButton },
-	{ "-onButtonRelease", GNOCL_OBJ, "R", gnoclOptOnButton },
-	{ "-onPopupMenu", GNOCL_OBJ, "popup-menu", gnoclOptCommand },
-	{ "-sizeGroup", GNOCL_OBJ, "s", gnoclOptSizeGroup },
-	{ "-widthGroup", GNOCL_OBJ, "w", gnoclOptSizeGroup },
-	{ "-widthRequest", GNOCL_INT, "width-request" },
+	{ "-tooltip", GNOCL_OBJ, "", gnoclOptTooltip }, /* 13 */
+	{ "-hasFocus", GNOCL_BOOL, "has-focus" }, // 14
+	{ "-headersClickable", GNOCL_BOOL, "headers-clickable" }, // 15
+	{ "-headersVisible", GNOCL_BOOL, "headers-visible" }, // 16
+	{ "-heightGroup", GNOCL_OBJ, "h", gnoclOptSizeGroup }, //17
+	{ "-heightRequest", GNOCL_INT, "height-request" }, // 18
+	{ "-name", GNOCL_STRING, "name" }, // 19
+	{ "-onButtonPress", GNOCL_OBJ, "P", gnoclOptOnButton }, // 20
+	{ "-onButtonRelease", GNOCL_OBJ, "R", gnoclOptOnButton }, // 21
+	{ "-onPopupMenu", GNOCL_OBJ, "popup-menu", gnoclOptCommand }, // 22
+	{ "-sizeGroup", GNOCL_OBJ, "s", gnoclOptSizeGroup }, // 23
+	{ "-widthGroup", GNOCL_OBJ, "w", gnoclOptSizeGroup }, // 24
+	{ "-widthRequest", GNOCL_INT, "width-request" }, // 25
 
-	{ "-baseFont", GNOCL_OBJ, "Sans 14", gnoclOptGdkBaseFont },
-	{ "-baseColor", GNOCL_OBJ, "normal", gnoclOptGdkColorBase },
+	{ "-baseFont", GNOCL_OBJ, "Sans 14", gnoclOptGdkBaseFont }, // 26
+	{ "-baseColor", GNOCL_OBJ, "normal", gnoclOptGdkColorBase }, // 27
 
-	{ "-evenRowColor", GNOCL_OBJ, "", gnoclOptColorEvenRow }, /* still a code stub */
+	{ "-evenRowColor", GNOCL_OBJ, "", gnoclOptColorEvenRow }, /* still a code stub */ // 28
 
 	/* GtkTreeList properties, actual colours set by theme engine based
 	   upon other settings,
 	   19/03/09
 	*/
-	{ "-ruleHint", GNOCL_BOOL, "rules-hint"},
-	{ "-treeLines", GNOCL_BOOL, "enable-tree-lines" },
-	{ "-gridLines", GNOCL_BOOL, "enable-grid-lines" },
-	{ "-expanders",  GNOCL_BOOL, "show-expanders" },
-	{ "-enableSearch", GNOCL_BOOL, "enable-search" },
-	{ "-fixedHeight", GNOCL_BOOL, "fixed-height-mode" },
+	{ "-ruleHint", GNOCL_BOOL, "rules-hint"}, // 29
+	{ "-treeLines", GNOCL_BOOL, "enable-tree-lines" }, // 30
+	{ "-gridLines", GNOCL_BOOL, "enable-grid-lines" }, // 31
+	{ "-expanders",  GNOCL_BOOL, "show-expanders" }, // 32
+	{ "-enableSearch", GNOCL_BOOL, "enable-search" }, // 33
+	{ "-fixedHeight", GNOCL_BOOL, "fixed-height-mode" }, // 34
 
-	{ "-hoverExpand", GNOCL_BOOL, "hover-expand" },
-	{ "-hoverSelection",  GNOCL_BOOL, "hover-selection" },
-	{ "-reorderable" , GNOCL_BOOL, "reorderable" },
-	{ "-rubberBand", GNOCL_BOOL, "rubber-banding" },
+	{ "-hoverExpand", GNOCL_BOOL, "hover-expand" }, // 35
+	{ "-hoverSelection",  GNOCL_BOOL, "hover-selection" }, // 36
+	{ "-reorderable" , GNOCL_BOOL, "reorderable" }, // 37
+	{ "-rubberBand", GNOCL_BOOL, "rubber-banding" }, // 38
 
-	{ "-searchColumn",  GNOCL_INT, "search-column"},
-	{ "-searchEntry",  GNOCL_OBJ, "", gnoclOptSearchEntryWidget },
-	{ "-tooltipColumn",  GNOCL_INT, "tooltip-column"},
-
-
+	{ "-searchColumn",  GNOCL_INT, "search-column"}, // 39
+	{ "-searchEntry",  GNOCL_OBJ, "", gnoclOptSearchEntryWidget }, // 40
+	{ "-tooltipColumn",  GNOCL_INT, "tooltip-column"}, // 41
 
 	{ NULL }
 };
@@ -1698,8 +1700,8 @@ errorExit:
 **/
 static int cget ( Tcl_Interp *interp, TreeListParams *para, GnoclOption options[], int idx )
 {
-#ifdef DEBUG_LABEL
-	g_print ( "label/staticFuncs/cget\n" );
+#if 1
+	g_print ( "%s %s\n", __FUNCTION__, options[idx] );
 #endif
 
 	Tcl_Obj *obj = NULL;
@@ -1710,7 +1712,6 @@ static int cget ( Tcl_Interp *interp, TreeListParams *para, GnoclOption options[
 		obj = Tcl_NewStringObj ( para->data, -1 );
 		//gnoclOptParaData ( interp, para->data, &obj);
 	}
-
 
 	if ( obj != NULL )
 	{
@@ -3508,7 +3509,7 @@ int treeListFunc ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * con
 			{
 				int idx;
 
-				switch ( gnoclCget ( interp, objc, objv, G_OBJECT ( para ), treeListOptions, &idx ) )
+				switch ( gnoclCget ( interp, objc, objv, G_OBJECT ( para->view ), treeListOptions, &idx ) )
 				{
 					case GNOCL_CGET_ERROR:
 						{
