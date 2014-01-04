@@ -1,5 +1,5 @@
 #include "gnocl.h"
-#include "gnoclparams.h"
+//#include "gnoclparams.h"
 
 /**
 \brief	Return text with Pango markup

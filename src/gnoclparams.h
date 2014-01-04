@@ -3,6 +3,44 @@
 gnoclparams.h
 */
 
+typedef enum GnoclStringType_
+{
+	GNOCL_STR_EMPTY     = 0,       // empty string
+	GNOCL_STR_STR       = 1 << 0,  // normal string
+	GNOCL_STR_STOCK     = 1 << 1,  // (potentially) the name of a stock item
+	GNOCL_STR_FILE      = 1 << 2,  // (potentially) the name of a file
+	GNOCL_STR_TRANSLATE = 1 << 3,  // to be translated via gettext
+	GNOCL_STR_UNDERLINE = 1 << 4,  // '_' marks underline and accelerator
+	GNOCL_STR_MARKUP    = 1 << 5,  // markup for label
+	GNOCL_STR_BUFFER    = 1 << 6   // (potentially) the name of a pixbuf
+} GnoclStringType;
+
+
+/* in radioButton.c  for menuRadioItem */
+
+typedef struct
+{
+	Tcl_Interp *interp;
+	GArray     *widgets;
+	int        inSetVar;
+	char       *variable;
+	//GSList     *list;
+	/* grouping for toolbar item */
+} GnoclRadioGroup;
+
+/*
+ * radioButton declarations
+ */
+typedef struct
+{
+	char            *name;
+	GnoclRadioGroup *group;
+	GtkWidget       *widget;
+	char            *onToggled;
+	Tcl_Obj         *onValue;
+} GnoclRadioParams;
+
+
 /**
 \brief    Function associated with the widget.
 \note     These are specific to the gnocl package alone, perhaps these should be put into specific library?
@@ -214,12 +252,11 @@ typedef struct
 
 typedef struct
 {
-	GtkWidget  	*item;
+	GtkToolItem  *item;
 	char 		*name;
 	char 		*onClicked;
 	Tcl_Interp 	*interp;
 } ToolButtonParams;
-
 
 typedef struct
 {
@@ -229,6 +266,8 @@ typedef struct
 	char		*onClicked;
 	Tcl_Interp	*interp;
 } ToolButtonMenuParams;
+
+
 
 typedef struct
 {
@@ -360,3 +399,27 @@ typedef struct
 	GtkWidget *bg;
 	GtkWidget *fg;
 } RichTextToolbarParams;
+
+typedef struct
+{
+	char       *name;
+	Tcl_Interp *interp;
+	GtkWidget  *widget;
+	char       *onToggled;
+	char       *variable;
+	Tcl_Obj    *onValue;
+	Tcl_Obj    *offValue;
+	int        inSetVar;
+} GnoclCheckParams;
+
+typedef struct
+{
+	char       *name;
+	Tcl_Interp *interp;
+	GtkToolItem  *item;
+	char       *onToggled;
+	char       *variable;
+	Tcl_Obj    *onValue;
+	Tcl_Obj    *offValue;
+	int        inSetVar;
+} GnoclToolBarCheckParams;

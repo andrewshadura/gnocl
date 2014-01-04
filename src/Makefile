@@ -65,6 +65,7 @@ GTK_OBJ := \
 	helperFuncs.o \
 	iconView.o \
 	infoBar.o \
+	inheritedOptions.o \
 	inputDialog.o \
 	image.o \
 	itemGroup.o \
@@ -129,6 +130,9 @@ GTK_OBJ := \
 	treeList.o \
 	volumeButton.o \
 	window.o \
+	./toolbar/toggleButton.o \
+	./toolbar/radioButton.o \
+	./toolbar/menuButton.o \	
 
 .PHONY: all $(PACKAGE_NAME) clean install uninstall reinstall devinstall devuninstall
 

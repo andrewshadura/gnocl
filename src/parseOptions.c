@@ -25,7 +25,7 @@
 */
 
 #include "gnocl.h"
-#include "gnoclparams.h"
+//#include "gnoclparams.h"
 
 /* global used to store a pointer to the text/entry popupmenu */
 GtkMenu *popupMenu;
@@ -38,6 +38,8 @@ extern lastRollOverTagBgClr;
 extern rollOverTagFgClr;
 extern rollOverTagBgClr;
 /* add to parseOptions */
+
+
 
 /**
 \brief
@@ -2168,6 +2170,10 @@ static void destroyCmdData ( gpointer data, GClosure *closure )
 **/
 static void doCommand ( GtkWidget *widget, gpointer data )
 {
+#if 0
+	g_print ( "%s\n", __FUNCTION__ );
+#endif
+
 	GnoclCommandData *cs = ( GnoclCommandData * ) data;
 
 	/* if we have set the result, we are in the middle of
@@ -2181,11 +2187,14 @@ static void doCommand ( GtkWidget *widget, gpointer data )
 	{
 		{ 'w', GNOCL_STRING },  /* widget */
 		{ 'g', GNOCL_STRING },  /* gladeName */
+		{ 'd', GNOCL_STRING },  /* data */
 		{ 0 }
 	};
 
 	ps[0].val.str = gnoclGetNameFromWidget ( widget );
 	ps[1].val.str = gtk_widget_get_name ( GTK_WIDGET ( widget ) );
+	ps[2].val.str = g_object_get_data ( GTK_WIDGET ( widget ), "gnocl::data" );
+
 	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
 	//}
 }
@@ -3807,9 +3816,71 @@ static void doOnColorSet   ( GtkWidget *color_button, gpointer user_data )
 /**
 \brief	callback handler for GTK_BUTTON widgets
 **/
+static void doOnStateChanged   ( GtkWidget *widget, gpointer user_data )
+{
+#if 0
+	g_print ( "%s\n", __FUNCTION__ );
+#endif
+	GnoclCommandData *cs = ( GnoclCommandData * ) user_data;
+
+	GnoclPercSubst ps[] =
+	{
+		{ 'w', GNOCL_STRING },  /* widget */
+		{ 'p', GNOCL_STRING },  /* parent */
+		{ 'g', GNOCL_STRING },  /* glade name */
+		{ 'd', GNOCL_STRING },  /* data */
+		{ 's', GNOCL_STRING },  /* data */
+		{ 0 }
+	};
+
+	const char *dataID = "gnocl::data";
+	ButtonParams *para = g_object_get_data ( G_OBJECT ( widget ), dataID );
+
+	ps[0].val.str = gnoclGetNameFromWidget ( widget );
+	ps[1].val.str = gnoclGetNameFromWidget ( gtk_widget_get_parent ( widget ) );
+	ps[2].val.str = gtk_widget_get_name ( widget );
+	ps[3].val.str = g_object_get_data ( widget, "gnocl::data" );
+
+	switch ( gtk_widget_get_state ( widget ) )
+	{
+		case GTK_STATE_NORMAL:
+			{
+				ps[4].val.str = "normal";
+			} break;
+		case GTK_STATE_ACTIVE:
+			{
+				ps[4].val.str = "active";
+			} break;
+		case GTK_STATE_PRELIGHT:
+			{
+				ps[4].val.str = "prelight";
+			} break;
+		case GTK_STATE_SELECTED:
+			{
+				ps[4].val.str = "selected";
+			} break;
+		case GTK_STATE_INSENSITIVE:
+			{
+				ps[4].val.str = "insensitive";
+			}
+			break;
+		default:
+			{
+			}
+			break;
+	}
+
+
+	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
+
+}
+
+/**
+\brief	callback handler for GTK_BUTTON widgets
+**/
 static void doOnClicked   ( GtkWidget *button, gpointer user_data )
 {
-#ifdef DEBUG_PARSEOPTIONS
+#if 0
 	g_print ( "%s\n", __FUNCTION__ );
 #endif
 	GnoclCommandData *cs = ( GnoclCommandData * ) user_data;
@@ -3974,15 +4045,12 @@ static void doOnIconPress ( GtkWidget *entry, GtkEntryIconPosition icon_pos, Gdk
 	{
 		ps[2].val.str = "secondary";
 	}
-
 	else
 	{
 		ps[2].val.str = "primary";
 	}
 
-
 	ps[3].val.str = gtk_widget_get_name ( GTK_WIDGET ( entry ) );
-
 	ps[4].val.str = gtk_entry_get_text  ( GTK_WIDGET ( entry ) );
 	ps[5].val.str = g_object_get_data ( entry, "gnocl::data" );
 
@@ -4362,11 +4430,24 @@ int gnoclOptOnColorSet ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl
 
 /**
 \brief
+\date 17/11/13
+**/
+int gnoclOptOnStateChange ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
+{
+	return gnoclConnectOptCmd ( interp, obj, "state-changed", G_CALLBACK ( doOnStateChanged ), opt, NULL, ret );
+}
+
+
+
+/**
+\brief
 **/
 int gnoclOptOnClicked ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
 	return gnoclConnectOptCmd ( interp, obj, "clicked", G_CALLBACK ( doOnClicked ), opt, NULL, ret );
 }
+
+
 
 /**
 \brief
@@ -5008,6 +5089,8 @@ static void doOnApplyTag (	GtkTextBuffer *textbuffer,	GtkTextTag *tag,	GtkTextIt
 		{ 'c', GNOCL_INT },     /* start (c)ol from which tag was applied */
 		{ 'l', GNOCL_INT },     /* end (l)ine to which tag was applied */
 		{ 'o', GNOCL_INT },     /* end (o)ffset to which tag was applied */
+		{ 'd', GNOCL_STRING },  /* data */
+
 		{ 0 }
 	};
 
@@ -5016,6 +5099,7 @@ static void doOnApplyTag (	GtkTextBuffer *textbuffer,	GtkTextTag *tag,	GtkTextIt
 	ps[2].val.i     = gtk_text_iter_get_line_offset ( start );
 	ps[3].val.i     = gtk_text_iter_get_line ( end );
 	ps[4].val.i     = gtk_text_iter_get_line_offset ( end );
+	ps[5].val.str 	= g_object_get_data ( tag, "gnocl::data" );
 
 	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
 }
@@ -6502,7 +6586,7 @@ void gnoclPopupMenuAddSubMenu ( Tcl_Interp *interp, gchar *str1, gchar *str2 )
 **/
 void gnoclPopupMenuAddSeparator ( Tcl_Interp *interp, gint position )
 {
-#if 1
+#if 0
 	g_print ( "%s\n", __FUNCTION__ );
 #endif
 

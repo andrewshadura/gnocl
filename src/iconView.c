@@ -15,7 +15,7 @@
 **/
 
 #include "gnocl.h"
-#include "gnoclparams.h"
+//#include "gnoclparams.h"
 
 /* some default settings for the default listStore model */
 

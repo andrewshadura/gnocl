@@ -12,6 +12,7 @@
 
 /*
    History:
+   2013-11: added commad attach
    2013-07:	added commands, options, commands
    2012-09: added -data option
    2008-10: added command, class
@@ -174,7 +175,7 @@ static const char *cmds[] =
 {
 	"delete", "configure", "add",
 	"addBegin", "addEnd", "popup",
-	"popdown", "class",
+	"popdown", "class", "attach",
 	NULL
 };
 
@@ -184,12 +185,15 @@ static const char *cmds[] =
 int menuFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
 
+#if 1
+	listParameters ( objc, objv, __FUNCTION__ );
+#endif
 
 	enum cmdIdx
 	{
 		DeleteIdx, ConfigureIdx, AddIdx,
 		BeginIdx, EndIdx, PopupIdx,
-		PopdownIdx, ClassIdx
+		PopdownIdx, ClassIdx, AttachIdx
 	};
 
 	GtkMenu *menu = GTK_MENU ( data );
@@ -208,13 +212,74 @@ int menuFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const ob
 
 	switch ( idx )
 	{
+			/*
+			left_attach : The column number to attach the left side of the item to.
+			right_attach : 	The column number to attach the right side of the item to.
+			top_attach : The row number to attach the top of the item to.
+			bottom_attach : The row number to attach the bottom of the item to.
+			*/
+		case AttachIdx:
+			{
+				g_print ( "AttachIdx objc=%d\n", objc );
+				uint r;
+				uint c;
+				uint rowSpan = 1;
+				uint colSpan = 1;
 
+				GtkWidget *item;
+
+				if ( objc < 5 )
+				{
+					Tcl_WrongNumArgs ( interp, 1, objv, "command" );
+					return TCL_ERROR;
+				}
+
+				item = gnoclGetWidgetFromName ( Tcl_GetString ( objv[2] ), interp );
+				Tcl_GetIntFromObj ( interp, objv[3], &r );
+				Tcl_GetIntFromObj ( interp, objv[4], &c );
+
+				gint i;
+
+				for ( i = 5 ; i < objc ; i += 2 )
+				{
+					if ( strcmp ( Tcl_GetString ( objv[i] ), "-rowSpan" ) == 0 )
+					{
+						g_print ( "row\n" );
+						Tcl_GetIntFromObj ( interp, objv[i+1], &rowSpan );
+					}
+
+					if ( strcmp ( Tcl_GetString ( objv[i] ), "-colSpan" ) == 0 )
+					{
+						g_print ( "col\n" );
+						Tcl_GetIntFromObj ( interp, objv[i+1], &colSpan );
+					}
+				}
+
+				/* final error check */
+				if ( rowSpan == 0 )
+				{
+					rowSpan = 1;
+				}
+
+				if ( colSpan == 0 )
+				{
+					colSpan = 1;
+				}
+
+				gtk_menu_attach ( GTK_MENU ( menu ), item, c, c + colSpan, r, r + rowSpan );
+
+			}
+			break;
 		case ClassIdx:
-			Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "menu", -1 ) );
+			{
+				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "menu", -1 ) );
+			}
 			break;
 		case DeleteIdx:
-			return gnoclDelete ( interp, GTK_WIDGET ( menu ), objc, objv );
-
+			{
+				return gnoclDelete ( interp, GTK_WIDGET ( menu ), objc, objv );
+			}
+			break;
 		case ConfigureIdx:
 			{
 				int ret = TCL_ERROR;
@@ -241,12 +306,7 @@ int menuFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const ob
 					return TCL_ERROR;
 				}
 
-				return gnoclMenuShellAddChildren (
-
-						   interp,
-						   GTK_MENU_SHELL ( menu ),
-						   objv[2],
-						   idx != BeginIdx );
+				return gnoclMenuShellAddChildren (  interp, GTK_MENU_SHELL ( menu ), objv[2], idx != BeginIdx );
 			}
 
 		case PopupIdx:

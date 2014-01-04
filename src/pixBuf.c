@@ -66,7 +66,7 @@
 **/
 
 #include "gnocl.h"
-#include "gnoclparams.h"
+//#include "gnoclparams.h"
 #include "gnocl_logo.h"
 #include "gnocl_pointer.h"
 

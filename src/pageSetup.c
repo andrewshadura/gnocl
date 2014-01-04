@@ -36,7 +36,7 @@ struct _GtkPaperSize
 **/
 
 #include "gnocl.h"
-#include "gnoclparams.h"
+//#include "gnoclparams.h"
 
 /* needs to be public to be accessed by gnocl::inventory */
 static GHashTable *name2pagesetupList;

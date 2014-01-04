@@ -29,7 +29,7 @@
 **/
 
 #include "gnocl.h"
-#include "gnoclparams.h"
+//#include "gnoclparams.h"
 
 
 /* module function declarations */

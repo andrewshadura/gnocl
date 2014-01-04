@@ -43,7 +43,7 @@
  */
 
 #include "gnocl.h"
-#include "gnoclparams.h"
+//#include "gnoclparams.h"
 
 /**
 \page page_label gnocl::label

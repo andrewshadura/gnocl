@@ -35,7 +35,7 @@
 **/
 
 #include "gnocl.h"
-#include "gnoclparams.h"
+//#include "gnoclparams.h"
 
 
 

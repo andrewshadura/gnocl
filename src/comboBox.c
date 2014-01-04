@@ -13,12 +13,15 @@
 /*
  * Problems: There is no activation event for the comboEntry entry widget.
  *
+ * CORRECT OPTIONS TO COMPLY WITH WIDGET PROPERTIES
+ *
  * /
 
 
 /**
 \par Modification History
 \verbatim
+* 	2014-01: added -hasEntry
 	2013-07: added commands, options, commands
 *   2010-10: added -widthChars
 *   2009-06: added -entryWidth
@@ -112,6 +115,10 @@ GnoclOption comboBoxOptions[] =
 	{ "-onShowHelp", GNOCL_OBJ, "", gnoclOptOnShowHelp },
 	{ "-baseFont", GNOCL_OBJ, "Sans 14", gnoclOptGdkBaseFont },
 
+
+
+	{ "-hasEntry", GNOCL_BOOL, "has-entry" },
+
 	/* inherited widget properties */
 	{ "-visible", GNOCL_BOOL, "visible" },
 	{ "-tooltip", GNOCL_OBJ, "", gnoclOptTooltip },
@@ -200,8 +207,7 @@ static int doCommand ( ComboParams *para, const char *val, int background )
 		ps[0].val.str = para->name;
 		ps[1].val.str = val;
 
-		return gnoclPercentSubstAndEval ( para->interp, ps, para->onChanged,
-										  background );
+		return gnoclPercentSubstAndEval ( para->interp, ps, para->onChanged, background );
 	}
 
 	return TCL_OK;
@@ -676,8 +682,7 @@ int comboBoxFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * cons
 			{
 				int ret = TCL_ERROR;
 
-				if ( gnoclParseAndSetOptions ( interp, objc - 1, objv + 1,
-											   comboBoxOptions, G_OBJECT ( widget ) ) == TCL_OK )
+				if ( gnoclParseAndSetOptions ( interp, objc - 1, objv + 1, comboBoxOptions, G_OBJECT ( widget ) ) == TCL_OK )
 				{
 					ret = configure ( interp, para, comboBoxOptions );
 				}
@@ -692,8 +697,7 @@ int comboBoxFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * cons
 			{
 				int     idx;
 
-				switch ( gnoclCget ( interp, objc, objv,
-									 G_OBJECT ( para->comboBox ), comboBoxOptions, &idx ) )
+				switch ( gnoclCget ( interp, objc, objv, G_OBJECT ( para->comboBox ), comboBoxOptions, &idx ) )
 				{
 					case GNOCL_CGET_ERROR:
 						return TCL_ERROR;
@@ -755,6 +759,9 @@ static int makeComboBox ( Tcl_Interp *interp, int objc, Tcl_Obj * const objv[], 
 	para->comboBox = GTK_COMBO_BOX (
 						 isEntry ? gtk_combo_box_entry_new_with_model ( model, VALUE_COLUMN )
 						 : gtk_combo_box_new_with_model ( model ) );
+
+	//para->comboBox = gtk_combo_box_new_with_entry  	();
+
 	para->inSetVar = 0;
 
 
@@ -791,9 +798,7 @@ static int makeComboBox ( Tcl_Interp *interp, int objc, Tcl_Obj * const objv[], 
 		return TCL_ERROR;
 	}
 
-	g_signal_connect ( GTK_OBJECT ( para->comboBox ), "destroy",
-
-					   G_CALLBACK ( destroyFunc ), para );
+	g_signal_connect ( GTK_OBJECT ( para->comboBox ), "destroy", G_CALLBACK ( destroyFunc ), para );
 
 	gnoclMemNameAndWidget ( para->name, GTK_WIDGET ( para->comboBox ) );
 

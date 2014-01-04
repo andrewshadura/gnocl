@@ -32,6 +32,8 @@
 #include <assert.h>
 #include <math.h>
 
+#include "gnoclparams.h"
+
 /* set some padding values */
 #define GNOCL_PAD_TINY  2
 #define GNOCL_PAD_SMALL 4
@@ -48,17 +50,19 @@
       do{ if(dest) Tcl_DecrRefCount( dest ); \
       dest = src; Tcl_IncrRefCount( dest ); } while( 0 )
 
+/*
 typedef enum GnoclStringType_
 {
-	GNOCL_STR_EMPTY     = 0,       /* empty string */
-	GNOCL_STR_STR       = 1 << 0,  /* normal string */
-	GNOCL_STR_STOCK     = 1 << 1,  /* (potentially) the name of a stock item */
-	GNOCL_STR_FILE      = 1 << 2,  /* (potentially) the name of a file */
-	GNOCL_STR_TRANSLATE = 1 << 3,  /* to be translated via gettext */
-	GNOCL_STR_UNDERLINE = 1 << 4,  /* '_' marks underline and accelerator */
-	GNOCL_STR_MARKUP    = 1 << 5,  /* markup for label */
-	GNOCL_STR_BUFFER    = 1 << 6   /* (potentially) the name of a pixbuf */
+	GNOCL_STR_EMPTY     = 0,       // empty string
+	GNOCL_STR_STR       = 1 << 0,  // normal string
+	GNOCL_STR_STOCK     = 1 << 1,  // (potentially) the name of a stock item
+	GNOCL_STR_FILE      = 1 << 2,  // (potentially) the name of a file
+	GNOCL_STR_TRANSLATE = 1 << 3,  // to be translated via gettext
+	GNOCL_STR_UNDERLINE = 1 << 4,  // '_' marks underline and accelerator
+	GNOCL_STR_MARKUP    = 1 << 5,  // markup for label
+	GNOCL_STR_BUFFER    = 1 << 6   // (potentially) the name of a pixbuf
 } GnoclStringType;
+*/
 
 GnoclStringType gnoclGetStringType ( Tcl_Obj *obj );
 char *gnoclGetString ( Tcl_Obj *op );
@@ -121,8 +125,7 @@ typedef struct
 	}    val;
 } GnoclPercSubst;
 
-const char *gnoclPercentSubstitution ( GnoclPercSubst *p, int no,
-									   const char *str );
+const char *gnoclPercentSubstitution ( GnoclPercSubst *p, int no, const char *str );
 
 enum GnoclOptionStatus
 {
@@ -257,6 +260,7 @@ gnoclOptFunc gnoclOptOnMarkDelete;
 gnoclOptFunc gnoclOptOnExpose;
 gnoclOptFunc gnoclOptOnClicked;
 gnoclOptFunc gnoclOptOnColorSet;
+gnoclOptFunc gnoclOptOnStateChange;
 gnoclOptFunc gnoclOptOnButtonClicked;
 gnoclOptFunc gnoclOptOnColumnClicked;
 gnoclOptFunc gnoclOptOnInteractiveSearch;
@@ -545,6 +549,8 @@ int gnoclVteTerminalCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj
  */
 /* in checkButton.c  for menuCheckItem and toolBar checkItem */
 
+
+/*
 typedef struct
 {
 	char       *name;
@@ -561,6 +567,7 @@ typedef struct
 {
 	char       *name;
 	Tcl_Interp *interp;
+	GtkWidget  *widget;
 	GtkToggleAction  *item;
 	char       *onToggled;
 	char       *variable;
@@ -569,7 +576,7 @@ typedef struct
 	int        inSetVar;
 } GnoclToolBarCheckParams;
 
-
+*/
 int gnoclCheckIsOn ( Tcl_Interp *interp, Tcl_Obj *onValue, Tcl_Obj *offValue, Tcl_Obj *val );
 void gnoclCheckDestroyFunc ( GtkWidget *widget, gpointer data );
 void gnoclCheckToggledFunc ( GtkWidget *widget, gpointer data );
@@ -580,7 +587,7 @@ int gnoclCheckSetActive ( GnoclCheckParams *para, GnoclOption *opt );
 int gnoclCheckVariableValueChanged ( GnoclCheckParams *para );
 
 /* in radioButton.c  for menuRadioItem */
-
+/*
 typedef struct
 {
 	Tcl_Interp *interp;
@@ -588,12 +595,14 @@ typedef struct
 	int        inSetVar;
 	char       *variable;
 	//GSList     *list;
-	/* grouping for toolbar item */
 } GnoclRadioGroup;
+*/
 
 /*
  * radioButton declarations
  */
+
+/*
 typedef struct
 {
 	char            *name;
@@ -602,7 +611,7 @@ typedef struct
 	char            *onToggled;
 	Tcl_Obj         *onValue;
 } GnoclRadioParams;
-
+*/
 
 /*
  * radioButton declarations
@@ -830,3 +839,10 @@ int pixBufFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const 
 
 void gtk_text_buffer_insert_markup ( GtkTextBuffer *buffer, GtkTextIter *iter, const gchar *markup );
 
+/* found in toolBar.c */
+int getTextAndIcon ( Tcl_Interp *interp, GtkToolbar *toolbar, GnoclOption *txtOpt, GnoclOption *iconOpt, char **txt, GtkWidget **item, int *isUnderline );
+
+/* used by toolbar, moved to helperfuncs */
+void setUnderline ( GtkWidget *item );
+int getTextAndIcon ( Tcl_Interp *interp, GtkToolbar *toolbar, GnoclOption *txtOpt, GnoclOption *iconOpt, char **txt, GtkWidget **item, int *isUnderline );
+Tcl_Obj *cgetText ( GtkWidget *item );

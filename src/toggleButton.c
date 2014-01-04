@@ -30,6 +30,8 @@
 
 #include "gnocl.h"
 
+//static void gnoclToggleToggledFunc ( GtkWidget *widget, gpointer data );
+
 static const int textIdx      = 0;
 static const int onToggledIdx = 1;
 static const int variableIdx  = 2;
@@ -97,6 +99,7 @@ static GnoclOption toggleButtonOptions[] =
 **/
 static int toggleDoCommand ( GnoclToggleParams *para, Tcl_Obj *val, int bg )
 {
+
 	if ( para->onToggled )
 	{
 		GnoclPercSubst ps[] =
@@ -737,10 +740,6 @@ int gnoclToggleButtonCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Ob
 			para->widget =  gtk_toggle_button_new   ();
 		}
 	}
-
-
-
-
 
 	para->onToggled = NULL;
 	para->variable = NULL;

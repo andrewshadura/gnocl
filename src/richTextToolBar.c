@@ -10,7 +10,7 @@
 **/
 
 #include "gnocl.h"
-#include "gnoclparams.h"
+//#include "gnoclparams.h"
 
 static const int textIdx = 0;
 static const int textAcceleratorsIdx = 1;

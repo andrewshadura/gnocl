@@ -65,7 +65,7 @@
 **/
 
 #include "gnocl.h"
-#include "gnoclparams.h"
+//#include "gnoclparams.h"
 #include "drag_n_drop.h" /* keep separate until all issues ironed out */
 
 /* static function declarations */
@@ -241,6 +241,7 @@ static GnoclOption colOptions[] =
 };
 
 /**
+ * As column configuration options
 **/
 static GnoclOption cellRenderOptions[] =
 {
@@ -1270,38 +1271,14 @@ static int setCell ( Tcl_Interp *interp, GtkTreeView *view, GtkTreeIter *iter, i
 	else
 	{
 
-#if 0
-		GtkCellRenderer *renderer;
-
-		renderer = gtk_cell_renderer_text_new ();
-		gtk_tree_model_get ( model, iter, COLOR, &text, -1 );
-		/* WORKING HERE! change cell colour? */
-		g_object_set ( renderer, "background", "#FF0000", "background-set", TRUE, NULL );
-#endif
-
-#if 0
-		setCellBgClr ( GTK_LIST_STORE ( model ), iter, "#FF00FF" );
-#endif
 
 		gtk_list_store_set_value ( GTK_LIST_STORE ( model ), iter, col, &value );
+		//gtk_list_store_set ( GTK_LIST_STORE ( model ), iter, col, &value, -1 );
 
 	}
 
-#if 0
-	/* this is not much use */
-	enum
-	{
-		COL_NAME = 0,
-		COL_AGE,
-		COL_COLOR,
-		NUM_COLS
-	};
-	GtkCellRenderer *renderer;
 
-	renderer = gtk_cell_renderer_text_new ();
-	gtk_tree_view_insert_column_with_attributes ( GTK_TREE_VIEW ( view ), -1, "Name", renderer, "text", COL_NAME, "foreground", COL_COLOR, NULL );
-	gtk_list_store_set ( GTK_LIST_STORE ( model ), &iter, COL_NAME, "Jane Doe", col, 23, COL_COLOR, "red", -1 );
-#endif
+
 
 	g_value_unset ( &value );
 
@@ -1343,6 +1320,10 @@ static void setCellBgClr ( GtkTreeModel *model, GtkTreeIter *iter, gchar *clr )
 	GtkTreeIter *parentIter
 	int singleCol
 	int insertPos
+\notes
+	in order to set the background colour of a cell, it may be necessary to
+	add each cell with its own cell renderer whose properties can then be set
+	explicitly...
 **/
 static Tcl_Obj *insertRow ( TreeListParams *para, Tcl_Interp *interp, Tcl_Obj *child, GtkTreeIter *parentIter, int singleCol, int insertPos )
 {
@@ -2912,8 +2893,7 @@ static int columnConfigure ( TreeListParams * para, Tcl_Interp * interp, int obj
 	else if ( GTK_IS_CELL_RENDERER_TOGGLE ( renderer ) )
 	{
 		GnoclOption optTgl = { "-onToggled", GNOCL_OBJ, NULL };
-		options = g_new ( GnoclOption, noColOptions + noCellRenderOptions
-						  + noToggleRenderOptions + 2 );
+		options = g_new ( GnoclOption, noColOptions + noCellRenderOptions + noToggleRenderOptions + 2 );
 		options->optName = NULL;
 		appendOptions ( options, colOptions );
 		startRenderOptions = appendOneOption ( options, &optTgl );
@@ -3299,7 +3279,6 @@ static int cellConfigure ( TreeListParams * para, Tcl_Interp * interp, int objc,
 	{
 		{ "-value", GNOCL_OBJ, NULL },
 		{ "-visible", GNOCL_OBJ, NULL },
-		{ "-background", GNOCL_OBJ, NULL },
 		/* TODO: all renderer options depending on type of renderer */
 		{ NULL }
 	};
@@ -3336,6 +3315,8 @@ static int cellConfigure ( TreeListParams * para, Tcl_Interp * interp, int objc,
 	{
 		goto cleanExit;
 	}
+
+
 
 	/* -value */
 	for ( k = 0; k < sizeof ( types ) / sizeof ( *types ); ++k )
@@ -4213,5 +4194,3 @@ int gnoclListCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * con
 
 	return gnoclTreeListCmd ( data, interp, objc, objv, 0 );
 }
-
-

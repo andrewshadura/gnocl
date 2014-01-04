@@ -365,11 +365,17 @@ int menuItemFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * cons
 				switch ( gnoclCget ( interp, objc, objv, G_OBJECT ( label ), labelOptions, &idx ) )
 				{
 					case GNOCL_CGET_ERROR:
-						return TCL_ERROR;
+						{
+							return TCL_ERROR;
+						}
 					case GNOCL_CGET_HANDLED:
-						return TCL_OK;
+						{
+							return TCL_OK;
+						}
 					case GNOCL_CGET_NOTHANDLED:
-						return cget ( interp, label, labelOptions, idx );
+						{
+							return cget ( interp, label, labelOptions, idx );
+						}
 				}
 			}
 		case ClassIdx:

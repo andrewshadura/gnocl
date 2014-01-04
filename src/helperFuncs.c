@@ -1239,3 +1239,204 @@ int exists ( const char *fname )
 
 	return 0;
 }
+
+/**
+\brief called from Toolbar libraries
+**/
+
+
+/**
+\brief
+**/
+Tcl_Obj *cgetText ( GtkWidget *item )
+{
+
+	/* FIXME: is there really only one label? */
+	GtkWidget *label = gnoclFindChild ( item, GTK_TYPE_LABEL );
+
+	if ( label != NULL )
+	{
+		const char *txt = gtk_label_get_label ( GTK_LABEL ( label ) );
+
+		if ( txt != NULL )
+		{
+			Tcl_Obj *obj = Tcl_NewStringObj ( txt, -1 );
+			/* FIXME: that does not work
+			if( gtk_button_get_use_stock( GTK_BUTTON( item ) ) )
+			{
+			   Tcl_Obj *old = obj;
+			   obj = Tcl_NewStringObj( "%#", 2 );
+			   Tcl_AppendObjToObj( obj, old );
+			}
+			else
+			*/
+
+			if ( gtk_label_get_use_underline ( GTK_LABEL ( label ) ) )
+			{
+				Tcl_Obj *old = obj;
+				obj = Tcl_NewStringObj ( "%_", 2 );
+				Tcl_AppendObjToObj ( obj, old );
+			}
+
+			return obj;
+		}
+	}
+
+	return Tcl_NewStringObj ( "", 0 );;
+}
+
+
+void setUnderline ( GtkWidget *item )
+{
+
+	/* FIXME: is there really only one label? */
+	GtkWidget *label = gnoclFindChild ( item, GTK_TYPE_LABEL );
+
+	//assert ( label );
+	if ( label !=  NULL )
+	{
+		gtk_label_set_use_underline ( GTK_LABEL ( label ), 1 );
+	}
+}
+
+
+/**
+\brief	Modified version of getTextAndIcon to allow for new Toolbar API
+\param
+		Tcl_Interp *interp		pointer to Tcl interpreter
+		GtkToolbar *toolbar		pointer to toolbar object that will receive new item
+		GnoclOption *txtOpt		pointer to item label ??
+		GnoclOption *iconOpt	pointer to item icon ??
+		char **txt				handle on text pointer
+		GtkWidget **icon		handle on image widget pointer
+		int *isUnderline		pointer to int
+
+\note	Either -text or -icon must be set.
+
+**/
+int getTextAndIcon ( Tcl_Interp *interp, GtkToolbar *toolbar,
+					 GnoclOption *txtOpt, GnoclOption *iconOpt,
+					 char **txt, GtkWidget **item, int *isUnderline )
+{
+	*item = NULL;
+	*txt = NULL;
+	*isUnderline = 0;
+
+	GtkImage *image;
+	gchar *name;
+	Tcl_Obj *icon;
+	GnoclStringType type;
+
+	/* error check, must have an icon defined! */
+	if ( iconOpt->status != GNOCL_STATUS_CHANGED && txtOpt->status != GNOCL_STATUS_CHANGED )
+	{
+		Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "GNOCL ERROR! Either -icon and -text must be set.", -1 ) );
+		return TCL_ERROR;
+	}
+
+
+	/* if only text set, must check for percent string */
+	if ( txtOpt->status == GNOCL_STATUS_CHANGED )
+	{
+		/* assume text == icon */
+		name = gnoclGetStringFromObj ( txtOpt->val.obj, NULL );
+		icon = txtOpt->val.obj;
+		type = gnoclGetStringType ( txtOpt->val.obj );
+
+	}
+
+	/* icon only */
+	if ( iconOpt->status == GNOCL_STATUS_CHANGED )
+	{
+		icon = iconOpt->val.obj;
+
+		if ( txtOpt->status != GNOCL_STATUS_CHANGED )
+		{
+			name = gnoclGetStringFromObj ( iconOpt->val.obj, NULL );
+		}
+
+	}
+
+	type = gnoclGetStringType ( icon );
+
+	/* stock item */
+	if ( type & GNOCL_STR_STOCK )
+	{
+#if 0
+		g_print ( "STOCK\n" );
+#endif
+		GtkStockItem stockItem;
+		GtkIconSize sz;
+
+		if ( gnoclGetStockItem ( icon, interp, &stockItem ) != TCL_OK )
+		{
+			return TCL_ERROR;
+		}
+
+		sz = gtk_toolbar_get_icon_size ( toolbar );
+		image = gtk_image_new_from_stock ( stockItem.stock_id, sz );
+
+	}
+
+	/* file */
+	else if ( type & GNOCL_STR_FILE )
+	{
+#if 0
+		g_print ( "FILE\n" );
+#endif
+		GError *error = NULL;
+		GdkPixbuf *pixbuf = NULL;
+
+		pixbuf = gdk_pixbuf_new_from_file ( icon, NULL );
+		image = gtk_image_new_from_pixbuf ( pixbuf );
+
+	}
+
+	/* buffer */
+	else if ( type & GNOCL_STR_BUFFER )
+	{
+#if 0
+		g_print ( "BUFFER\n" );
+#endif
+		GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file ( icon, NULL );
+		GtkWidget *image = gtk_image_new_from_pixbuf ( pixbuf );
+
+	}
+
+	/* get the text string */
+	else
+	{
+		GtkIconSize sz;
+
+		sz = gtk_toolbar_get_icon_size ( toolbar );
+		GtkWidget *image = gtk_image_new_from_stock ( GTK_STOCK_MISSING_IMAGE, sz );
+
+	}
+
+	/*
+		uncertain what's happening here
+		this isUnderline was
+	*/
+	if ( type & GNOCL_STR_UNDERLINE )
+	{
+		if ( txt == NULL )
+		{
+			*isUnderline = 0;
+		}
+
+		else
+		{
+			*isUnderline = 1;
+		}
+	}
+
+	gtk_widget_show ( image );
+
+	*item = image;
+
+	*txt = g_strdup ( name );
+
+	*isUnderline = 1;
+
+	return TCL_OK;
+}

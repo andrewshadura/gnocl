@@ -38,7 +38,7 @@
 */
 
 #include "gnocl.h"
-#include "gnoclparams.h"
+//#include "gnoclparams.h"
 
 /* static function declarations */
 static int optUpdatePolicy ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret );

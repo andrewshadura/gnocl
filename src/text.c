@@ -25,6 +25,7 @@
 */
 /*
    History:
+   2013-11: added some error checking to function applyTag
    2013-10: added -rollOverFgColor and tag option -rollover
    2013-09: added -length (chars) option to lorem command.
 			added command modified
@@ -113,8 +114,9 @@
 **/
 
 #include "gnocl.h"
-#include "gnoclparams.h"
+//#include "gnoclparams.h"
 #include "./textUndo/undo_manager.h"
+
 
 static int textFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *  const objv[] );
 static int cget ( Tcl_Interp *interp, GtkTextView *text, GnoclOption options[], int idx );
@@ -1471,7 +1473,6 @@ static GnoclOption textOptions[] =
 
 	{ "-hasFocus", GNOCL_BOOL, "has-focus" },
 
-	{ "-onShowHelp", GNOCL_OBJ, "", gnoclOptOnShowHelp },
 	{ "-name", GNOCL_STRING, "name" },
 	{ "-visible", GNOCL_BOOL, "visible" },
 	{ "-sensitive", GNOCL_BOOL, "sensitive" },
@@ -1567,7 +1568,21 @@ static GnoclOption textOptions[] =
 	{ "-onQueryTooltip", GNOCL_OBJ, "", gnoclOptOnQueryToolTip },
 	{ "-onDestroy", GNOCL_OBJ, "destroy", gnoclOptCommand },
 
+#if 0
+	/* -------- GtkWidget Inherited Signals -------- */
+	{ "-onStateChange", GNOCL_OBJ, "state-change", gnoclOptOnStateChange},
+	{ "-onShowHelp", GNOCL_OBJ, "", gnoclOptOnShowHelp },
+	{ "-onRealize", GNOCL_OBJ, "realize", gnoclOptCommand}, // Generic Callback Handler
+	{ "-onUnrealize", GNOCL_OBJ, "unrealize", gnoclOptCommand}, // Generic Callback Handler
+	{ "-onMap", GNOCL_OBJ, "map", gnoclOptCommand}, // Generic Callback Handler
+	{ "-onHide", GNOCL_OBJ, "hide", gnoclOptCommand}, // Generic Callback Handler
+	{ "-onGrabFocus", GNOCL_OBJ, "grab-focus", gnoclOptCommand}, // Generic Callback Handler
+	{ "-onPopupMenu", GNOCL_OBJ, "popup-menu", gnoclOptCommand}, // Generic Callback Handler
+	{ "-onShow", GNOCL_OBJ, "show", gnoclOptCommand}, // Generic Callback Handler
+	{ "-onUnmap", GNOCL_OBJ, "unmap", gnoclOptCommand}, // Generic Callback Handler
 	{ NULL }
+#endif
+
 };
 
 /**
@@ -1856,6 +1871,9 @@ static int applyTag ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, Tcl
 
 	GtkTextIter   iter;
 	GtkTextIter   iter2;
+	GtkTextTagTable *table;
+
+	table = gtk_text_buffer_get_tag_table ( buffer );
 
 	/*  The arguments passed in the tcl script are in the objv array. These are:
 	0:  {0 0}       fromIndex
@@ -1928,6 +1946,9 @@ static int applyTag ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, Tcl
 
 		/*  apply each tag in turn */
 
+
+
+
 		for ( k = 0; k < no; ++k )
 		{
 			Tcl_Obj *tp;
@@ -1938,7 +1959,15 @@ static int applyTag ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, Tcl
 				goto clearExit;
 			}
 
-			gtk_text_buffer_apply_tag_by_name ( buffer, Tcl_GetString ( tp ), &start, &end );
+			/* do this check otherwise Gtk error thrown up! */
+			if ( gtk_text_tag_table_lookup ( table, Tcl_GetString ( tp ) ) != NULL )
+			{
+				gtk_text_buffer_apply_tag_by_name ( buffer, Tcl_GetString ( tp ), &start, &end );
+			}
+			else
+			{
+				g_print ( "WARNING! Tag %s not found.\n", Tcl_GetString ( tp ) );
+			}
 
 		}
 	}
@@ -1966,6 +1995,11 @@ static void deleteTag  ( GtkTextTag * tag, gpointer data )
 **/
 static int removeTag ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, Tcl_Obj *  const objv[], int cmdNo )
 {
+#if 1
+	g_print ( "%s\n", __FUNCTION__ );
+#endif
+
+
 	/*  declare some variables */
 	// console error messaging
 	GnoclOption insertOptions[] =
@@ -5327,6 +5361,7 @@ int gnoclTextViewCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj *
 	GtkTextView       *textView;
 	GtkTextView       *textBuffer;
 
+	// gnoclAppendOptions (textOptions);
 
 	if ( gnoclParseOptions ( interp, objc, objv, textOptions ) != TCL_OK )
 	{
@@ -5342,6 +5377,7 @@ int gnoclTextViewCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj *
 
 	//add some extra signals to the default setting -these have no effect!!!
 	gtk_widget_add_events ( textView, GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK );
+
 
 	ret = gnoclSetOptions ( interp, textOptions, G_OBJECT ( textView ), -1 );
 

@@ -28,7 +28,7 @@
 **/
 
 #include "gnocl.h"
-#include "gnoclparams.h"
+//#include "gnoclparams.h"
 
 static const int imageIdx = 0;
 static const int stockSizeIdx  = 1;

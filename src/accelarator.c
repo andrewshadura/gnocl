@@ -12,7 +12,7 @@
 **/
 
 #include "gnocl.h"
-#include "gnoclparams.h"
+//#include "gnoclparams.h"
 
 
 AccGrpParams *gnoclGetAccGrpFromName ( const char *id, Tcl_Interp *interp );

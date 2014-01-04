@@ -31,7 +31,7 @@ take an optional graphic,
 **/
 
 #include "gnocl.h"
-#include "gnoclparams.h"
+//#include "gnoclparams.h"
 
 static const int widthIdx			= 0;
 static const int heightIdx			= 1;

@@ -45,7 +45,7 @@ date	20012
 
 
 #include "gnocl.h"
-#include "gnoclparams.h"
+//#include "gnoclparams.h"
 
 /*
 #include "gnocl.h"
@@ -944,7 +944,6 @@ int gnoclLabelEntryCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj 
 
 	LabelEntryParams *para;
 	int ret = TCL_OK;
-
 
 	if ( gnoclParseOptions ( interp, objc, objv, labelEntryOptions ) != TCL_OK )
 	{

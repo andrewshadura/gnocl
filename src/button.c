@@ -37,7 +37,7 @@ date 	2001-03:
 **/
 
 #include "gnocl.h"
-#include "gnoclparams.h"
+// #include "gnoclparams.h"
 
 
 static const int textIdx 	= 0;
