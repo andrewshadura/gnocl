@@ -13,6 +13,8 @@
 
 /*
    History:
+   2014-01: added %p %d subtitution strings
+			added -data option
    2013-07: added commands, options, commands
    2011-03: fixed problems with -icon option
    2011-03: added -widthGroup
@@ -21,7 +23,7 @@
    2009-01: added command, geometry
    2008-10: added command, class
    2008-06: Begin of developement
- */
+*/
 
 /**
 \page page_toggleButton gnocl::toggleButton
@@ -40,6 +42,7 @@ static const int offValueIdx  = 4;
 static const int activeIdx    = 5;
 static const int valueIdx     = 6;
 static const int iconIdx      = 7;
+static const int dataIdx      = 8;
 
 static GnoclOption toggleButtonOptions[] =
 {
@@ -53,15 +56,14 @@ static GnoclOption toggleButtonOptions[] =
 	{ "-active", GNOCL_BOOL, NULL },    /* 5 */
 	{ "-value", GNOCL_OBJ, NULL },      /* 6 */
 	{ "-icon", GNOCL_OBJ, NULL },    	/* 7 */
-
+	//{ "-data", GNOCL_OBJ, NULL },		/* 8 */
 
 	/* unique widget properties */
 	{ "-drawIndicator", GNOCL_BOOL, "draw-indicator" },
 	{ "-inconsistent", GNOCL_BOOL, "inconsistent" },
 
-
 	{ "-activeBackgroundColor", GNOCL_OBJ, "active", gnoclOptGdkColorBg },
-	{ "-data", GNOCL_OBJ, "", gnoclOptData },
+
 	{ "-hasFocus", GNOCL_BOOL, "has-focus" },
 	{ "-name", GNOCL_STRING, "name" },
 	{ "-normalBackgroundColor", GNOCL_OBJ, "normal", gnoclOptGdkColorBg },
@@ -79,6 +81,8 @@ static GnoclOption toggleButtonOptions[] =
 	/* inherited GtkWidget properties */
 	{ "-heightRequest", GNOCL_INT, "height-request" },
 	{ "-widthRequest", GNOCL_INT, "width-request" },
+
+	{ "-data", GNOCL_OBJ, "", gnoclOptData },
 
 	/*
 
@@ -107,12 +111,16 @@ static int toggleDoCommand ( GnoclToggleParams *para, Tcl_Obj *val, int bg )
 			{ 'w', GNOCL_STRING },  /* widget */
 			{ 'v', GNOCL_OBJ },     /* value */
 			{ 'g', GNOCL_STRING },  /* glade name */
+			{ 'p', GNOCL_STRING },  /* parent */
+			{ 'd', GNOCL_STRING },  /* data */
 			{ 0 }
 		};
 
 		ps[0].val.str = para->name;
 		ps[1].val.obj = val;
 		ps[2].val.str = gtk_widget_get_name ( GTK_WIDGET ( para->widget ) );
+		ps[3].val.str = gnoclGetNameFromWidget ( gtk_widget_get_parent ( para->widget ) );
+		ps[4].val.str = g_object_get_data ( para->widget, "gnocl::data" );
 
 		return gnoclPercentSubstAndEval ( para->interp, ps, para->onToggled, bg );
 	}
@@ -436,6 +444,13 @@ static int configure ( Tcl_Interp *interp, GnoclToggleParams *para, GnoclOption 
 		return TCL_ERROR;
 	}
 
+	/*
+		if ( options[dataIdx].status == GNOCL_STATUS_CHANGED )
+		{
+			para->data =  Tcl_GetString ( options[dataIdx].val.obj );
+			g_print ("data = %s\n", para->data);
+		}
+	*/
 	if ( options[onValueIdx].status == GNOCL_STATUS_CHANGED )
 	{
 		GNOCL_MOVE_OBJ ( options[onValueIdx].val.obj, para->onValue );
@@ -464,7 +479,9 @@ static int configure ( Tcl_Interp *interp, GnoclToggleParams *para, GnoclOption 
 	if ( options[valueIdx].status == GNOCL_STATUS_CHANGED )
 	{
 		if ( gnoclToggleSetValue ( para, options[valueIdx].val.obj ) != TCL_OK )
+		{
 			return TCL_ERROR;
+		}
 	}
 
 	/* add custom icon etc */
@@ -567,6 +584,14 @@ static int cget ( Tcl_Interp *interp, GnoclToggleParams *para, GnoclOption optio
 {
 	Tcl_Obj *obj = NULL;
 
+	/*
+		if ( idx == dataIdx )
+		{
+			g_print ("**********\n");
+			obj = Tcl_NewStringObj ( para->data, -1 );
+
+		}
+	*/
 	if ( idx == textIdx )
 	{
 		obj = gnoclCgetButtonText ( interp, GTK_BUTTON ( para->widget ) );
@@ -719,12 +744,13 @@ int gnoclToggleButtonCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Ob
 		return TCL_ERROR;
 	}
 
-
 	para = g_new ( GnoclToggleParams, 1 );
 	para->interp = interp;
 	para->name = gnoclGetAutoWidgetId();
-
 	para->widget =  gtk_toggle_button_new   ();
+
+	const char *dataID = "gnocl::para";
+	g_object_set_data ( G_OBJECT ( para->widget ), dataID, para );
 
 	if ( 0 )
 	{

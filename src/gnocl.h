@@ -484,6 +484,7 @@ typedef struct
 	Tcl_Obj    *onValue;
 	Tcl_Obj    *offValue;
 	int        inSetVar;
+	char	   *data;
 } GnoclToggleParams;
 
 

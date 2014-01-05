@@ -3902,7 +3902,6 @@ static void doOnClicked   ( GtkWidget *button, gpointer user_data )
 	ps[2].val.str = gtk_widget_get_name ( button );
 	ps[3].val.str = g_object_get_data ( button, "gnocl::data" );
 
-
 	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
 
 }

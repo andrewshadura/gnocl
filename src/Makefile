@@ -130,9 +130,10 @@ GTK_OBJ := \
 	treeList.o \
 	volumeButton.o \
 	window.o \
-	./toolbar/toggleButton.o \
-	./toolbar/radioButton.o \
-	./toolbar/menuButton.o \	
+	./toolbar/tb_toggleButton.o \
+	./toolbar/tb_radioButton.o \
+	./toolbar/tb_menuButton.o \
+	./toolbar/tb_button.o \	
 
 .PHONY: all $(PACKAGE_NAME) clean install uninstall reinstall devinstall devuninstall
 

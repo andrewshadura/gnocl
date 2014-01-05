@@ -2,7 +2,13 @@
 	gnocl::toolbar
 		o separated source code for the creation of toolbar items into
 			individual modules. 
-		o -onToggled functionality now working properly for relevant items.
+		o -onToggled functionality now working properly for relevant 
+			items.
+	gnocl::radioButton
+		o added %p substitution strings
+	gnocl::toggleButton
+		o added %p %d subtitution strings
+		o new option -data
 
 2013-11: 
 	gnocl::menu

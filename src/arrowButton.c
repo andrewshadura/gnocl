@@ -22,8 +22,6 @@ date	2001-03:
 \endverbatim
 **/
 
-
-
 #include "gnocl.h"
 
 static GnoclOption arrowOptions[] =
@@ -58,7 +56,6 @@ static GnoclOption arrowOptions[] =
 static const int textIdx = 0;
 static const int iconsIdx = 1;
 
-
 /**
 \brief
 **/
@@ -73,7 +70,6 @@ static int configure ( Tcl_Interp *interp, GtkWidget *widget, GnoclOption option
 
 	/* this will enable us to obtain widget data for the arrow object */
 	char *result = g_object_get_data ( G_OBJECT ( arrow ), dataIDa );
-
 
 	result = g_object_get_data ( G_OBJECT ( arrow ), dataIDb );
 

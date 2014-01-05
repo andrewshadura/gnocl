@@ -255,6 +255,7 @@ typedef struct
 	GtkToolItem  *item;
 	char 		*name;
 	char 		*onClicked;
+	char 		*data;
 	Tcl_Interp 	*interp;
 } ToolButtonParams;
 
@@ -266,8 +267,6 @@ typedef struct
 	char		*onClicked;
 	Tcl_Interp	*interp;
 } ToolButtonMenuParams;
-
-
 
 typedef struct
 {
@@ -422,4 +421,5 @@ typedef struct
 	Tcl_Obj    *onValue;
 	Tcl_Obj    *offValue;
 	int        inSetVar;
+	char       *data;
 } GnoclToolBarCheckParams;

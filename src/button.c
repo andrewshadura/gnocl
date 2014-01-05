@@ -53,7 +53,7 @@ static GnoclOption buttonOptions[] =
 	{ "-text", GNOCL_OBJ, NULL },    /* 0 */
 	{ "-icon", GNOCL_OBJ, NULL },    /* 1 */
 	{ "-align", GNOCL_OBJ, NULL },   /* 2 */
-	{ "-baseFont", GNOCL_OBJ, NULL }, /* 4 */
+	{ "-baseFont", GNOCL_OBJ, NULL }, /*  */
 
 	//{ "-data", GNOCL_STRING, NULL }, /* 3 */
 

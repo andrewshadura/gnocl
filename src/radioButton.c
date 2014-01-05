@@ -12,6 +12,7 @@
 
 /*
    History:
+   2014:01: added %p substitution option
    2013-10: added %d, data subsitution to -onToggle option
    2013-07: added commands, options, commands
    2011-03: added -icon option
@@ -347,12 +348,14 @@ static int radioDoCommand ( GnoclRadioParams *para, int background )
 			{ 'w', GNOCL_STRING },  /* widget */
 			{ 'v', GNOCL_OBJ },     /* value */
 			{ 'd', GNOCL_STRING },  /* data */
+			{ 'p', GNOCL_STRING },  /* parent */
 
 			{ 0 }
 		};
 		ps[0].val.str = para->name;
 		ps[1].val.obj = para->onValue;
 		ps[2].val.str = g_object_get_data ( para->widget, "gnocl::data" );
+		ps[3].val.str = gnoclGetNameFromWidget ( gtk_widget_get_parent ( para->widget ) );
 
 		return gnoclPercentSubstAndEval ( para->group->interp, ps, para->onToggled, background );
 	}
