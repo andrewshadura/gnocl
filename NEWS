@@ -4,6 +4,7 @@
 			individual modules. 
 		o -onToggled functionality now working properly for relevant 
 			items.
+		o -position implemented for all objects
 	gnocl::radioButton
 		o added %p substitution strings
 	gnocl::toggleButton

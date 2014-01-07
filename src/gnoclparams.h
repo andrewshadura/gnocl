@@ -255,7 +255,7 @@ typedef struct
 	GtkToolItem  *item;
 	char 		*name;
 	char 		*onClicked;
-	char 		*data;
+	char 		*data;	// redundant
 	Tcl_Interp 	*interp;
 } ToolButtonParams;
 

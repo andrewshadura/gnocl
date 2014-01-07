@@ -1753,8 +1753,6 @@ int gnoclUpdateCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * c
 		return TCL_OK;
 	}
 
-
-
 	int nMax = 500;
 	int n;
 

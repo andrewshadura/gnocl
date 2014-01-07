@@ -12,6 +12,7 @@
 
 /*
    History:
+   2014-01: added gnoclUpdate, internal library call to complete drawing tasks
    2013-07: removed gnoclGetWidgetOptions func, moved to parseOptions.c
    2013-06: added str_replace
    2012-03: added trim
@@ -899,10 +900,23 @@ int gnoclGet2Double ( Tcl_Interp *interp, Tcl_Obj *obj, double *b1, double *b2 )
 	return TCL_ERROR;
 }
 
+/**
+\brief	Complete internal drawing tasks
+**/
+void gnoclUpdate () 
+{
+	int nMax = 500;
+	int n;
 
+	for ( n = 0; n < nMax && gtk_events_pending(); ++n )
+	{
+		gtk_main_iteration_do ( 0 );
+	}
+}
 
 /**
- */
+\brief
+**/
 static int getScrollbarPolicy ( Tcl_Interp *interp, Tcl_Obj *obj, GtkPolicyType *pol )
 {
 	const char *txt[] = { "always", "never", "automatic", NULL };

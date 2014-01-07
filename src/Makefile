@@ -133,7 +133,10 @@ GTK_OBJ := \
 	./toolbar/tb_toggleButton.o \
 	./toolbar/tb_radioButton.o \
 	./toolbar/tb_menuButton.o \
-	./toolbar/tb_button.o \	
+	./toolbar/tb_button.o \
+	./toolbar/tb_widget.o \
+	./toolbar/tb_separator.o \
+	./toolbar/tb_insert.o \
 
 .PHONY: all $(PACKAGE_NAME) clean install uninstall reinstall devinstall devuninstall
 

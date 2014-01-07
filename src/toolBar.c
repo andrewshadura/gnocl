@@ -285,7 +285,7 @@ static int toolBarCget (  Tcl_Interp *interp, GtkWidget *widget,  GnoclOption op
 **/
 /* WJG added menuButton item 29/12/07 */
 
-static int addItem ( GtkToolbar *toolbar, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[], int atEnd )
+static int addItem ( GtkToolbar *toolbar, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[], int pos )
 {
 
 	const char *txt[] =
@@ -325,109 +325,35 @@ static int addItem ( GtkToolbar *toolbar, Tcl_Interp *interp, int objc, Tcl_Obj 
 		case SeparatorIdx:
 		case SpaceIdx:
 			{
-				gint pos;
-				gint n = -1;
-
-				GtkToolItem *item = NULL;
-
-				if ( objc < 3 )
-				{
-					Tcl_WrongNumArgs ( interp, 3, objv, NULL );
-					return TCL_ERROR;
-				}
-
-				item = gtk_separator_tool_item_new ();
-
-				gtk_widget_show ( item );
-
-				if ( objc == 5 )
-				{
-
-					Tcl_GetIntFromObj ( NULL, objv[4], &pos );
-
-					n = gtk_toolbar_get_n_items ( toolbar );
-
-					gtk_toolbar_insert ( GTK_TOOLBAR ( toolbar ), item, n );
-
-					return TCL_OK;
-
-				}
-
-				if ( atEnd )
-				{
-					gtk_toolbar_insert ( GTK_TOOLBAR ( toolbar ), item, -1 );
-				}
-
-				else
-				{
-					gtk_toolbar_insert ( GTK_TOOLBAR ( toolbar ), item, 0 );
-				}
-
+				return addSeparator ( toolbar, interp, objc, objv, pos );
 			}
-
 			break;
 		case WidgetIdx:
 			{
-				GtkWidget *child;
-
-				if ( objc != 4 )
-				{
-					Tcl_WrongNumArgs ( interp, 3, objv, "widget-ID" );
-					return TCL_ERROR;
-				}
-
-				child = gnoclGetWidgetFromName ( Tcl_GetString ( objv[3] ),	 interp );
-
-				if ( child == NULL )
-				{
-					return TCL_ERROR;
-				}
-
-				// GtkToolItems are widgets that can appear on a toolbar.
-				// To create a toolbar item that contain something else than a button, use gtk_tool_item_new().
-				// Use gtk_container_add() to add a child widget to the tool item.
-
-				GtkToolItem *item = gtk_tool_item_new ();
-				gtk_container_add ( item, child );
-
-
-				if ( atEnd )
-				{
-					gtk_toolbar_insert ( toolbar, item, -1 );
-				}
-
-				else
-				{
-					gtk_toolbar_insert ( toolbar, item, 0 );
-				}
-
-				gtk_widget_show_all ( item );
-				Tcl_SetObjResult ( interp, objv[3] );
-
-				return TCL_OK;
+				return addWidget ( toolbar, interp, objc, objv, pos );
 			}
-
+			break;
 		case ItemIdx:
 		case ButtonIdx:
 			{
-				return addButton ( toolbar, interp, objc, objv, atEnd );
+				return addButton ( toolbar, interp, objc, objv, pos );
 			}
 			break;
 		case ToggleButtonIdx:
 		case CheckItemIdx:
 			{
-				return addCheckButton ( toolbar, interp, objc, objv, atEnd );
+				return addCheckButton ( toolbar, interp, objc, objv, pos );
 			}
 			break;
 		case RadioButtonIdx:
 		case RadioItemIdx:
 			{
-				return addRadioButton ( toolbar, interp, objc, objv, atEnd );
+				return addRadioButton ( toolbar, interp, objc, objv, pos );
 			}
 			break;
 		case MenuButtonIdx:
 			{
-				return addMenuButton ( toolbar, interp, objc, objv, atEnd );
+				return addMenuButton ( toolbar, interp, objc, objv, pos );
 			}
 
 	}
@@ -441,7 +367,7 @@ static const char *cmds[] =
 	"flip", "add", "addBegin", "addEnd",
 	"class", "configure", "delete",
 	"insert", "nItems", "cget",
-	"parent",
+	"parent", "remove",
 	NULL
 };
 
@@ -461,10 +387,10 @@ int toolBarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const
 #endif
 	enum cmdIdx
 	{
-		FlipIdx, AddIdx, BeginIdx, EndIdx,
+		FlipIdx, AddIdx, AddBeginIdx, AddEndIdx,
 		ClassIdx, ConfigureIdx, DeleteIdx,
 		InsertIdx, NitemsIdx, CgetIdx,
-		ParentIdx
+		ParentIdx, RemoveIdx
 	};
 
 	GtkToolbar *toolBar = GTK_TOOLBAR ( data );
@@ -484,6 +410,25 @@ int toolBarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const
 	switch ( idx )
 	{
 
+		case RemoveIdx:
+			{
+
+				GtkWidget *item;
+
+				item = gnoclGetWidgetFromName (  Tcl_GetString ( objv[2] ), interp );
+
+				g_object_ref ( item );
+				gtk_container_remove ( GTK_CONTAINER ( toolBar ), item );
+
+				Tcl_SetObjResult ( interp, objv[2] );
+
+			}
+			break;
+		case InsertIdx:
+			{
+				return insertItem ( toolBar, interp, objc, objv, -1 );
+			}
+			return;
 		case FlipIdx:
 			{
 
@@ -556,6 +501,7 @@ int toolBarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const
 			{
 				return gnoclDelete ( interp, GTK_WIDGET ( toolBar ), objc, objv );
 			}
+			break;
 		case ConfigureIdx:
 			{
 				//int ret = gnoclParseAndSetOptions ( interp, objc - 1, objv + 1, toolBarOptions, G_OBJECT ( toolBar ) );
@@ -573,17 +519,25 @@ int toolBarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const
 				return ret;
 
 			}
-
 			break;
-		case BeginIdx:
+#if 1
+		/* deprecated calls */
+		case AddBeginIdx:
 			{
 				return addItem ( toolBar, interp, objc, objv, 0 );
 			}
-
+			break;
+		case AddEndIdx:
+#endif
 		case AddIdx:      /* add is a shortcut for addEnd */
-		case EndIdx:
+
 			{
-				return addItem ( toolBar, interp, objc, objv, 1 );
+				return addItem ( toolBar, interp, objc, objv, -1 );
+			}
+		break;
+		default:
+			{
+				return TCL_ERROR;
 			}
 	}
 

@@ -64,29 +64,31 @@ int separatorFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * con
 	{
 
 		case ClassIdx:
-			Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "separator", -1 ) );
+			{
+				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "separator", -1 ) );
+			}
 			break;
 		case DeleteIdx:
-			return gnoclDelete ( interp, GTK_WIDGET ( separator ), objc, objv );
+			{
+				return gnoclDelete ( interp, GTK_WIDGET ( separator ), objc, objv );
+			}
+			break;
 		case ConfigureIdx:
 			{
 				int ret = TCL_ERROR;
 
-				if ( gnoclParseOptions ( interp, objc - 1, objv + 1,
-										 separatorOptions ) == TCL_OK )
+				if ( gnoclParseOptions ( interp, objc - 1, objv + 1, separatorOptions ) == TCL_OK )
 				{
-					if ( separatorOptions[orientationIdx].status
-							== GNOCL_STATUS_CHANGED )
+					if ( separatorOptions[orientationIdx].status == GNOCL_STATUS_CHANGED )
 					{
-						Tcl_SetResult ( interp,
-										"Option \"-orientation\"  can only set on creation.",
-										TCL_STATIC );
+						Tcl_SetResult ( interp, "Option \"-orientation\"  can only set on creation.", TCL_STATIC );
 						ret = TCL_ERROR;
 					}
 
 					else
-						ret = gnoclSetOptions ( interp, separatorOptions,
-												G_OBJECT ( separator ), -1 );
+					{
+						ret = gnoclSetOptions ( interp, separatorOptions, G_OBJECT ( separator ), -1 );
+					}
 				}
 
 				gnoclClearOptions ( separatorOptions );
@@ -110,10 +112,9 @@ int gnoclSeparatorCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *
 		return TCL_OK;
 	}
 
-
-	int            ret;
+	int ret;
 	GtkOrientation orient = GTK_ORIENTATION_HORIZONTAL;
-	GtkSeparator   *separator;
+	GtkSeparator *separator;
 
 	if ( gnoclParseOptions ( interp, objc, objv, separatorOptions ) != TCL_OK )
 	{

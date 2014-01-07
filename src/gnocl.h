@@ -847,3 +847,5 @@ int getTextAndIcon ( Tcl_Interp *interp, GtkToolbar *toolbar, GnoclOption *txtOp
 void setUnderline ( GtkWidget *item );
 int getTextAndIcon ( Tcl_Interp *interp, GtkToolbar *toolbar, GnoclOption *txtOpt, GnoclOption *iconOpt, char **txt, GtkWidget **item, int *isUnderline );
 Tcl_Obj *cgetText ( GtkWidget *item );
+
+void gnoclUpdate ();

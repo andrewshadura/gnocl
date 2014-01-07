@@ -172,6 +172,8 @@ static int configure (  Tcl_Interp *interp, ButtonParams *para,  GnoclOption opt
 
 		para->align = Tcl_GetString ( options[alignIdx].val.obj );
 
+		// gtk_toolbar_insert  (GtkToolbar *toolbar, GtkToolItem *item, gint pos);
+
 		buttonAlign ( para );
 
 	}
