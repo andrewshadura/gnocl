@@ -1,4 +1,6 @@
 2014-01:
+	gnocl::menu
+		o added -position to the add command
 	gnocl::toolbar
 		o separated source code for the creation of toolbar items into
 			individual modules. 

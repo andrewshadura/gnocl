@@ -12,6 +12,7 @@
 
 /*
    History:
+   2014-01: added -position to the add command
    2013-11: added commad attach
    2013-07:	added commands, options, commands
    2012-09: added -data option
@@ -87,8 +88,13 @@ static void position_function ( GtkMenu *menu, gint *x, gint *y, gboolean *push_
 
 /**
 \brief
+args
+	Tcl_Interp *interp
+	GtkMenuShell *shell
+	Tcl_Obj *children
+	int pos
 **/
-int gnoclMenuShellAddChildren ( Tcl_Interp *interp, GtkMenuShell *shell, Tcl_Obj *children, int atEnd )
+int gnoclMenuShellAddChildren ( Tcl_Interp *interp, GtkMenuShell *shell, Tcl_Obj *children, int pos )
 {
 	int n, noChilds;
 
@@ -120,20 +126,14 @@ int gnoclMenuShellAddChildren ( Tcl_Interp *interp, GtkMenuShell *shell, Tcl_Obj
 
 		if ( !GTK_CHECK_TYPE ( childWidget, GTK_TYPE_MENU_ITEM ) )
 		{
-			Tcl_AppendResult ( interp, "child window \"",
-							   childName, "\" is not a menu item.", ( char * ) NULL );
+			Tcl_AppendResult ( interp, "child window \"",childName, "\" is not a menu item.", ( char * ) NULL );
 			return TCL_ERROR;
 		}
 
-		if ( atEnd )
-		{
-			gtk_menu_shell_append ( shell, childWidget );
-		}
+		if ( pos < -1 ) { pos = -1; }
 
-		else
-		{
-			gtk_menu_shell_prepend ( shell, childWidget );
-		}
+		gtk_menu_shell_insert( shell, childWidget, pos );
+
 	}
 
 	return TCL_OK;
@@ -300,13 +300,21 @@ int menuFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const ob
 		case BeginIdx:
 		case EndIdx:
 			{
-				if ( objc != 3 )
+				gint pos = -1; /* default to end */
+				
+				if ( objc != 3 && objc != 5)
 				{
-					Tcl_WrongNumArgs ( interp, 2, objv, "widget-list" );
+					Tcl_WrongNumArgs ( interp, 2, objv, "widget-list <optional> -position n" );
 					return TCL_ERROR;
 				}
 
-				return gnoclMenuShellAddChildren (  interp, GTK_MENU_SHELL ( menu ), objv[2], idx != BeginIdx );
+				if (objc == 5 && strcmp (Tcl_GetString ( objv[3] ),"-position")== 0 ) {
+					
+					g_print("HERE~~~~~~~~~~~\n");
+					Tcl_GetIntFromObj(interp, objv[4], &pos);
+				}
+
+				return gnoclMenuShellAddChildren (  interp, GTK_MENU_SHELL ( menu ), objv[2], pos); //idx != BeginIdx );
 			}
 
 		case PopupIdx:
