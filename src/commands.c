@@ -12,6 +12,7 @@
 
 /*
    History:
+   2014-01: added gnocl::iconTheme
    2013-09: added gnocl::pango
 				validate markup strings
    2013-03: bug-fixed gnocl::setStyle
@@ -205,7 +206,6 @@ int gnoclSetOpts ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * cons
 int gnoclSetPropertyCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
 
-
 #ifdef DEBUG_COMMANDS
 	g_print ( "%s\n", __FUNCTION__ );
 #endif
@@ -292,6 +292,146 @@ int gnoclToggleCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * c
 	return TCL_ERROR;
 
 }
+
+/**
+\brief  Return string values in a GList as a Tcl list.
+**/
+int glist2TclList ( Tcl_Interp *interp, GSList *list, Tcl_Obj *obj )
+
+{
+	gint n;
+	GSList *p;
+
+	n = 0;
+
+	for ( p = list; p != NULL; p = p->next )
+	{
+		Tcl_ListObjAppendElement ( interp, obj, Tcl_NewStringObj ( p->data, -1 ) );
+		n++;
+	}
+
+	return n;
+}
+
+
+/**
+\brief  Wrapper around the Gtk+ Icontheme API.
+**/
+int gnoclIconThemeCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
+{
+
+#if 0
+	g_print ( "cmd = %s\n", Tcl_GetString ( objv[1] ) );
+#endif
+
+
+	Tcl_Obj *res = Tcl_NewListObj ( 0, NULL );
+	GtkIconTheme *icon_theme = gtk_icon_theme_get_default();
+
+	GSList *p;
+	GSList *i;
+
+
+	static const char *cmds[] =
+	{
+		"contexts", "hasIcon", "icons",
+		NULL
+	};
+
+	static GnoclOption options[] =
+	{
+		{ NULL, GNOCL_STRING, NULL },
+		{ NULL },
+	};
+
+	if ( gnoclGetCmdsAndOpts ( interp, cmds, options, objv, objc ) == TCL_OK )
+	{
+		return TCL_OK;
+	}
+
+	/*--------------------------------------*/
+
+	enum optIdx
+	{
+		ContextsIdx, HasIconIdx, IconsIdx
+	};
+
+	int idx;
+
+	if ( objc != 2 && objc != 4 )
+	{
+		Tcl_WrongNumArgs ( interp, 1, objv, "option" );
+		return TCL_ERROR;
+	}
+
+	if ( Tcl_GetIndexFromObj ( interp, objv[1], cmds, "option", TCL_EXACT, &idx ) != TCL_OK )
+	{
+		return TCL_ERROR;
+	}
+
+	switch ( idx )
+	{
+		case HasIconIdx:
+			{
+				gboolean gtk_icon_theme_has_icon ( GtkIconTheme * icon_theme, const gchar * icon_name );
+			}
+			break;
+		case ContextsIdx:
+			{
+
+				i = gtk_icon_theme_list_contexts ( icon_theme );
+
+#if 0
+				glist2TclList ( interp, i , res ); // something not quite right with this func
+#else
+
+				for ( p = i; p != NULL; p = p->next )
+				{
+
+					Tcl_ListObjAppendElement ( interp, res, Tcl_NewStringObj ( p->data, -1 ) );
+
+				}
+
+#endif
+				Tcl_SetObjResult ( interp, res );
+			}
+			break;
+		case IconsIdx:
+			{
+				//g_slist_free ( p );
+				//g_slist_free ( ids );
+
+				gchar *context = NULL;
+
+				if ( objc == 4 )
+				{
+					if ( strcmp ( Tcl_GetString ( objv[2] ), "-context" ) == 0 )
+					{
+						context = Tcl_GetString ( objv[3] );
+					}
+				}
+
+				i = gtk_icon_theme_list_icons ( icon_theme, context );
+
+				for ( p = i; p != NULL; p = p->next )
+				{
+					Tcl_ListObjAppendElement ( interp, res, Tcl_NewStringObj ( ( char * ) p->data, -1 ) );
+				}
+
+				//g_slist_free ( ids );
+
+				Tcl_SetObjResult ( interp, res );
+			}
+
+			break;
+	}
+
+	g_slist_free ( p );
+	g_slist_free ( i );
+
+	return TCL_OK;
+}
+
 
 
 /**
@@ -1557,7 +1697,6 @@ int gnoclParseColorCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj
 int gnoclInfoCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * const objv[] )
 {
 
-
 	/*--------------------------------------*/
 	static GnoclOption options[] =
 	{
@@ -1569,6 +1708,7 @@ int gnoclInfoCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * con
 	{
 		"version", "gtkVersion", "hasGnomeSupport",
 		"allStockItems", "breakpoint", "fonts",
+		"allIconThemes",
 		NULL
 	};
 
@@ -1583,7 +1723,8 @@ int gnoclInfoCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * con
 	enum optIdx
 	{
 		VersionIdx, GtkVersionIdx, HasGnomeIdx,
-		AllStockItems, BreakpointIdx, FontsIdx
+		AllStockItemsIdx, BreakpointIdx, FontsIdx,
+		AllIconThemesIdx
 	};
 	int idx;
 
@@ -1657,11 +1798,24 @@ int gnoclInfoCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * con
 #endif
 							   ) );
 			break;
-		case AllStockItems:
+		case AllStockItemsIdx:
+		case AllIconThemesIdx:
 			{
-				Tcl_Obj *res = Tcl_NewListObj ( 0, NULL );
-				GSList *ids = gtk_stock_list_ids();
 				GSList *p;
+				GSList *ids;
+				GtkIconTheme *icon_theme;
+				Tcl_Obj *res = Tcl_NewListObj ( 0, NULL );
+
+				if ( idx == AllIconThemesIdx )
+				{
+					icon_theme = gtk_icon_theme_get_default();
+
+					ids = gtk_icon_theme_list_icons ( icon_theme, NULL );
+				}
+				else
+				{
+					ids = gtk_stock_list_ids();
+				}
 
 				for ( p = ids; p != NULL; p = p->next )
 				{
@@ -1712,8 +1866,7 @@ int gnoclInfoCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * con
 					}
 
 					else
-						Tcl_ListObjAppendElement ( interp, res,
-												   Tcl_NewStringObj ( txt, -1 ) );
+						Tcl_ListObjAppendElement ( interp, res, Tcl_NewStringObj ( txt, -1 ) );
 
 					g_free ( p->data );
 				}
@@ -1807,11 +1960,16 @@ gnocl::stockItem add <option val ...>
 **/
 static int createStockItem ( Tcl_Interp * interp, GnoclStringType type, gchar * stockName, gchar * label, gchar * icon )
 {
+#if 1
 	g_print ( "%s\n", __FUNCTION__ );
+#endif
+
 	GtkIconFactory *factory;
 	GtkIconSet *iconset;
 	GtkIconSource *source;
 	GdkPixbuf *pixbuf;
+
+	PixbufParams *para;
 
 	GtkStockItem stock_items[] =
 	{
@@ -1840,8 +1998,8 @@ static int createStockItem ( Tcl_Interp * interp, GnoclStringType type, gchar * 
 		case GNOCL_STR_BUFFER:
 			{
 				/* create stock icon from pixbuf */
-				pixbuf = gnoclGetPixBufFromName ( icon, interp );
-				iconset = gtk_icon_set_new_from_pixbuf ( pixbuf );
+				para = gnoclGetPixBufFromName ( icon, interp );
+				iconset = gtk_icon_set_new_from_pixbuf ( para->pixbuf );
 			}
 			break;
 		default: {}
@@ -1856,16 +2014,15 @@ static int createStockItem ( Tcl_Interp * interp, GnoclStringType type, gchar * 
 }
 
 /**
-\brief
+\brief	Add new items to the list of available stock icons.
 **/
 int gnoclStockItemCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * const objv[] )
 {
 
-
 	static GnoclOption options[] =
 	{
 		{ "-label", GNOCL_STRING, NULL },
-		{  "-icon", GNOCL_STRING, NULL },
+		{ "-icon", GNOCL_STRING, NULL },
 		{ NULL },
 	};
 
@@ -1876,8 +2033,7 @@ int gnoclStockItemCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj 
 		return TCL_OK;
 	}
 
-
-#ifdef DEBUG_COMMANDS
+#if 1
 	listParameters ( objc, objv, "gnoclStockItemCmd" );
 #endif
 
@@ -1917,10 +2073,10 @@ int gnoclStockItemCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj 
 			case LabelIdx:
 				{
 					/* the stock id can be constructed from the label */
-					label = Tcl_GetString ( objv[i+1] );
+					label = Tcl_GetString ( objv[i+1] ); // OK
 					gtkName = createStockName ( "gtk", objv[i+1] );
 
-					g_print ( "name = %s\n", gtkName );
+					g_print ( "name = %s %s\n", Tcl_GetString ( objv[i+1] ), gtkName );
 
 				}
 				break;
@@ -2261,8 +2417,7 @@ int gnoclConfigureCmd (	ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj 
 				break;
 			case GNOCL_STR_FILE:
 				{
-					GdkPixbuf *pix = gnoclPixbufFromObj ( interp,
-														  options + defaultIconIdx );
+					GdkPixbuf *pix = gnoclPixbufFromObj ( interp, options + defaultIconIdx );
 					GList *list = NULL;
 
 					if ( pix == NULL )

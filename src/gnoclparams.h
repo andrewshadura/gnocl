@@ -5,14 +5,15 @@ gnoclparams.h
 
 typedef enum GnoclStringType_
 {
-	GNOCL_STR_EMPTY     = 0,       // empty string
-	GNOCL_STR_STR       = 1 << 0,  // normal string
-	GNOCL_STR_STOCK     = 1 << 1,  // (potentially) the name of a stock item
-	GNOCL_STR_FILE      = 1 << 2,  // (potentially) the name of a file
-	GNOCL_STR_TRANSLATE = 1 << 3,  // to be translated via gettext
-	GNOCL_STR_UNDERLINE = 1 << 4,  // '_' marks underline and accelerator
-	GNOCL_STR_MARKUP    = 1 << 5,  // markup for label
-	GNOCL_STR_BUFFER    = 1 << 6   // (potentially) the name of a pixbuf
+	GNOCL_STR_EMPTY      = 0,       // empty string
+	GNOCL_STR_STR        = 1 << 0,  // normal string
+	GNOCL_STR_STOCK      = 1 << 1,  // (potentially) the name of a stock item
+	GNOCL_STR_FILE       = 1 << 2,  // (potentially) the name of a file
+	GNOCL_STR_TRANSLATE  = 1 << 3,  // to be translated via gettext
+	GNOCL_STR_UNDERLINE  = 1 << 4,  // '_' marks underline and accelerator
+	GNOCL_STR_MARKUP     = 1 << 5,  // markup for label
+	GNOCL_STR_BUFFER	 = 1 << 6,   // (potentially) the name of a pixbuf
+	GNOCL_STR_ICON_THEME = 1 << 7  // (potentially) the name of a icon theme object
 } GnoclStringType;
 
 
@@ -389,6 +390,7 @@ typedef struct
 {
 	GtkToolbar *toolBar;
 	GtkTextView *textView;
+	//GtkTextView *sourceView;
 	Tcl_Interp *interp;
 	char *name;
 	char *fgClr;

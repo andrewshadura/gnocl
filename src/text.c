@@ -5340,13 +5340,11 @@ int gnoclTextCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj *  co
 	gnoclMemNameAndWidget ( para->name, GTK_WIDGET ( para->scrolled ) );
 
 	Tcl_CreateObjCommand ( interp, para->name, textFunc, para, NULL );
-
 	Tcl_SetObjResult ( interp, Tcl_NewStringObj ( para->name, -1 ) );
 
 	return TCL_OK;
 
 }
-
 
 /**
 \brief	Create a plain vanilla GtkTextView widget

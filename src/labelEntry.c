@@ -737,6 +737,22 @@ static int configure ( Tcl_Interp *interp, LabelEntryParams *para, GnoclOption o
 
 				gtk_entry_set_icon_from_pixbuf ( para->entry, GTK_ENTRY_ICON_PRIMARY, pix );
 			}
+			else if ( type & GNOCL_STR_BUFFER )
+			{
+				g_print ( "Adding pixbuf, %s\n", Tcl_GetString ( options[primaryIconIdx].val.obj ) );
+
+				PixbufParams *para = gnoclGetPixBufFromName ( gnoclGetStringFromObj ( options[primaryIconIdx].val.obj, NULL ) , interp );
+
+
+				// GdkPixbuf *pix = gnoclPixbufFromObj ( interp, options + iconIdx );
+
+				if ( para->pixbuf == NULL )
+				{
+					return TCL_ERROR;
+				}
+
+				gtk_image_set_from_pixbuf ( GTK_IMAGE ( image ), para->pixbuf );
+			}
 		}
 	}
 

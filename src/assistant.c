@@ -873,7 +873,7 @@ int assistantFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * con
 }
 
 /**
-\brief      Function to create and configure an new instance of the asistant widget.
+\brief      Function to create and configure a new instance of the asistant widget.
 \note       KRAUSE(2007) 146-157
 */
 int gnoclAssistantCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )

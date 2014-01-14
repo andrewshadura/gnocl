@@ -1,4 +1,16 @@
 2014-01:
+	added %& to the list of percentage markup strings to identify a
+		non-stock-item icon-theme graphic.
+	gnocl::info
+		o new command allIconThemes, gives list of available icons
+	gnocl::iconTheme
+		o new command, wrapper aroudn the GtkIconTheme API
+	gnocl::stockItem
+		o fixed a range of issues preventing the creation and use of widget 
+			icons from pixbufs.
+	gnocl::menuBar
+		o new options -packDirection and -childPackDirection
+		o added options -position -childPackDirection to the add command
 	gnocl::menu
 		o added -position to the add command
 	gnocl::toolbar

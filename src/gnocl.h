@@ -23,6 +23,8 @@
 #include <gdk/gdkkeysyms.h>
 #include <glib/gprintf.h>
 #include <glade/glade.h>
+
+
 #include <gtk-unix-print-2.0/gtk/gtkprinter.h>
 
 #include <ctype.h>
@@ -71,6 +73,7 @@ char *gnoclGetStringUline ( Tcl_Obj *op, char **pattern );
 char *gnoclStringDup ( Tcl_Obj *op );
 char *gnoclGetStockLabel ( Tcl_Obj *obj, Tcl_Interp *interp );
 int gnoclGetStockItem ( Tcl_Obj *obj, Tcl_Interp *interp, GtkStockItem *sp );
+
 Tcl_Obj *gnoclGtkToStockName ( const char *gtk );
 const char *gnoclGetAppName ( Tcl_Interp *interp );
 const char *gnoclGetAppVersion ( Tcl_Interp *interp );
@@ -748,6 +751,7 @@ Tcl_ObjCmdProc gnoclHsv2RgbCmd;
 Tcl_ObjCmdProc gnoclStringCmd;
 Tcl_ObjCmdProc gnoclBindCmd;
 Tcl_ObjCmdProc gnoclStockItemCmd;
+Tcl_ObjCmdProc gnoclIconThemeCmd;
 Tcl_ObjCmdProc gnoclSoundCmd;
 Tcl_ObjCmdProc gnoclPointerCmd;
 Tcl_ObjCmdProc gnoclExecCmd;

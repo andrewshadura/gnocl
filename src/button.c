@@ -223,11 +223,11 @@ static int configure (  Tcl_Interp *interp, ButtonParams *para,  GnoclOption opt
 				label = gnoclFindChild ( GTK_WIDGET ( para->button ), GTK_TYPE_LABEL );
 			}
 
-			else if ( ( type & ( GNOCL_STR_STOCK | GNOCL_STR_FILE ) ) == 0 )
+			else if ( ( type & ( GNOCL_STR_STOCK | GNOCL_STR_FILE | GNOCL_STR_BUFFER | GNOCL_STR_ICON_THEME ) ) == 0 )
 			{
 				Tcl_AppendResult ( interp, "Unknown type for \"",
 								   Tcl_GetString ( options[iconIdx].val.obj ),
-								   "\" must be of type FILE (%/) or STOCK (%#)", NULL );
+								   "\" must be of type FILE (%/), STOCK (%#), BUFFER (%?) or ICON_THEME (%&)", NULL );
 				return TCL_ERROR;
 
 			}
@@ -281,8 +281,41 @@ static int configure (  Tcl_Interp *interp, ButtonParams *para,  GnoclOption opt
 
 				gtk_image_set_from_pixbuf ( GTK_IMAGE ( image ), pix );
 			}
-		}
+			else if ( type & GNOCL_STR_BUFFER )
+			{
 
+				PixbufParams *para = gnoclGetPixBufFromName ( gnoclGetStringFromObj ( options[iconIdx].val.obj, NULL ) , interp );
+
+				if ( para->pixbuf == NULL )
+				{
+					return TCL_ERROR;
+				}
+
+				gtk_image_set_from_pixbuf ( GTK_IMAGE ( image ), para->pixbuf );
+			}
+			else if ( type & GNOCL_STR_ICON_THEME )
+			{
+
+				GtkIconTheme *icon_theme;
+				GdkPixbuf *pixbuf;
+				const char *name;
+
+				icon_theme = gtk_icon_theme_get_default();
+
+				name = gnoclGetStringFromObj ( options[iconIdx].val.obj, NULL );
+
+				g_print ( "GNOCL_STR_ICON_THEME txt = %s\n", name );
+
+				pixbuf = gtk_icon_theme_load_icon ( icon_theme, name, GTK_ICON_SIZE_BUTTON, 0, NULL );
+
+				if ( pixbuf == NULL )
+				{
+					return TCL_ERROR;
+				}
+
+				gtk_image_set_from_pixbuf ( GTK_IMAGE ( image ), pixbuf );
+			}
+		}
 	}
 
 	return TCL_OK;

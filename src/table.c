@@ -144,8 +144,7 @@ static int needFrame ( const GnoclOption options[] )
 /**
 \brief
 **/
-static int configure ( Tcl_Interp *interp, GtkFrame *frame, GtkTable *table,
-					   GnoclOption options[] )
+static int configure ( Tcl_Interp *interp, GtkFrame *frame, GtkTable *table, GnoclOption options[] )
 {
 	GtkWidget *widget = frame ? GTK_WIDGET ( frame ) : GTK_WIDGET ( table );
 
@@ -159,18 +158,21 @@ static int configure ( Tcl_Interp *interp, GtkFrame *frame, GtkTable *table,
 
 	if ( frame != NULL )
 	{
-		if ( gnoclSetOptions ( interp, options + startFrameOpts,
-							   G_OBJECT ( frame ), startCommonOpts - startFrameOpts ) != TCL_OK )
+		if ( gnoclSetOptions ( interp, options + startFrameOpts, G_OBJECT ( frame ), startCommonOpts - startFrameOpts ) != TCL_OK )
+		{
 			return TCL_ERROR;
+		}
 	}
 
-	if ( gnoclSetOptions ( interp, tableOptions, G_OBJECT ( table ),
-						   startFrameOpts ) != TCL_OK )
+	if ( gnoclSetOptions ( interp, tableOptions, G_OBJECT ( table ), startFrameOpts ) != TCL_OK )
+	{
 		return TCL_ERROR;
+	}
 
-	if ( gnoclSetOptions ( interp, tableOptions + startCommonOpts,
-						   G_OBJECT ( widget ), -1 ) != TCL_OK )
+	if ( gnoclSetOptions ( interp, tableOptions + startCommonOpts, G_OBJECT ( widget ), -1 ) != TCL_OK )
+	{
 		return TCL_ERROR;
+	}
 
 	return TCL_OK;
 }
@@ -178,8 +180,7 @@ static int configure ( Tcl_Interp *interp, GtkFrame *frame, GtkTable *table,
 /**
 \brief
 **/
-static int parsePackOptions ( Tcl_Interp *interp, GnoclOption opts[],
-							  AttachOptions *pa )
+static int parsePackOptions ( Tcl_Interp *interp, GnoclOption opts[], AttachOptions *pa )
 {
 	double xFill = 1.,   yFill = 1.;
 	gfloat xAlign = 0.5, yAlign = 0.5;
@@ -191,35 +192,32 @@ static int parsePackOptions ( Tcl_Interp *interp, GnoclOption opts[],
 
 	if ( opts[alignIdx].status == GNOCL_STATUS_CHANGED )
 	{
-		if ( gnoclGetBothAlign ( interp, opts[alignIdx].val.obj,
-								 &xAlign, &yAlign ) != TCL_OK )
+		if ( gnoclGetBothAlign ( interp, opts[alignIdx].val.obj, &xAlign, &yAlign ) != TCL_OK )
 			return TCL_ERROR;
 	}
 
 	if ( opts[expandIdx].status == GNOCL_STATUS_CHANGED )
 	{
-		if ( gnoclGet2Boolean ( interp, opts[expandIdx].val.obj,
-								&xExpand, &yExpand ) != TCL_OK )
+		if ( gnoclGet2Boolean ( interp, opts[expandIdx].val.obj, &xExpand, &yExpand ) != TCL_OK )
 			return TCL_ERROR;
 	}
 
 	if ( opts[shrinkIdx].status == GNOCL_STATUS_CHANGED )
 	{
-		if ( gnoclGet2Boolean ( interp, opts[shrinkIdx].val.obj,
-								&xShrink, &yShrink ) != TCL_OK )
+		if ( gnoclGet2Boolean ( interp, opts[shrinkIdx].val.obj, &xShrink, &yShrink ) != TCL_OK )
 			return TCL_ERROR;
 	}
 
 	if ( opts[fillIdx].status == GNOCL_STATUS_CHANGED )
 	{
-		if ( gnoclGet2Double ( interp, opts[fillIdx].val.obj,
-							   &xFill, &yFill ) != TCL_OK )
+		if ( gnoclGet2Double ( interp, opts[fillIdx].val.obj, &xFill, &yFill ) != TCL_OK )
+		{
 			return TCL_ERROR;
+		}
 
 		if ( xFill < .0 || yFill < .0 || xFill > 1. || yFill > 1. )
 		{
-			Tcl_SetResult ( interp, "Options \"fill\" must be between 0 and 1",
-							TCL_STATIC );
+			Tcl_SetResult ( interp, "Options \"fill\" must be between 0 and 1", TCL_STATIC );
 			return TCL_ERROR;
 		}
 	}
@@ -228,8 +226,7 @@ static int parsePackOptions ( Tcl_Interp *interp, GnoclOption opts[],
 	{
 		int no;
 
-		if ( Tcl_ListObjLength ( interp, opts[paddingIdx].val.obj, &no ) != TCL_OK
-				|| ( no != 2 && no != 1 ) )
+		if ( Tcl_ListObjLength ( interp, opts[paddingIdx].val.obj, &no ) != TCL_OK || ( no != 2 && no != 1 ) )
 		{
 			Tcl_AppendResult ( interp, "Expected integer value or list of "
 							   "two integer values but got \"",
@@ -239,9 +236,10 @@ static int parsePackOptions ( Tcl_Interp *interp, GnoclOption opts[],
 
 		if ( no == 1 )
 		{
-			if ( gnoclGetPadding ( interp, opts[paddingIdx].val.obj,
-								   &xPadding ) != TCL_OK )
+			if ( gnoclGetPadding ( interp, opts[paddingIdx].val.obj, &xPadding ) != TCL_OK )
+			{
 				return TCL_ERROR;
+			}
 
 			yPadding = xPadding;
 		}
@@ -250,31 +248,41 @@ static int parsePackOptions ( Tcl_Interp *interp, GnoclOption opts[],
 		{
 			Tcl_Obj *tp;
 
-			if ( Tcl_ListObjIndex ( interp, opts[paddingIdx].val.obj, 0,
-									&tp ) != TCL_OK )
+			if ( Tcl_ListObjIndex ( interp, opts[paddingIdx].val.obj, 0, &tp ) != TCL_OK )
+			{
 				return TCL_ERROR;
+			}
 
 			if ( gnoclGetPadding ( interp, tp, &xPadding ) != TCL_OK )
+			{
 				return TCL_ERROR;
+			}
 
-			if ( Tcl_ListObjIndex ( interp, opts[paddingIdx].val.obj, 1,
-									&tp ) != TCL_OK )
+			if ( Tcl_ListObjIndex ( interp, opts[paddingIdx].val.obj, 1, &tp ) != TCL_OK )
+			{
 				return TCL_ERROR;
+			}
 
 			if ( gnoclGetPadding ( interp, tp, &yPadding ) != TCL_OK )
+			{
 				return TCL_ERROR;
+			}
 		}
 	}
 
 	pa->columnSpan = 1;
 
 	if ( opts[columnSpanIdx].status == GNOCL_STATUS_CHANGED )
+	{
 		pa->columnSpan = opts[columnSpanIdx].val.i;
+	}
 
 	pa->rowSpan = 1;
 
 	if ( opts[rowSpanIdx].status == GNOCL_STATUS_CHANGED )
+	{
 		pa->rowSpan = opts[rowSpanIdx].val.i;
+	}
 
 	pa->xOptions = pa->yOptions = 0;
 

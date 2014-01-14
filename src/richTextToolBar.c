@@ -14,12 +14,16 @@
 
 static const int textIdx = 0;
 static const int textAcceleratorsIdx = 1;
+static const int iconSizeIdx = 2;
 
 static GnoclOption richTextToolBarOptions[] =
 {
 	/* widget specific options */
 	{ "-text", GNOCL_OBJ, NULL },
 	{ "-textAccelerators", GNOCL_OBJ, NULL },
+	{ "-iconSize", GNOCL_OBJ, NULL },
+
+	{ "-icon_Size", GNOCL_INT, "icon-size" },
 
 	/* general options */
 	{ "-name", GNOCL_STRING, "name" },
@@ -143,8 +147,10 @@ static void clearTag ( GtkTextTag * tag, GtkTextBuffer  *buffer )
 /**
 \brief
 **/
-static void doClear ( GtkToolButton *toolbutton, gpointer user_data )
+static void doShowsource ( GtkToolButton *toolbutton, gpointer user_data )
 {
+
+	g_print ( "Modify code to toggle source viewer\n" );
 
 	RichTextToolbarParams *para = ( RichTextToolbarParams * ) user_data;
 	GtkTextBuffer  *buffer = gtk_text_view_get_buffer ( GTK_TEXT_VIEW ( para->textView ) );
@@ -343,7 +349,6 @@ static void doUnderline ( GtkToolButton *toolbutton, gpointer user_data )
 	applyTag ( buffer, "<u>" );
 }
 
-
 /**
 \brief
 **/
@@ -378,6 +383,15 @@ static void doSubscript ( GtkToolButton *toolbutton, gpointer user_data )
 	applyTag ( buffer, "<sub>" );
 }
 
+
+/**
+\brief
+**/
+static void doSpellCheck ( GtkToolButton *toolbutton, gpointer user_data )
+{
+	g_print ( "TOGGLE SPELL-CHECK\n" );
+}
+
 /**
 \brief
 **/
@@ -401,7 +415,6 @@ static void doSmaller ( GtkToolButton *toolbutton, gpointer user_data )
 	removeTag ( buffer , "<small>" );
 	applyTag ( buffer, "<small>" );
 }
-
 
 /**
 \brief
@@ -435,8 +448,6 @@ static void doFg ( GtkToolButton *toolbutton, gpointer user_data )
 	}
 }
 
-
-
 /**
 \brief	Check for specific key presses -own widget keybindings
 **/
@@ -445,10 +456,7 @@ gboolean key_pressed ( GtkWidget * window, GdkEventKey* event, RichTextToolbarPa
 
 	g_print ( "%s\n", __FUNCTION__ );
 
-
 	GtkTextIter sel_start, sel_end;
-
-
 	GtkTextBuffer *buffer = gtk_text_view_get_buffer ( para->textView );
 
 
@@ -460,7 +468,6 @@ gboolean key_pressed ( GtkWidget * window, GdkEventKey* event, RichTextToolbarPa
 
 	if ( gtk_text_buffer_get_selection_bounds ( buffer, &sel_start, &sel_end ) )
 	{
-
 
 		switch ( event->keyval )
 		{
@@ -509,12 +516,67 @@ gboolean key_pressed ( GtkWidget * window, GdkEventKey* event, RichTextToolbarPa
 	return FALSE;
 }
 
+/**
+\brief
+\author     Peter G Baum, William J Giddings
+\date
+**/
+static int cget ( Tcl_Interp *interp, RichTextToolbarParams *para, GnoclOption options[], int idx )
+{
+#if 1
+	g_print ( "%s\n", __FUNCTION__ );
+#endif
+
+	Tcl_Obj *obj = NULL;
+
+	if ( idx == iconSizeIdx )
+	{
+		g_print ( "iconSize = %d\n", gtk_toolbar_get_icon_size ( para->toolBar ) );
+	}
+
+
+	if ( obj != NULL )
+	{
+		Tcl_SetObjResult ( interp, obj );
+		return TCL_OK;
+	}
+
+	return gnoclCgetNotImplemented ( interp, options + idx );
+}
 
 /**
 \brief
 **/
 static int configure ( Tcl_Interp *interp, RichTextToolbarParams *para, GnoclOption options[] )
 {
+
+	if ( options[iconSizeIdx].status == GNOCL_STATUS_CHANGED )
+	{
+
+		/*
+		typedef enum
+		{
+		  GTK_ICON_SIZE_INVALID,
+		  GTK_ICON_SIZE_MENU,
+		  GTK_ICON_SIZE_SMALL_TOOLBAR,
+		  GTK_ICON_SIZE_LARGE_TOOLBAR,
+		  GTK_ICON_SIZE_BUTTON,
+		  GTK_ICON_SIZE_DND,
+		  GTK_ICON_SIZE_DIALOG
+		} GtkIconSize;
+		*/
+		gint size;
+		Tcl_GetIntFromObj ( interp, options[iconSizeIdx].val.obj, &size );
+
+		if ( size > 0 && size < 4 )
+		{
+
+			g_print ( "iconsize = %d\n", size );
+			gtk_toolbar_set_icon_size ( para->toolBar, GTK_ICON_SIZE_SMALL_TOOLBAR );
+		}
+
+
+	}
 
 	if ( options[textIdx].status == GNOCL_STATUS_CHANGED )
 	{
@@ -541,13 +603,10 @@ static int configure ( Tcl_Interp *interp, RichTextToolbarParams *para, GnoclOpt
 	return TCL_OK;
 }
 
-
-
-
 static const char *cmds[] =
 {
 	"delete", "configure",
-	"class",
+	"class", "cget",
 	NULL
 };
 
@@ -560,7 +619,7 @@ int richTextToolBarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj
 
 	enum cmdIdx
 	{
-		DeleteIdx, ConfigureIdx, ClassIdx, SetIdx
+		DeleteIdx, ConfigureIdx, ClassIdx, SetIdx, CgetIdx
 	};
 
 	RichTextToolbarParams *para = ( RichTextToolbarParams * ) data;
@@ -575,7 +634,27 @@ int richTextToolBarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj
 
 	switch ( idx )
 	{
+		case CgetIdx:
+			{
+				int     idx;
 
+				switch ( gnoclCget ( interp, objc, objv, G_OBJECT ( para->toolBar ), richTextToolBarOptions, &idx ) )
+				{
+					case GNOCL_CGET_ERROR:
+						{
+							return TCL_ERROR;
+						}
+					case GNOCL_CGET_HANDLED:
+						{
+							return TCL_OK;
+						}
+					case GNOCL_CGET_NOTHANDLED:
+						{
+							return cget ( interp, para, richTextToolBarOptions, idx );
+						}
+				}
+			}
+			break;
 		case ClassIdx:
 			{
 				Tcl_SetObjResult ( interp, Tcl_NewStringObj ( "richTextToolBar", -1 ) );
@@ -585,6 +664,7 @@ int richTextToolBarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj
 			{
 				return gnoclDelete ( interp, GTK_WIDGET ( para->toolBar ), objc, objv );
 			}
+			break;
 		case ConfigureIdx:
 			{
 				int ret = TCL_ERROR;
@@ -631,21 +711,12 @@ int gnoclRichTextToolBarCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl
 	para->fgClr = "<span foreground='red'>";
 	para->bgClr = "<span background='yellow'>";
 
-
-	GtkToolItem *clear, *bold, *italic, *underline,
+	GtkToolItem *bold, *italic, *underline,
 				*strikethrough, *superscript, *subscript,
-				*bigger, *smaller;
+				*bigger, *smaller, *spellcheck, *showsource;
 
 	GtkWidget *bgclrs, *fgclrs;
 	GtkAccelGroup *group;
-
-	GtkWidget *clearImg = gtk_image_new_from_file ( "./normal.png" );
-	clear = gtk_tool_button_new  ( clearImg, "" );
-	gtk_tool_button_set_icon_widget ( clear, clearImg );
-
-	GtkWidget *boldImg = gtk_image_new_from_file ( "./bold.png" );
-	bold = gtk_tool_button_new  ( boldImg, "" );
-	gtk_tool_button_set_icon_widget ( bold, boldImg );
 
 	/*
 	typedef struct {
@@ -674,24 +745,45 @@ int gnoclRichTextToolBarCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl
 
 	gtk_widget_modify_bg ( bold, GTK_STATE_NORMAL, &color );
 
-
 	/*
 	 *  IMPORT THESE GRAPHICS INTO THEIR OWN INCLUDE FILE
 	 *
 	 *
 	*/
 
-	GtkWidget *italicImg = gtk_image_new_from_file ( "./italic.png" );
-	italic = gtk_tool_button_new  ( italicImg, "" );
-	gtk_tool_button_set_icon_widget ( italic, italicImg );
+	/*
+	GdkPixbuf *         gtk_icon_theme_load_icon            (GtkIconTheme *icon_theme,
+	                                                         const gchar *icon_name,
+	                                                         gint size,
+	                                                         GtkIconLookupFlags flags,
+	                                                         GError **error);
+	*/
 
-	GtkWidget *underlineImg = gtk_image_new_from_file ( "./underline.png" );
-	underline = gtk_tool_button_new  ( underlineImg, "" );
-	gtk_tool_button_set_icon_widget ( underline, underlineImg );
+	//GtkWidget *italicImg = gtk_image_new_from_file ( "./italic.png" );
+	//italic = gtk_tool_button_new  ( italicImg, "" );
+	//gtk_tool_button_set_icon_widget ( italic, italicImg );
 
-	GtkWidget *strikethroughImg = gtk_image_new_from_file ( "./strikethrough.png" );
-	strikethrough = gtk_tool_button_new  ( strikethroughImg, "" );
-	gtk_tool_button_set_icon_widget ( strikethrough, strikethroughImg );
+	/*
+	stock_text-strikethrough
+	stock_text_bold
+	stock_text_center
+	stock_text_indent
+	stock_text_italic
+	stock_text_justify
+	stock_text_left
+	stock_text_right
+	stock_text_underlined
+	stock_text_unindent
+	*/
+
+
+
+
+	bold = gtk_tool_button_new  ( gtk_image_new_from_icon_name ( "stock_text_bold", GTK_ICON_SIZE_BUTTON ), "" );
+	italic = gtk_tool_button_new  ( gtk_image_new_from_icon_name ( "stock_text_italic", GTK_ICON_SIZE_BUTTON ), "" );
+	underline = gtk_tool_button_new  ( gtk_image_new_from_icon_name ( "stock_text_underlined", GTK_ICON_SIZE_BUTTON ), "" );
+	strikethrough = gtk_tool_button_new  ( gtk_image_new_from_icon_name ( "stock_text-strikethrough", GTK_ICON_SIZE_BUTTON ), "" );
+
 
 	GtkWidget *superscriptImg = gtk_image_new_from_file ( "./superscript.png" );
 	superscript = gtk_tool_button_new  ( superscriptImg, "" );
@@ -713,10 +805,18 @@ int gnoclRichTextToolBarCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl
 	para->bg =  gtk_menu_tool_button_new ( para->bgImg, "" );
 	gtk_tool_button_set_icon_widget ( para->bg, para->bgImg );
 
-
 	para->fgImg = gtk_image_new_from_file ( "./foreground.png" );
 	para->fg =  gtk_menu_tool_button_new   ( para->fgImg, "" );
 	gtk_tool_button_set_icon_widget ( para->fg, para->fgImg );
+
+	GtkWidget *spellCheckImg = gtk_image_new_from_icon_name ( "tools-check-spelling", GTK_ICON_SIZE_BUTTON );
+	spellcheck = gtk_toggle_tool_button_new  ();
+	gtk_tool_button_set_icon_widget ( spellcheck, spellCheckImg );
+
+	GtkWidget *htmlImg = gtk_image_new_from_icon_name ( "text-html", GTK_ICON_SIZE_BUTTON );
+	showsource = gtk_toggle_tool_button_new  ();
+	gtk_tool_button_set_icon_widget ( showsource, htmlImg );
+
 
 
 	group = gtk_accel_group_new();
@@ -737,7 +837,6 @@ int gnoclRichTextToolBarCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl
 	gtk_menu_shell_append ( GTK_MENU_SHELL ( bgclrs ), b1 );
 	gtk_menu_shell_append ( GTK_MENU_SHELL ( bgclrs ), c1 );
 	gtk_menu_shell_append ( GTK_MENU_SHELL ( bgclrs ), d1 );
-
 
 	g_signal_connect ( G_OBJECT ( n1 ), "activate", G_CALLBACK ( doClearBg ), ( gpointer ) para );
 
@@ -767,7 +866,6 @@ int gnoclRichTextToolBarCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl
 	GtkWidget *b2 = gtk_image_menu_item_new_with_mnemonic ( "_Green" );
 	GtkWidget *c2 = gtk_image_menu_item_new_with_mnemonic ( "_Blue" );
 	GtkWidget *d2 = gtk_image_menu_item_new_with_mnemonic ( "_Gray" );
-
 
 	/*------------------------------------------------------------------*/
 
@@ -807,6 +905,18 @@ int gnoclRichTextToolBarCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl
 	gtk_toolbar_set_show_arrow ( para->toolBar, TRUE );
 
 	/*
+		 GTK_ICON_SIZE_INVALID
+		 GTK_ICON_SIZE_MENU
+		 GTK_ICON_SIZE_SMALL_TOOLBAR
+		 GTK_ICON_SIZE_LARGE_TOOLBAR
+		 GTK_ICON_SIZE_BUTTON
+		 GTK_ICON_SIZE_DND
+		 GTK_ICON_SIZE_DIALOG
+		*/
+
+	gtk_toolbar_set_icon_size ( GTK_TOOLBAR ( para->toolBar ), GTK_ICON_SIZE_SMALL_TOOLBAR );
+
+	/*
 	 GTK_TOOLBAR_ICONS,
 	 GTK_TOOLBAR_TEXT,
 	 GTK_TOOLBAR_BOTH,
@@ -814,20 +924,6 @@ int gnoclRichTextToolBarCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl
 	*/
 	gtk_toolbar_set_style ( GTK_TOOLBAR ( para->toolBar ), GTK_TOOLBAR_ICONS );
 
-	/*
-	 GTK_ICON_SIZE_INVALID
-	 GTK_ICON_SIZE_MENU
-	 GTK_ICON_SIZE_SMALL_TOOLBAR
-	 GTK_ICON_SIZE_LARGE_TOOLBAR
-	 GTK_ICON_SIZE_BUTTON
-	 GTK_ICON_SIZE_DND
-	 GTK_ICON_SIZE_DIALOG
-	*/
-
-	gtk_toolbar_set_icon_size ( GTK_TOOLBAR ( para->toolBar ), GTK_ICON_SIZE_MENU );
-
-	gtk_toolbar_insert ( GTK_TOOLBAR ( para->toolBar ), clear, -1 );
-	gtk_toolbar_insert ( GTK_TOOLBAR ( para->toolBar ), gtk_separator_tool_item_new(), -1 );
 	gtk_toolbar_insert ( GTK_TOOLBAR ( para->toolBar ), bold, -1 );
 	gtk_toolbar_insert ( GTK_TOOLBAR ( para->toolBar ), italic, -1 );
 	gtk_toolbar_insert ( GTK_TOOLBAR ( para->toolBar ), underline, -1 );
@@ -843,8 +939,11 @@ int gnoclRichTextToolBarCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl
 	gtk_toolbar_insert ( GTK_TOOLBAR ( para->toolBar ), para->bg, -1 );
 	gtk_toolbar_insert ( GTK_TOOLBAR ( para->toolBar ), para->fg, -1 );
 
+	gtk_toolbar_insert ( GTK_TOOLBAR ( para->toolBar ), gtk_separator_tool_item_new(), -1 );
+	gtk_toolbar_insert ( GTK_TOOLBAR ( para->toolBar ), spellcheck, -1 );
+	gtk_toolbar_insert ( GTK_TOOLBAR ( para->toolBar ), showsource, -1 );
+
 	/* event handlers */
-	g_signal_connect ( G_OBJECT ( clear ), "clicked", G_CALLBACK ( doClear ), ( gpointer ) para );
 	g_signal_connect ( G_OBJECT ( bold ), "clicked", G_CALLBACK ( doBold ), ( gpointer ) para );
 	g_signal_connect ( G_OBJECT ( italic ), "clicked", G_CALLBACK ( doItalic ), ( gpointer ) para );
 	g_signal_connect ( G_OBJECT ( underline ), "clicked", G_CALLBACK ( doUnderline ), ( gpointer ) para );
@@ -859,10 +958,13 @@ int gnoclRichTextToolBarCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl
 	g_signal_connect ( G_OBJECT ( para->bg ), "clicked", G_CALLBACK ( doBg ), ( gpointer ) para );
 	g_signal_connect ( G_OBJECT ( para->fg ), "clicked", G_CALLBACK ( doFg ), ( gpointer ) para );
 
+	g_signal_connect ( G_OBJECT ( spellcheck ), "clicked", G_CALLBACK ( doSpellCheck ), ( gpointer ) para );
+	g_signal_connect ( G_OBJECT ( showsource ), "clicked", G_CALLBACK ( doShowsource ), ( gpointer ) para );
+
 	gtk_widget_show_all ( GTK_WIDGET ( para->toolBar ) );
 
 	/* set tooltips */
-	gtk_widget_set_tooltip_text ( GTK_WIDGET ( clear ) , "Clear formatting from selected text." );
+	gtk_widget_set_tooltip_text ( GTK_WIDGET ( showsource ) , "Toggle markup source viewer." );
 	gtk_widget_set_tooltip_text ( GTK_WIDGET ( bold ) , "Enbolden selected text." );
 	gtk_widget_set_tooltip_text ( GTK_WIDGET ( italic ) , "Italicize selected text." );
 	gtk_widget_set_tooltip_text ( GTK_WIDGET ( underline ) , "Underline selected text." );
@@ -876,8 +978,6 @@ int gnoclRichTextToolBarCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl
 
 	gtk_widget_set_tooltip_text ( GTK_WIDGET ( para->bg ) , "Set the background colour of the selected text." );
 	gtk_widget_set_tooltip_text ( GTK_WIDGET ( para->fg ) , "Set the foreground colour of the selected text." );
-
-
 
 	/* step 3) check the options passed for the creation of the widget */
 	ret = gnoclSetOptions ( interp, richTextToolBarOptions, G_OBJECT ( para->toolBar ), -1 );

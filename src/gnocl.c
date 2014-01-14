@@ -327,6 +327,9 @@ int gnoclDelete ( Tcl_Interp *interp, GtkWidget *widget, int objc, Tcl_Obj * con
    else:  use defaultStringPrefix
 
    FIXME: what about translation?
+
+   Added '&' option to denote icons, not if the stock list.
+
 */
 
 GnoclStringType gnoclGetStringType ( Tcl_Obj *obj )
@@ -353,6 +356,7 @@ GnoclStringType gnoclGetStringType ( Tcl_Obj *obj )
 			case '_': return GNOCL_STR_UNDERLINE;
 			case '<': return GNOCL_STR_MARKUP | GNOCL_STR_UNDERLINE;
 			case '?': return GNOCL_STR_BUFFER;
+			case '&': return GNOCL_STR_ICON_THEME;
 		}
 	}
 
@@ -373,9 +377,7 @@ static char *getEscStringFromObj ( Tcl_Obj *op, int *len, int useEscape )
 		return NULL;
 	}
 
-
 	ret = Tcl_GetStringFromObj ( op, len );
-
 
 	if ( useEscape && *ret == '%' )
 	{
@@ -389,6 +391,7 @@ static char *getEscStringFromObj ( Tcl_Obj *op, int *len, int useEscape )
 			case '_':	/* GNOCL_STR_UNDERLINE */
 			case '<':	/* GNOCL_STR_MARKUP */
 			case '!':	/* GNOCL_STR_STR */
+			case '&':   /* GNOCL_STR_ICON_THEME */
 				{
 					ret += 2;
 
@@ -424,7 +427,7 @@ static char *getEscStringFromObj ( Tcl_Obj *op, int *len, int useEscape )
 }
 
 /**
-\brief Strip away percentage markup from string names.
+\brief ?? Strip away percentage markup from string names. ??
 */
 char *gnoclGetStringFromObj ( Tcl_Obj *op,	int *len )
 {
@@ -491,9 +494,18 @@ Tcl_Obj *gnoclGtkToStockName ( const char *gtk )
 */
 GString *createStockName ( const char *init, Tcl_Obj *obj )
 {
+#if 1
+	g_print ( "%s init %s name %s\n", __FUNCTION__, init, Tcl_GetString ( obj ) );
+#endif
+
 	int len;
 
 	const char *name = getEscStringFromObj ( obj, &len, 1 );
+
+#if 1
+	g_print ( "name -> %s\n", name );
+#endif
+
 
 	GString *gtkName = g_string_new ( init );
 	int   isFirst = 1;
@@ -510,7 +522,9 @@ GString *createStockName ( const char *init, Tcl_Obj *obj )
 		}
 
 		else
+		{
 			g_string_append_c ( gtkName, *name );
+		}
 
 		isFirst = 0;
 	}
@@ -804,6 +818,7 @@ static GnoclCmd commands[] =
 //	{ "string", gnoclStringCmd },
 	{ "inventory", gnoclGetInventory },
 	{ "stockItem", gnoclStockItemCmd },
+	{ "iconTheme", gnoclIconThemeCmd },
 	{ "bind", gnoclBindCmd },
 	{ "colorButton", gnoclColorButtonCmd },
 	{ "comboBox", gnoclComboBoxCmd },

@@ -790,6 +790,11 @@ int iconViewFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * cons
 						{
 							g_print ( "stock %s\n", filename );
 						} break;
+					case GNOCL_STR_ICON_THEME:
+						{
+							g_print ( "icon-theme %s\n", filename );
+						}
+						break;
 					default:
 						{
 							g_print ( "unknown item %s\n", Tcl_GetString ( objv[2] ) );

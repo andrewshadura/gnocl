@@ -607,6 +607,18 @@ static int configure ( Tcl_Interp *interp, GnoclRadioParams *para, GnoclOption o
 
 				gtk_image_set_from_pixbuf ( GTK_IMAGE ( image ), pix );
 			}
+			else if ( type & GNOCL_STR_BUFFER )
+			{
+
+				PixbufParams *para = gnoclGetPixBufFromName ( gnoclGetStringFromObj ( options[iconIdx].val.obj, NULL ) , interp );
+
+				if ( para->pixbuf == NULL )
+				{
+					return TCL_ERROR;
+				}
+
+				gtk_image_set_from_pixbuf ( GTK_IMAGE ( image ), para->pixbuf );
+			}
 		}
 	} /* end if */
 

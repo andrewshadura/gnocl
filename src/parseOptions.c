@@ -762,8 +762,7 @@ int gnoclGetPadding ( Tcl_Interp *interp, Tcl_Obj *obj, int *pad )
 
 		int idx;
 
-		if ( Tcl_GetIndexFromObj ( NULL, obj, txt, NULL,
-								   TCL_EXACT, &idx ) != TCL_OK )
+		if ( Tcl_GetIndexFromObj ( NULL, obj, txt, NULL, TCL_EXACT, &idx ) != TCL_OK )
 		{
 			Tcl_AppendResult ( interp, "Unknown padding \"",
 							   Tcl_GetString ( obj ),
@@ -1775,7 +1774,7 @@ static int optAlign ( Tcl_Interp *interp, Tcl_Obj *obj, int isHor,  gfloat *f )
             or - a double
             or - one of the predifined strings
 **/
-int gnoclGetBothAlign ( Tcl_Interp *interp, Tcl_Obj *obj,   gfloat *xAlign, gfloat *yAlign )
+int gnoclGetBothAlign ( Tcl_Interp *interp, Tcl_Obj *obj, gfloat *xAlign, gfloat *yAlign )
 {
 	int    len = 0;
 	double d;

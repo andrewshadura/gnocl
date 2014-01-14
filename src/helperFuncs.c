@@ -758,6 +758,7 @@ int gnoclAttachOptCmdAndVar ( GnoclOption *newCmd, char **oldCmd, GnoclOption *n
 
 
 /**
+\brief
 **/
 int gnoclGet2Boolean ( Tcl_Interp *interp, Tcl_Obj *obj, int *b1, int *b2 )
 {
@@ -903,7 +904,7 @@ int gnoclGet2Double ( Tcl_Interp *interp, Tcl_Obj *obj, double *b1, double *b2 )
 /**
 \brief	Complete internal drawing tasks
 **/
-void gnoclUpdate () 
+void gnoclUpdate ()
 {
 	int nMax = 500;
 	int n;
@@ -1454,3 +1455,4 @@ int getTextAndIcon ( Tcl_Interp *interp, GtkToolbar *toolbar,
 
 	return TCL_OK;
 }
+

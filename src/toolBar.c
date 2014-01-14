@@ -76,12 +76,14 @@ static const int orientationIdx = 1;
 static const int tooolbarStyleIdx = 2;
 static const int reliefIdx = 3;
 
+
 /* toolBar options */
 static GnoclOption toolBarOptions[] =
 {
 	{ "-data", GNOCL_OBJ, "", gnoclOptData }, /* 0 */
 	{ "-orientation", GNOCL_STRING, NULL},
 	{ "-style", GNOCL_OBJ, "toolbar-style", optStyle },
+
 	//{ "-relief", GNOCL_OBJ, "button-relief", gnoclOptButtonRelief },
 
 	/* widget specific options */
@@ -521,7 +523,7 @@ int toolBarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const
 			}
 			break;
 #if 1
-		/* deprecated calls */
+			/* deprecated calls */
 		case AddBeginIdx:
 			{
 				return addItem ( toolBar, interp, objc, objv, 0 );
@@ -534,7 +536,7 @@ int toolBarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const
 			{
 				return addItem ( toolBar, interp, objc, objv, -1 );
 			}
-		break;
+			break;
 		default:
 			{
 				return TCL_ERROR;

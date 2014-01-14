@@ -2313,7 +2313,10 @@ int gnoclClr2RGBCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj * 
 	return TCL_OK;
 }
 
-
+/**---------------
+\brief
+---------------
+**/
 static const char *cmds[] =
 {
 	"get", "render", "types",
@@ -3319,6 +3322,10 @@ void gdk_pixbuf_draw_circle_1 ( GdkPixbuf *pixbuf, guint32 pixel, gint xc, gint 
 	}
 }
 
+/**---------------
+\brief
+---------------
+**/
 void gdk_pixbuf_draw_circle_2 ( GdkPixbuf *pixbuf, guint32 pixel, gint xc, gint yc, gint r, gint fill )
 {
 
@@ -3363,7 +3370,10 @@ void gdk_pixbuf_draw_circle_2 ( GdkPixbuf *pixbuf, guint32 pixel, gint xc, gint 
 
 }
 
-
+/**---------------
+\brief
+---------------
+**/
 void gdk_pixbuf_draw_circle ( GdkPixbuf *pixbuf, guint32 pixel, gint xc, gint yc, gint r, gint solid )
 {
 	int i, x, y;

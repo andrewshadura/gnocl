@@ -12,6 +12,8 @@
 
 /*
    History:
+   2014-01: new options -packDirection and -childPackDirection
+			added options -position -childPackDirection to the add command
    2013-07:	added commands, options, commands
         10: switched from GnoclWidgetOptions to GnoclOption
    2002-04: updates for gtk 2.0
@@ -26,9 +28,16 @@
 
 #include "gnocl.h"
 
+static const int childrenIdx = 0;
+static const int packDirectionIdx = 1;
+static const int childPackDirectionIdx = 2;
+
 static GnoclOption menuBarOptions[] =
 {
 	{ "-children", GNOCL_LIST, NULL },
+	{ "-packDirection", GNOCL_LIST, NULL },
+	{ "-childPackDirection", GNOCL_LIST, NULL },
+
 	{ "-name", GNOCL_STRING, "name" },
 	{ "-visible", GNOCL_BOOL, "visible" },
 	{ "-sensitive", GNOCL_BOOL, "sensitive" },
@@ -36,17 +45,56 @@ static GnoclOption menuBarOptions[] =
 };
 
 
-static const int childrenIdx = 0;
 
 /**
 \brief
+
+typedef enum
+{
+  GTK_PACK_DIRECTION_LTR,
+  GTK_PACK_DIRECTION_RTL,
+  GTK_PACK_DIRECTION_TTB,
+  GTK_PACK_DIRECTION_BTT
+} GtkPackDirection;
+
+
 **/
 static int configure ( Tcl_Interp *interp, GtkMenuBar *menuBar, GnoclOption options[] )
 {
+
+	gint idx;
+	const char *txt[] = { "ltr", "rtl", "ttb", "btt", NULL };
+	const int types[] = { GTK_PACK_DIRECTION_LTR, GTK_PACK_DIRECTION_RTL, GTK_PACK_DIRECTION_TTB, GTK_PACK_DIRECTION_BTT };
+
+	if ( options[packDirectionIdx].status == GNOCL_STATUS_CHANGED )
+	{
+		g_print ( "PACK 1 %s\n", Tcl_GetString ( options[packDirectionIdx].val.obj ) );
+
+		if ( Tcl_GetIndexFromObj ( NULL, options[packDirectionIdx].val.obj, txt, NULL, TCL_EXACT, &idx ) == TCL_OK )
+		{
+
+			gtk_menu_bar_set_pack_direction ( menuBar, types[idx] );
+
+			g_print ( "PACK 3 %d %d\n", idx, types[idx] );
+		}
+	}
+
+	if ( options[childPackDirectionIdx].status == GNOCL_STATUS_CHANGED )
+	{
+		g_print ( "PACK 1 %s\n", Tcl_GetString ( options[childPackDirectionIdx].val.obj ) );
+
+		if ( Tcl_GetIndexFromObj ( NULL, options[childPackDirectionIdx].val.obj, txt, NULL, TCL_EXACT, &idx ) == TCL_OK )
+		{
+
+			gtk_menu_bar_set_child_pack_direction ( menuBar, types[idx] );
+
+			g_print ( "PACK 3 %d %d\n", idx, types[idx] );
+		}
+	}
+
 	if ( options[childrenIdx].status == GNOCL_STATUS_CHANGED )
 	{
-		return gnoclMenuShellAddChildren ( interp, GTK_MENU_SHELL ( menuBar ),
-										   options[childrenIdx].val.obj, 1 );
+		return gnoclMenuShellAddChildren ( interp, GTK_MENU_SHELL ( menuBar ), options[childrenIdx].val.obj, 1 );
 	}
 
 	return TCL_OK;
@@ -113,6 +161,25 @@ int menuBarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const
 			break;
 
 		case AddIdx:
+			{
+				gint pos = -1; /* default to end */
+
+				if ( objc != 3 && objc != 5 )
+				{
+					Tcl_WrongNumArgs ( interp, 2, objv, "widget-list <optional> -position n" );
+					return TCL_ERROR;
+				}
+
+				if ( objc == 5 && strcmp ( Tcl_GetString ( objv[3] ), "-position" ) == 0 )
+				{
+
+					// g_print("HERE~~~~~~~~~~~\n");
+					Tcl_GetIntFromObj ( interp, objv[4], &pos );
+				}
+
+				return gnoclMenuShellAddChildren (  interp, GTK_MENU_SHELL ( menuBar ), objv[2], pos ); //idx != BeginIdx );
+			}
+			break;
 		case BeginIdx:
 		case EndIdx:
 			{
@@ -122,9 +189,7 @@ int menuBarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const
 					return TCL_ERROR;
 				}
 
-				return gnoclMenuShellAddChildren ( interp,
-
-												   GTK_MENU_SHELL ( menuBar ), objv[2], idx != EndIdx );
+				return gnoclMenuShellAddChildren ( interp, GTK_MENU_SHELL ( menuBar ), objv[2], idx != EndIdx );
 
 			}
 	}
