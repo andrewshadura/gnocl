@@ -853,3 +853,6 @@ int getTextAndIcon ( Tcl_Interp *interp, GtkToolbar *toolbar, GnoclOption *txtOp
 Tcl_Obj *cgetText ( GtkWidget *item );
 
 void gnoclUpdate ();
+
+/* pixbuf */
+int gnoclCreatePixbufFromIcon ( Tcl_Interp * interp, GtkIconTheme * icon_theme, const gchar * icon_name, GtkIconSize size );

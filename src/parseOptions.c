@@ -1351,6 +1351,7 @@ int gnoclOptTooltip ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Ob
 }
 
 /**
+\brief	modify widget base colour.
 **/
 int modifyWidgetGdkColor ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, void ( *func ) ( GtkWidget *, GtkStateType, const GdkColor * ), glong offset, Tcl_Obj **ret )
 {
@@ -1406,7 +1407,7 @@ int modifyWidgetGdkColor ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, v
 
 
 /**
- */
+**/
 int gnoclOptGdkColorBg ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
 	return modifyWidgetGdkColor ( interp, opt, obj, gtk_widget_modify_bg, G_STRUCT_OFFSET ( GtkStyle, bg ), ret );
@@ -1420,7 +1421,7 @@ int gnoclOptGdkColorFg ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl
 }
 
 /**
- */
+**/
 int gnoclOptGdkColorText ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
 	return modifyWidgetGdkColor ( interp, opt, obj, gtk_widget_modify_text, G_STRUCT_OFFSET ( GtkStyle, text ), ret );
@@ -1451,14 +1452,15 @@ int gnoclOptGdkColorRollOver ( Tcl_Interp *interp, GnoclOption *opt, GObject *ob
 }
 
 /**
- */
+\brief	Modify widget base colour, i.e. GtlTextView.
+**/
 int gnoclOptGdkColorBase ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
 	return modifyWidgetGdkColor ( interp, opt, obj, gtk_widget_modify_base, G_STRUCT_OFFSET ( GtkStyle, base ), ret );
 }
 
 /**
- */
+**/
 int gnoclOptGdkBaseFont ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
 
@@ -1472,7 +1474,7 @@ int gnoclOptGdkBaseFont ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tc
 }
 
 /**
- */
+**/
 char *gnoclGetGdkBaseFont ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
 
@@ -1487,7 +1489,7 @@ char *gnoclGetGdkBaseFont ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, 
 
 
 /**
- */
+**/
 /* -----------------
    group <-> sizeGroup mapping
 -------------------- */
@@ -1505,7 +1507,7 @@ static int groupToIdx ( GtkSizeGroupMode mode )
 
 
 /**
- */
+**/
 static void destroySizeGroup (  gpointer data,  GObject *obj )
 {
 	const char   *name = data;
@@ -1514,7 +1516,7 @@ static void destroySizeGroup (  gpointer data,  GObject *obj )
 }
 
 /**
- */
+**/
 static void destroyWidthGroup ( gpointer data,  GObject *obj )
 {
 	const char   *name = data;

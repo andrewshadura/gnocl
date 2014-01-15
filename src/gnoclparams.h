@@ -390,6 +390,7 @@ typedef struct
 {
 	GtkToolbar *toolBar;
 	GtkTextView *textView;
+	GtkScrolledWindow *source;
 	//GtkTextView *sourceView;
 	Tcl_Interp *interp;
 	char *name;

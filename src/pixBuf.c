@@ -2329,6 +2329,33 @@ static const char *cmds[] =
 };
 
 /**
+\brief		Create pixbuf from icon
+\author     William J Giddings
+\date       17-Jan-2010
+\since      0.9.94
+**/
+int gnoclCreatePixbufFromIcon ( Tcl_Interp * interp, GtkIconTheme * icon_theme, const gchar * icon_name, GtkIconSize size )
+{
+
+	GError *error = NULL;
+	GdkPixbuf *pixbuf;
+	PixbufParams *para;
+	para = g_new ( PixbufParams, 1 );
+
+	/* create new hash table if one does not exist */
+	if ( name2pixbufList == NULL )
+	{
+		name2pixbufList = g_hash_table_new ( g_direct_hash, g_direct_equal );
+	}
+
+	pixbuf =  gtk_icon_theme_load_icon ( icon_theme, icon_name , size, 0, &error );
+
+	para->pixbuf = pixbuf;
+	return gnoclRegisterPixBuf ( interp, para->pixbuf, pixBufFunc );
+
+}
+
+/**
 \brief
 \author     William J Giddings
 \date       17-Jan-2010

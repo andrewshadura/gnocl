@@ -12,6 +12,8 @@
 #include "gnocl.h"
 //#include "gnoclparams.h"
 
+static void updateSV ( RichTextToolbarParams *para );
+
 static const int textIdx = 0;
 static const int textAcceleratorsIdx = 1;
 static const int iconSizeIdx = 2;
@@ -32,6 +34,96 @@ static GnoclOption richTextToolBarOptions[] =
 	{ "-data", GNOCL_OBJ, "", gnoclOptData },
 	{ NULL },
 };
+
+
+/**
+\brief Apply named tag to active selection.
+**/
+static void applyTag ( GtkTextBuffer *buffer, gchar *tagName )
+{
+	GtkTextIter start;
+	GtkTextIter end;
+
+	gtk_text_buffer_get_selection_bounds ( buffer, &start, &end );
+
+	gtk_text_buffer_apply_tag_by_name ( buffer, tagName, &start, &end );
+}
+
+/**
+\brief	Determine wether the text within the selection bounds contains
+		is **all** marked up with the named tag.
+		Return TRUE if present, otherwise FALSE.
+**/
+static int selectionHasTag ( GtkTextBuffer *buffer, gchar *name )
+{
+
+	GtkTextIter iter, start, end;
+	GtkTextTagTable *table;
+	GtkTextTag *tag;
+
+	table = gtk_text_buffer_get_tag_table ( buffer );
+	tag = gtk_text_tag_table_lookup ( table, name );
+
+	gtk_text_buffer_get_selection_bounds ( buffer, &start, &end );
+
+	iter = start;
+
+	gint i = 0;
+
+	while ( gtk_text_iter_equal ( &iter, &end ) == 0 )
+	{
+		/* tag found within selection */
+		if ( gtk_text_iter_has_tag ( &iter, tag ) )
+		{
+			i++;
+		}
+		else
+		{
+			i--;
+		}
+
+		gtk_text_iter_forward_char ( &iter );
+	}
+
+	if ( i == strlen ( gtk_text_buffer_get_text ( buffer, &start, &end, 0 ) ) )
+	{
+		return TRUE;
+	}
+
+	return FALSE;
+
+}
+
+/**
+\brief Remove named tag from active selection.
+**/
+static void removeTag ( GtkTextBuffer *buffer, gchar *tagName )
+{
+	GtkTextIter start;
+	GtkTextIter end;
+
+	gtk_text_buffer_get_selection_bounds ( buffer, &start, &end );
+
+	gtk_text_buffer_remove_tag_by_name ( buffer, tagName, &start, &end );
+}
+
+/**
+\brief	Toggle application of tag in buffer. If tag is only partially
+ 		applied to the selection then the selection will be completed tagged.
+		Only if entire selection is tagged will any of the tag be removed.
+**/
+static void toggleTag ( GtkTextBuffer *buffer, gchar *name )
+{
+
+	if ( selectionHasTag ( buffer, name ) )
+	{
+		removeTag ( buffer, name );
+		return;
+	}
+
+	applyTag ( buffer, name );
+}
+
 
 /**
 \brief
@@ -104,34 +196,6 @@ static GtkTextBuffer *getTextBuffer ( gpointer user_data )
 }
 
 /**
-\brief
-**/
-static void removeTag ( GtkTextBuffer *buffer, gchar *tagName )
-{
-	GtkTextIter start;
-	GtkTextIter end;
-
-	gtk_text_buffer_get_selection_bounds ( buffer, &start, &end );
-
-	gtk_text_buffer_remove_tag_by_name ( buffer, tagName, &start, &end );
-}
-
-/**
-\brief
-**/
-static void applyTag ( GtkTextBuffer *buffer, gchar *tagName )
-{
-	GtkTextIter start;
-	GtkTextIter end;
-
-	gtk_text_buffer_get_selection_bounds ( buffer, &start, &end );
-
-	gtk_text_buffer_apply_tag_by_name ( buffer, tagName, &start, &end );
-}
-
-
-
-/**
 \brief	Remove **ALL** tags from selected text range.
 **/
 static void clearTag ( GtkTextTag * tag, GtkTextBuffer  *buffer )
@@ -147,16 +211,42 @@ static void clearTag ( GtkTextTag * tag, GtkTextBuffer  *buffer )
 /**
 \brief
 **/
-static void doShowsource ( GtkToolButton *toolbutton, gpointer user_data )
+static void doShowsource ( GtkToggleToolButton *toggle_button, gpointer user_data )
 {
 
 	g_print ( "Modify code to toggle source viewer\n" );
 
 	RichTextToolbarParams *para = ( RichTextToolbarParams * ) user_data;
-	GtkTextBuffer  *buffer = gtk_text_view_get_buffer ( GTK_TEXT_VIEW ( para->textView ) );
 
-	GtkTextTagTable *tagtable = gtk_text_buffer_get_tag_table ( buffer );
-	gtk_text_tag_table_foreach ( tagtable, clearTag , buffer );
+	GtkTextView *text_view;
+	GtkTextBuffer *buffer;
+
+	GtkWidget *container = gtk_widget_get_parent ( para->textView ); // get the scrolled window
+	container = gtk_widget_get_parent ( container ); // get containing upper box
+
+	//buffer = gtk_text_view_get_buffer (para->textView);
+	//gtk_text_buffer_insert_at_cursor (buffer,"HIDIHI", -1);
+
+	if (  gtk_toggle_tool_button_get_active ( GTK_TOGGLE_BUTTON ( toggle_button ) ) )
+	{
+
+		gtk_box_pack_end  ( container, para->source, 1, 1, 0 );
+	}
+	else
+	{
+
+		g_object_ref ( para->source );
+		gtk_container_remove ( GTK_CONTAINER ( container ), para->source );
+	}
+
+	/*
+		GtkTextBuffer  *buffer = gtk_text_view_get_buffer ( GTK_TEXT_VIEW ( para->textView ) );
+
+		GtkTextTagTable *tagtable = gtk_text_buffer_get_tag_table ( buffer );
+		gtk_text_tag_table_foreach ( tagtable, clearTag , buffer );
+	*/
+
+	updateSV ( para );
 
 }
 
@@ -317,15 +407,16 @@ static void doGrayFg ( GtkToolButton *toolbutton, gpointer user_data )
 	gtk_tool_button_set_icon_widget ( para->fg, para->fgImg );
 }
 
-
 /**
 \brief
 **/
 static void doBold ( GtkToolButton *toolbutton, gpointer user_data )
 {
+
 	RichTextToolbarParams *para = ( RichTextToolbarParams * ) user_data;
 	GtkTextBuffer  *buffer = gtk_text_view_get_buffer ( GTK_TEXT_VIEW ( para->textView ) );
-	applyTag ( buffer, "<b>" );
+
+	toggleTag ( buffer, "<b>" );
 
 }
 
@@ -336,7 +427,9 @@ static void doItalic ( GtkToolButton *toolbutton, gpointer user_data )
 {
 	RichTextToolbarParams *para = ( RichTextToolbarParams * ) user_data;
 	GtkTextBuffer  *buffer = gtk_text_view_get_buffer ( GTK_TEXT_VIEW ( para->textView ) );
-	applyTag ( buffer, "<i>" );
+
+	toggleTag ( buffer, "<i>" );
+
 }
 
 /**
@@ -346,7 +439,8 @@ static void doUnderline ( GtkToolButton *toolbutton, gpointer user_data )
 {
 	RichTextToolbarParams *para = ( RichTextToolbarParams * ) user_data;
 	GtkTextBuffer  *buffer = gtk_text_view_get_buffer ( GTK_TEXT_VIEW ( para->textView ) );
-	applyTag ( buffer, "<u>" );
+
+	toggleTag ( buffer, "<u>" );
 }
 
 /**
@@ -356,7 +450,8 @@ static void doStrikethrough ( GtkToolButton *toolbutton, gpointer user_data )
 {
 	RichTextToolbarParams *para = ( RichTextToolbarParams * ) user_data;
 	GtkTextBuffer  *buffer = gtk_text_view_get_buffer ( GTK_TEXT_VIEW ( para->textView ) );
-	applyTag ( buffer, "<s>" );
+
+	toggleTag ( buffer, "<s>" );
 }
 
 /**
@@ -366,9 +461,8 @@ static void doSuperscript ( GtkToolButton *toolbutton, gpointer user_data )
 {
 	RichTextToolbarParams *para = ( RichTextToolbarParams * ) user_data;
 	GtkTextBuffer  *buffer = gtk_text_view_get_buffer ( GTK_TEXT_VIEW ( para->textView ) );
-	removeTag ( buffer , "<sub>" );
-	removeTag ( buffer , "<sup>" );
-	applyTag ( buffer, "<sup>" );
+
+	toggleTag ( buffer, "<sup>" );
 }
 
 /**
@@ -378,9 +472,8 @@ static void doSubscript ( GtkToolButton *toolbutton, gpointer user_data )
 {
 	RichTextToolbarParams *para = ( RichTextToolbarParams * ) user_data;
 	GtkTextBuffer  *buffer = gtk_text_view_get_buffer ( GTK_TEXT_VIEW ( para->textView ) );
-	removeTag ( buffer , "<sub>" );
-	removeTag ( buffer , "<sup>" );
-	applyTag ( buffer, "<sub>" );
+
+	toggleTag ( buffer, "<sub>" );
 }
 
 
@@ -399,9 +492,8 @@ static void doBigger ( GtkToolButton *toolbutton, gpointer user_data )
 {
 	RichTextToolbarParams *para = ( RichTextToolbarParams * ) user_data;
 	GtkTextBuffer  *buffer = gtk_text_view_get_buffer ( GTK_TEXT_VIEW ( para->textView ) );
-	removeTag ( buffer , "<big>" );
-	removeTag ( buffer , "<small>" );
-	applyTag ( buffer, "<big>" );
+
+	toggleTag ( buffer, "<big>" );
 }
 
 /**
@@ -411,9 +503,8 @@ static void doSmaller ( GtkToolButton *toolbutton, gpointer user_data )
 {
 	RichTextToolbarParams *para = ( RichTextToolbarParams * ) user_data;
 	GtkTextBuffer  *buffer = gtk_text_view_get_buffer ( GTK_TEXT_VIEW ( para->textView ) );
-	removeTag ( buffer , "<big>" );
-	removeTag ( buffer , "<small>" );
-	applyTag ( buffer, "<small>" );
+
+	toggleTag ( buffer, "<small>" );
 }
 
 /**
@@ -606,9 +697,29 @@ static int configure ( Tcl_Interp *interp, RichTextToolbarParams *para, GnoclOpt
 static const char *cmds[] =
 {
 	"delete", "configure",
-	"class", "cget",
+	"class", "set", "cget",
+	"updateSV",
 	NULL
 };
+
+/**
+\brief	Update the contents of the sourcecode view widget.
+**/
+static void updateSV ( RichTextToolbarParams *para )
+{
+
+	GtkTextIter start, end;
+	GtkTextBuffer  *buffer;
+
+	/* get markup */
+	buffer = gtk_text_view_get_buffer ( para->textView );
+	gtk_text_buffer_get_bounds  ( buffer, &start, &end );
+	Tcl_Obj *str = getMarkUpString ( NULL, buffer, &start, &end );
+
+	/* insert into source view */
+	GtkTextView *text = GTK_TEXT_VIEW ( gtk_bin_get_child ( GTK_BIN ( para->source ) ) );
+	gtk_text_buffer_set_text ( gtk_text_view_get_buffer ( text ), Tcl_GetString ( str ), -1 );
+}
 
 /**
 \brief
@@ -619,7 +730,9 @@ int richTextToolBarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj
 
 	enum cmdIdx
 	{
-		DeleteIdx, ConfigureIdx, ClassIdx, SetIdx, CgetIdx
+		DeleteIdx, ConfigureIdx,
+		ClassIdx, SetIdx, CgetIdx,
+		UpdateSVIdx
 	};
 
 	RichTextToolbarParams *para = ( RichTextToolbarParams * ) data;
@@ -634,6 +747,28 @@ int richTextToolBarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj
 
 	switch ( idx )
 	{
+		case UpdateSVIdx:
+			{
+
+
+#if 0
+				GtkTextIter start, end;
+				GtkTextBuffer  *buffer;
+
+				/* get markup */
+				buffer = gtk_text_view_get_buffer ( para->textView );
+				gtk_text_buffer_get_bounds  ( buffer, &start, &end );
+				Tcl_Obj *str = getMarkUpString ( interp, buffer, &start, &end );
+
+				/* insert in sourve view */
+				GtkTextView     *text = GTK_TEXT_VIEW ( gtk_bin_get_child ( GTK_BIN ( para->source ) ) );
+				gtk_text_buffer_set_text ( gtk_text_view_get_buffer ( text ), Tcl_GetString ( str ), -1 );
+#else
+				updateSV ( para );
+#endif
+
+			}
+			break;
 		case CgetIdx:
 			{
 				int     idx;
@@ -705,8 +840,10 @@ int gnoclRichTextToolBarCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl
 		return TCL_ERROR;
 	}
 
+
 	RichTextToolbarParams *para;
 	para = g_new ( RichTextToolbarParams, 1 );
+
 
 	para->fgClr = "<span foreground='red'>";
 	para->bgClr = "<span background='yellow'>";
@@ -717,6 +854,9 @@ int gnoclRichTextToolBarCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl
 
 	GtkWidget *bgclrs, *fgclrs;
 	GtkAccelGroup *group;
+
+	GdkColor color;
+	PangoFontDescription *font_desc;
 
 	/*
 	typedef struct {
@@ -738,7 +878,7 @@ int gnoclRichTextToolBarCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl
 	  GTK_STATE_FOCUSED
 	} GtkStateType;
 	*/
-	GdkColor color;
+
 	color.red = 65535;
 	color.green = 0;
 	color.blue = 0;
@@ -979,6 +1119,38 @@ int gnoclRichTextToolBarCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl
 	gtk_widget_set_tooltip_text ( GTK_WIDGET ( para->bg ) , "Set the background colour of the selected text." );
 	gtk_widget_set_tooltip_text ( GTK_WIDGET ( para->fg ) , "Set the foreground colour of the selected text." );
 
+	/* create the source code window */
+	para->source =  GTK_SCROLLED_WINDOW ( gtk_scrolled_window_new ( NULL, NULL ) );
+	gtk_scrolled_window_set_policy ( para->source, GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC );
+
+	GtkTextView *sourceview ;
+	sourceview = GTK_TEXT_VIEW ( gtk_text_view_new () );
+
+	gtk_text_view_set_editable ( sourceview, FALSE );
+	/*
+	typedef struct {
+	  guint32 pixel;
+	  guint16 red;
+	  guint16 green;
+	  guint16 blue;
+	} GdkColor;
+	*
+	This is a value between 0 and 65535, with 65535 indicating full intensitiy.
+	*/
+
+	gdk_color_parse ( "#F5F5FA", &color ) ;
+	gtk_widget_modify_base ( sourceview, GTK_STATE_NORMAL, &color );
+
+	font_desc = pango_font_description_from_string ( "Monospace 10" );
+
+	gtk_widget_modify_font ( sourceview, font_desc );
+
+
+	gtk_text_view_set_wrap_mode ( sourceview, GTK_WRAP_WORD );
+
+	gtk_container_add ( GTK_CONTAINER ( para->source ), GTK_WIDGET ( sourceview ) );
+	gtk_widget_show_all ( GTK_WIDGET ( para->source ) );
+
 	/* step 3) check the options passed for the creation of the widget */
 	ret = gnoclSetOptions ( interp, richTextToolBarOptions, G_OBJECT ( para->toolBar ), -1 );
 
@@ -1006,7 +1178,7 @@ int gnoclRichTextToolBarCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl
 	para->name = gnoclGetAutoWidgetId();
 	g_signal_connect ( G_OBJECT ( para->toolBar ), "destroy", G_CALLBACK ( destroyFunc ), para );
 	gnoclMemNameAndWidget ( para->name, GTK_WIDGET ( para->toolBar ) );
-	Tcl_CreateObjCommand ( interp, para->name, buttonFunc, para, NULL );
+	Tcl_CreateObjCommand ( interp, para->name, richTextToolBarFunc, para, NULL );
 	Tcl_SetObjResult ( interp, Tcl_NewStringObj ( para->name, -1 ) );
 }
 

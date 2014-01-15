@@ -334,7 +334,7 @@ int gnoclIconThemeCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *
 
 	static const char *cmds[] =
 	{
-		"contexts", "hasIcon", "icons",
+		"contexts", "hasIcon", "icons", "load",
 		NULL
 	};
 
@@ -353,7 +353,7 @@ int gnoclIconThemeCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *
 
 	enum optIdx
 	{
-		ContextsIdx, HasIconIdx, IconsIdx
+		ContextsIdx, HasIconIdx, IconsIdx, LoadIdx
 	};
 
 	int idx;
@@ -371,9 +371,61 @@ int gnoclIconThemeCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *
 
 	switch ( idx )
 	{
+		case LoadIdx:
+			{
+				/* create a pixbuf containing the specified icon */
+				/*
+				GdkPixbuf * gtk_icon_theme_load_icon (GtkIconTheme *icon_theme,
+				                                      const gchar *icon_name,
+				                                      gint size,
+				                                      GtkIconLookupFlags flags,
+				                                      GError **error);
+				*/
+				/*
+				typedef enum
+				{
+				  GTK_ICON_LOOKUP_NO_SVG           = 1 << 0,
+				  GTK_ICON_LOOKUP_FORCE_SVG        = 1 << 1,
+				  GTK_ICON_LOOKUP_USE_BUILTIN      = 1 << 2,
+				  GTK_ICON_LOOKUP_GENERIC_FALLBACK = 1 << 3,
+				  GTK_ICON_LOOKUP_FORCE_SIZE       = 1 << 4
+				} GtkIconLookupFlags;
+
+				typedef enum
+				{
+				  GTK_ICON_SIZE_INVALID,
+				  GTK_ICON_SIZE_MENU,
+				  GTK_ICON_SIZE_SMALL_TOOLBAR,
+				  GTK_ICON_SIZE_LARGE_TOOLBAR,
+				  GTK_ICON_SIZE_BUTTON,
+				  GTK_ICON_SIZE_DND,
+				  GTK_ICON_SIZE_DIALOG
+				} GtkIconSize;
+
+				*/
+
+				/*
+								if ( objc == 4 )
+								{
+									if ( strcmp ( Tcl_GetString ( objv[2] ), "-size" ) == 0 )
+									{
+										context = Tcl_GetString ( objv[3] );
+									}
+								}
+				*/
+
+				GdkPixbuf *pix;
+				gchar *icon_name;
+				gint size;
+
+
+
+				return gnoclCreatePixbufFromIcon ( interp, icon_theme, icon_name, GTK_ICON_SIZE_BUTTON );
+			}
+			break;
 		case HasIconIdx:
 			{
-				gboolean gtk_icon_theme_has_icon ( GtkIconTheme * icon_theme, const gchar * icon_name );
+				// gboolean gtk_icon_theme_has_icon ( GtkIconTheme * icon_theme, const gchar * icon_name );
 			}
 			break;
 		case ContextsIdx:
@@ -2560,7 +2612,6 @@ int gnoclClipboardCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj 
 				/* FIXME? else error? */
 			}
 
-			break;
 			break;
 		case ClearIdx:
 			gtk_clipboard_clear ( clip );
