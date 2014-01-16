@@ -1,4 +1,9 @@
 2014-01:
+	gnocl::richTextToolBar
+		o new widget, now in a stable, usable form
+	gnocl::text
+		o load/save & serialize/deserialize commands will now set 
+			result in emission of 'modified' signal.
 	added %& to the list of percentage markup strings to identify a
 		non-stock-item icon-theme graphic.
 	gnocl::info

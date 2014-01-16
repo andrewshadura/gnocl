@@ -391,6 +391,8 @@ typedef struct
 	GtkToolbar *toolBar;
 	GtkTextView *textView;
 	GtkScrolledWindow *source;
+	char *SVBaseFont;
+	char *SVBaseClr;
 	//GtkTextView *sourceView;
 	Tcl_Interp *interp;
 	char *name;

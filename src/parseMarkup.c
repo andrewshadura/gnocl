@@ -183,11 +183,13 @@ static int contains ( char character, char * list )
 }
 
 
-
+/**
+\brief
+**/
 char * removeChar ( char *str, char garbage )
 {
 
-#if 1
+#if 0
 	g_print ( "FUNC: %s\n", __FUNCTION__ );
 #endif
 
@@ -334,7 +336,7 @@ char *strcpy(char *dest, const char *src)
 **/
 static int getTag ( char *str, char *tag, int i )
 {
-#if 1
+#if 0
 	g_print ( "%s\n", __FUNCTION__ );
 #endif
 	int j;
@@ -400,7 +402,7 @@ int gnoclMarkupInsertTest ( GtkTextBuffer *buffer, GtkTextIter *iter )
 **/
 void addTag ( gchar *tag )
 {
-#if 1
+#if 0
 	g_print ( "FUNC: %s\n", __FUNCTION__ );
 #endif
 
@@ -417,7 +419,7 @@ void addTag ( gchar *tag )
 **/
 void removeTag ( gchar *tag )
 {
-#if 1
+#if 0
 	g_print ( "FUNC: %s\n", __FUNCTION__ );
 #endif
 
@@ -433,15 +435,12 @@ void removeTag ( gchar *tag )
 
 }
 
-
-
-
 /**
 \brief
 **/
 void handleTag ( gchar tag[] )
 {
-#if 1
+#if 0
 	g_print ( "FUNC: %s %s\n", __FUNCTION__, tag );
 #endif
 
@@ -468,7 +467,7 @@ void handleTag ( gchar tag[] )
 **/
 int gnoclInsertMarkup ( GtkTextBuffer *buffer, GtkTextIter *iter, gchar markup_text[] )
 {
-#if 1
+#if 0
 	g_print ( "FUNC: %s\n", __FUNCTION__ );
 #endif
 
@@ -498,15 +497,15 @@ int gnoclInsertMarkup ( GtkTextBuffer *buffer, GtkTextIter *iter, gchar markup_t
 
 		if ( markup_text[i] == '<' )
 		{
-			g_print ( "1-1 %d\n", i );
+			// g_print ( "1-1 %d\n", i );
 			i = getTag ( markup_text, tag, i );
 			handleTag ( tag );
-			g_print ( "1-2 %d\n", i );
+			// g_print ( "1-2 %d\n", i );
 		}
 
 		else
 		{
-			g_print ( "2\n" );
+			// g_print ( "2\n" );
 			//sprintf ( txt, "%c", ch1 );
 			ch2 = &markup_text[i];
 			tagIter = gtk_text_iter_copy ( iter );
@@ -519,7 +518,7 @@ int gnoclInsertMarkup ( GtkTextBuffer *buffer, GtkTextIter *iter, gchar markup_t
 			/* problems occuring here */
 			applyTags ( buffer,  iter );
 
-			g_print ( "ch = %c\n",  markup_text[i] );
+			// g_print ( "ch = %c\n",  markup_text[i] );
 
 		}
 
@@ -540,7 +539,7 @@ int gnoclInsertMarkup ( GtkTextBuffer *buffer, GtkTextIter *iter, gchar markup_t
 
 
 
-	g_print ( "==========\n" );
+	// g_print ( "==========\n" );
 	return 0;
 }
 

@@ -1,5 +1,6 @@
 /*
    History:
+   2014-01: now in a stable, usable form
    2013-07: added commands, options, commands
    2013-02: Begin of developement
  */
@@ -11,6 +12,7 @@
 
 #include "gnocl.h"
 //#include "gnoclparams.h"
+#include "rttbar_icons.h"
 
 static void updateSV ( RichTextToolbarParams *para );
 
@@ -35,6 +37,37 @@ static GnoclOption richTextToolBarOptions[] =
 	{ NULL },
 };
 
+
+/**
+\brief
+\note	Adapted from search found in module text.c.
+**/
+
+static void markup_sourceview ( GtkTextBuffer *buffer, gchar *str )
+{
+
+	int row1, col1, row2, col2;
+	GtkTextIter start, begin, end;
+
+	/*  default with the start of the buffer */
+	gtk_text_buffer_get_start_iter ( buffer, &start );
+
+	while ( gtk_text_iter_forward_search ( &start, str, 0, &begin, &end, NULL ) != NULL )
+	{
+		/*  return the index of the found location */
+		row1 = gtk_text_iter_get_line ( &begin );
+		col1 = gtk_text_iter_get_line_offset ( &begin );
+		row2 = gtk_text_iter_get_line ( &end );
+		col2 = gtk_text_iter_get_line_offset ( &end );
+
+		/*  check if there is a taglist to apply */
+
+		gtk_text_buffer_apply_tag_by_name ( buffer, "mark_up", &begin, &end );
+
+		start = end;
+
+	}
+}
 
 /**
 \brief Apply named tag to active selection.
@@ -214,7 +247,7 @@ static void clearTag ( GtkTextTag * tag, GtkTextBuffer  *buffer )
 static void doShowsource ( GtkToggleToolButton *toggle_button, gpointer user_data )
 {
 
-	g_print ( "Modify code to toggle source viewer\n" );
+//	g_print ( "Modify code to toggle source viewer\n" );
 
 	RichTextToolbarParams *para = ( RichTextToolbarParams * ) user_data;
 
@@ -279,10 +312,14 @@ static void doClearFg ( GtkToolButton *toolbutton, gpointer user_data )
 **/
 static void doYellowBg ( GtkToolButton *toolbutton, gpointer user_data )
 {
+
 	RichTextToolbarParams *para = ( RichTextToolbarParams * ) user_data;
+
 	para->bgClr = "<span background='yellow'>";
 	gtk_widget_destroy ( para->bgImg );
-	para->bgImg = gtk_image_new_from_file ( "./yellowBg.png"  );
+
+	para->bgImg = gtk_image_new_from_pixbuf ( gdk_pixbuf_new_from_inline ( -1, yellowBg_in_line, FALSE, NULL ) );
+
 	gtk_widget_show ( para->bgImg );
 	gtk_tool_button_set_icon_widget ( para->bg, para->bgImg );
 }
@@ -295,7 +332,8 @@ static void doMagentaBg ( GtkToolButton *toolbutton, gpointer user_data )
 	RichTextToolbarParams *para = ( RichTextToolbarParams * ) user_data;
 	para->bgClr = "<span background='magenta'>";
 	gtk_widget_destroy ( para->bgImg );
-	para->bgImg = gtk_image_new_from_file ( "./magentaBg.png"  );
+
+	para->bgImg = gtk_image_new_from_pixbuf ( gdk_pixbuf_new_from_inline ( -1, magentaBg_in_line, FALSE, NULL ) );
 	gtk_widget_show ( para->bgImg );
 	gtk_tool_button_set_icon_widget ( para->bg, para->bgImg );
 }
@@ -308,7 +346,8 @@ static void doCyanBg ( GtkToolButton *toolbutton, gpointer user_data )
 	RichTextToolbarParams *para = ( RichTextToolbarParams * ) user_data;
 	para->bgClr = "<span background='cyan'>";
 	gtk_widget_destroy ( para->bgImg );
-	para->bgImg = gtk_image_new_from_file ( "./cyanBg.png"  );
+
+	para->bgImg = gtk_image_new_from_pixbuf ( gdk_pixbuf_new_from_inline ( -1, cyanBg_in_line, FALSE, NULL ) );
 	gtk_widget_show ( para->bgImg );
 	gtk_tool_button_set_icon_widget ( para->bg, para->bgImg );
 }
@@ -321,7 +360,8 @@ static void doOrangeBg ( GtkToolButton *toolbutton, gpointer user_data )
 	RichTextToolbarParams *para = ( RichTextToolbarParams * ) user_data;
 	para->bgClr = "<span background='orange'>";
 	gtk_widget_destroy ( para->bgImg );
-	para->bgImg = gtk_image_new_from_file ( "./orangeBg.png"  );
+
+	para->bgImg = gtk_image_new_from_pixbuf ( gdk_pixbuf_new_from_inline ( -1, orangeBg_in_line, FALSE, NULL ) );
 	gtk_widget_show ( para->bgImg );
 	gtk_tool_button_set_icon_widget ( para->bg, para->bgImg );
 }
@@ -363,7 +403,8 @@ static void doRedFg ( GtkToolButton *toolbutton, gpointer user_data )
 	RichTextToolbarParams *para = ( RichTextToolbarParams * ) user_data;
 	para->fgClr = "<span foreground='red'>";
 	gtk_widget_destroy ( para->fgImg );
-	para->fgImg = gtk_image_new_from_file ( "./redFg.png"  );
+
+	para->fgImg = gtk_image_new_from_pixbuf ( gdk_pixbuf_new_from_inline ( -1, redFg_in_line, FALSE, NULL ) );
 	gtk_widget_show ( para->fgImg );
 	gtk_tool_button_set_icon_widget ( para->fg, para->fgImg );
 }
@@ -376,7 +417,8 @@ static void doGreenFg ( GtkToolButton *toolbutton, gpointer user_data )
 	RichTextToolbarParams *para = ( RichTextToolbarParams * ) user_data;
 	para->fgClr = "<span foreground='green'>";
 	gtk_widget_destroy ( para->fgImg );
-	para->fgImg = gtk_image_new_from_file ( "./greenFg.png"  );
+
+	para->fgImg = gtk_image_new_from_pixbuf ( gdk_pixbuf_new_from_inline ( -1, greenFg_in_line, FALSE, NULL ) );
 	gtk_widget_show ( para->fgImg );
 	gtk_tool_button_set_icon_widget ( para->fg, para->fgImg );
 }
@@ -389,7 +431,9 @@ static void doBlueFg ( GtkToolButton *toolbutton, gpointer user_data )
 	RichTextToolbarParams *para = ( RichTextToolbarParams * ) user_data;
 	para->fgClr = "<span foreground='blue'>";
 	gtk_widget_destroy ( para->fgImg );
-	para->fgImg = gtk_image_new_from_file ( "./blueFg.png"  );
+
+	para->fgImg = gtk_image_new_from_pixbuf ( gdk_pixbuf_new_from_inline ( -1, blueFg_in_line, FALSE, NULL ) );
+
 	gtk_widget_show ( para->fgImg );
 	gtk_tool_button_set_icon_widget ( para->fg, para->fgImg );
 }
@@ -402,7 +446,8 @@ static void doGrayFg ( GtkToolButton *toolbutton, gpointer user_data )
 	RichTextToolbarParams *para = ( RichTextToolbarParams * ) user_data;
 	para->fgClr = "<span foreground='gray'>";
 	gtk_widget_destroy ( para->fgImg );
-	para->fgImg = gtk_image_new_from_file ( "./grayFg.png"  );
+
+	para->fgImg = gtk_image_new_from_pixbuf ( gdk_pixbuf_new_from_inline ( -1, grayFg_in_line, FALSE, NULL ) );
 	gtk_widget_show ( para->fgImg );
 	gtk_tool_button_set_icon_widget ( para->fg, para->fgImg );
 }
@@ -417,6 +462,8 @@ static void doBold ( GtkToolButton *toolbutton, gpointer user_data )
 	GtkTextBuffer  *buffer = gtk_text_view_get_buffer ( GTK_TEXT_VIEW ( para->textView ) );
 
 	toggleTag ( buffer, "<b>" );
+	g_signal_emit_by_name (  gtk_text_view_get_buffer ( para->textView ), "changed", NULL );
+	updateSV ( para );
 
 }
 
@@ -429,7 +476,8 @@ static void doItalic ( GtkToolButton *toolbutton, gpointer user_data )
 	GtkTextBuffer  *buffer = gtk_text_view_get_buffer ( GTK_TEXT_VIEW ( para->textView ) );
 
 	toggleTag ( buffer, "<i>" );
-
+	g_signal_emit_by_name (  gtk_text_view_get_buffer ( para->textView ), "changed", NULL );
+	updateSV ( para );
 }
 
 /**
@@ -441,6 +489,8 @@ static void doUnderline ( GtkToolButton *toolbutton, gpointer user_data )
 	GtkTextBuffer  *buffer = gtk_text_view_get_buffer ( GTK_TEXT_VIEW ( para->textView ) );
 
 	toggleTag ( buffer, "<u>" );
+	g_signal_emit_by_name (  gtk_text_view_get_buffer ( para->textView ), "changed", NULL );
+	updateSV ( para );
 }
 
 /**
@@ -452,6 +502,8 @@ static void doStrikethrough ( GtkToolButton *toolbutton, gpointer user_data )
 	GtkTextBuffer  *buffer = gtk_text_view_get_buffer ( GTK_TEXT_VIEW ( para->textView ) );
 
 	toggleTag ( buffer, "<s>" );
+	g_signal_emit_by_name (  gtk_text_view_get_buffer ( para->textView ), "changed", NULL );
+	updateSV ( para );
 }
 
 /**
@@ -463,6 +515,8 @@ static void doSuperscript ( GtkToolButton *toolbutton, gpointer user_data )
 	GtkTextBuffer  *buffer = gtk_text_view_get_buffer ( GTK_TEXT_VIEW ( para->textView ) );
 
 	toggleTag ( buffer, "<sup>" );
+	g_signal_emit_by_name (  gtk_text_view_get_buffer ( para->textView ), "changed", NULL );
+	updateSV ( para );
 }
 
 /**
@@ -474,6 +528,8 @@ static void doSubscript ( GtkToolButton *toolbutton, gpointer user_data )
 	GtkTextBuffer  *buffer = gtk_text_view_get_buffer ( GTK_TEXT_VIEW ( para->textView ) );
 
 	toggleTag ( buffer, "<sub>" );
+	g_signal_emit_by_name (  gtk_text_view_get_buffer ( para->textView ), "changed", NULL );
+	updateSV ( para );
 }
 
 
@@ -494,6 +550,8 @@ static void doBigger ( GtkToolButton *toolbutton, gpointer user_data )
 	GtkTextBuffer  *buffer = gtk_text_view_get_buffer ( GTK_TEXT_VIEW ( para->textView ) );
 
 	toggleTag ( buffer, "<big>" );
+	g_signal_emit_by_name (  gtk_text_view_get_buffer ( para->textView ), "changed", NULL );
+	updateSV ( para );
 }
 
 /**
@@ -505,6 +563,8 @@ static void doSmaller ( GtkToolButton *toolbutton, gpointer user_data )
 	GtkTextBuffer  *buffer = gtk_text_view_get_buffer ( GTK_TEXT_VIEW ( para->textView ) );
 
 	toggleTag ( buffer, "<small>" );
+	g_signal_emit_by_name (  gtk_text_view_get_buffer ( para->textView ), "changed", NULL );
+	updateSV ( para );
 }
 
 /**
@@ -522,6 +582,9 @@ static void doBg ( GtkToolButton *toolbutton, gpointer user_data )
 		applyTag ( buffer, para->bgClr );
 	}
 
+	g_signal_emit_by_name (  gtk_text_view_get_buffer ( para->textView ), "changed", NULL );
+	updateSV ( para );
+
 }
 
 /**
@@ -537,15 +600,30 @@ static void doFg ( GtkToolButton *toolbutton, gpointer user_data )
 		removeFgTags ( buffer );
 		applyTag ( buffer, para->fgClr );
 	}
+
+	g_signal_emit_by_name (  gtk_text_view_get_buffer ( para->textView ), "changed", NULL );
+	updateSV ( para );
 }
 
 /**
 \brief	Check for specific key presses -own widget keybindings
+	Cttl-b bold
+	Ctrl-u underline
+	Ctrl-i italic
+	Ctrl-- strikethrough
+	Ctrl-[ bgClr
+	Ctrl-] fgClr
+	Ctrl-, sup
+	Ctrl-. sub
+	Ctrl-(kp)+ big
+	Ctrl-(kp)- small
 **/
 gboolean key_pressed ( GtkWidget * window, GdkEventKey* event, RichTextToolbarParams *para ) // GtkTextBuffer *buffer )
 {
 
+#if 0
 	g_print ( "%s\n", __FUNCTION__ );
+#endif
 
 	GtkTextIter sel_start, sel_end;
 	GtkTextBuffer *buffer = gtk_text_view_get_buffer ( para->textView );
@@ -566,9 +644,9 @@ gboolean key_pressed ( GtkWidget * window, GdkEventKey* event, RichTextToolbarPa
 			case GDK_b:
 				{
 					gtk_text_buffer_apply_tag_by_name ( buffer, "<b>", &sel_start, &sel_end );
-					break;
-				}
 
+				}
+				break;
 			case GDK_i:
 				{
 					gtk_text_buffer_apply_tag_by_name ( buffer, "<i>", &sel_start, &sel_end );
@@ -584,6 +662,16 @@ gboolean key_pressed ( GtkWidget * window, GdkEventKey* event, RichTextToolbarPa
 					gtk_text_buffer_apply_tag_by_name ( buffer, "<s>", &sel_start, &sel_end );
 				}
 				break;
+			case GDK_comma:
+				{
+					gtk_text_buffer_apply_tag_by_name ( buffer, "<sup>", &sel_start, &sel_end );
+				}
+				break;
+			case GDK_period:
+				{
+					gtk_text_buffer_apply_tag_by_name ( buffer, "<sub>", &sel_start, &sel_end );
+				}
+				break;
 			case GDK_bracketleft:
 				{
 					gtk_text_buffer_apply_tag_by_name ( buffer, para->bgClr, &sel_start, &sel_end );
@@ -594,6 +682,16 @@ gboolean key_pressed ( GtkWidget * window, GdkEventKey* event, RichTextToolbarPa
 					gtk_text_buffer_apply_tag_by_name ( buffer, para->fgClr, &sel_start, &sel_end );
 				}
 				break;
+			case GDK_KP_Subtract:
+				{
+					gtk_text_buffer_apply_tag_by_name ( buffer, "<small>", &sel_start, &sel_end );
+				}
+				break;
+			case GDK_KP_Add:
+				{
+					gtk_text_buffer_apply_tag_by_name ( buffer, "<big>", &sel_start, &sel_end );
+				}
+				break;
 			default:
 				{
 #if 0
@@ -602,6 +700,8 @@ gboolean key_pressed ( GtkWidget * window, GdkEventKey* event, RichTextToolbarPa
 				}
 		}
 
+		g_signal_emit_by_name (  gtk_text_view_get_buffer ( para->textView ), "changed", NULL );
+		updateSV ( para );
 	}
 
 	return FALSE;
@@ -614,7 +714,7 @@ gboolean key_pressed ( GtkWidget * window, GdkEventKey* event, RichTextToolbarPa
 **/
 static int cget ( Tcl_Interp *interp, RichTextToolbarParams *para, GnoclOption options[], int idx )
 {
-#if 1
+#if 0
 	g_print ( "%s\n", __FUNCTION__ );
 #endif
 
@@ -678,8 +778,9 @@ static int configure ( Tcl_Interp *interp, RichTextToolbarParams *para, GnoclOpt
 	if ( options[textAcceleratorsIdx].status == GNOCL_STATUS_CHANGED )
 	{
 
+#if 0
 		g_print ( "ADD ACCELERATORS\n" );
-
+#endif
 		GtkScrolledWindow *scrolled = gnoclGetWidgetFromName ( Tcl_GetString ( options[textIdx].val.obj ), interp );
 
 		GtkTextView *textView;
@@ -710,6 +811,7 @@ static void updateSV ( RichTextToolbarParams *para )
 
 	GtkTextIter start, end;
 	GtkTextBuffer  *buffer;
+	gint i;
 
 	/* get markup */
 	buffer = gtk_text_view_get_buffer ( para->textView );
@@ -719,6 +821,38 @@ static void updateSV ( RichTextToolbarParams *para )
 	/* insert into source view */
 	GtkTextView *text = GTK_TEXT_VIEW ( gtk_bin_get_child ( GTK_BIN ( para->source ) ) );
 	gtk_text_buffer_set_text ( gtk_text_view_get_buffer ( text ), Tcl_GetString ( str ), -1 );
+
+	/*  highlight sourceview */
+	gchar *tag[] =
+	{
+		"<b>", "</b>",
+		"<i>", "</i>",
+		"<u>", "</u>",
+		"<s>", "</s>",
+		"<sub>", "</sub>",
+		"<sup>", "</sup>",
+		"<big>", "</big>",
+		"<small>", "</small>",
+		"<span background='cyan'>",
+		"<span background='magenta'>",
+		"<span background='yellow'>",
+		"<span background='orange'>",
+		"<span foreground='red'>",
+		"<span foreground='green'>",
+		"<span foreground='blue'>",
+		"<span foreground='gray'>",
+		"</span>",
+		NULL
+	};
+
+	i = 0;
+
+	while ( tag[i] != NULL )
+	{
+		markup_sourceview ( gtk_text_view_get_buffer ( text ), tag[i] );
+		// g_print ( "i = %d ; tag = %s\n", i, tag[i] );
+		i++;
+	}
 }
 
 /**
@@ -845,12 +979,15 @@ int gnoclRichTextToolBarCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl
 	para = g_new ( RichTextToolbarParams, 1 );
 
 
+	/* set some defaults values */
+	para->SVBaseClr = "#F5F5FA";
+	para->SVBaseFont = "Monospace 9";
 	para->fgClr = "<span foreground='red'>";
 	para->bgClr = "<span background='yellow'>";
 
 	GtkToolItem *bold, *italic, *underline,
 				*strikethrough, *superscript, *subscript,
-				*bigger, *smaller, *spellcheck, *showsource;
+				*bigger, *smaller, *showsource;
 
 	GtkWidget *bgclrs, *fgclrs;
 	GtkAccelGroup *group;
@@ -858,105 +995,45 @@ int gnoclRichTextToolBarCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl
 	GdkColor color;
 	PangoFontDescription *font_desc;
 
-	/*
-	typedef struct {
-	  guint32 pixel;
-	  guint16 red;
-	  guint16 green;
-	  guint16 blue;
-	} GdkColor;
-	*/
-
-	/*
-	 typedef enum {
-	  GTK_STATE_NORMAL,
-	  GTK_STATE_ACTIVE,
-	  GTK_STATE_PRELIGHT,
-	  GTK_STATE_SELECTED,
-	  GTK_STATE_INSENSITIVE,
-	  GTK_STATE_INCONSISTENT,
-	  GTK_STATE_FOCUSED
-	} GtkStateType;
-	*/
-
-	color.red = 65535;
-	color.green = 0;
-	color.blue = 0;
-
-	gtk_widget_modify_bg ( bold, GTK_STATE_NORMAL, &color );
-
-	/*
-	 *  IMPORT THESE GRAPHICS INTO THEIR OWN INCLUDE FILE
-	 *
-	 *
-	*/
-
-	/*
-	GdkPixbuf *         gtk_icon_theme_load_icon            (GtkIconTheme *icon_theme,
-	                                                         const gchar *icon_name,
-	                                                         gint size,
-	                                                         GtkIconLookupFlags flags,
-	                                                         GError **error);
-	*/
-
-	//GtkWidget *italicImg = gtk_image_new_from_file ( "./italic.png" );
-	//italic = gtk_tool_button_new  ( italicImg, "" );
-	//gtk_tool_button_set_icon_widget ( italic, italicImg );
-
-	/*
-	stock_text-strikethrough
-	stock_text_bold
-	stock_text_center
-	stock_text_indent
-	stock_text_italic
-	stock_text_justify
-	stock_text_left
-	stock_text_right
-	stock_text_underlined
-	stock_text_unindent
-	*/
-
-
-
 
 	bold = gtk_tool_button_new  ( gtk_image_new_from_icon_name ( "stock_text_bold", GTK_ICON_SIZE_BUTTON ), "" );
 	italic = gtk_tool_button_new  ( gtk_image_new_from_icon_name ( "stock_text_italic", GTK_ICON_SIZE_BUTTON ), "" );
 	underline = gtk_tool_button_new  ( gtk_image_new_from_icon_name ( "stock_text_underlined", GTK_ICON_SIZE_BUTTON ), "" );
 	strikethrough = gtk_tool_button_new  ( gtk_image_new_from_icon_name ( "stock_text-strikethrough", GTK_ICON_SIZE_BUTTON ), "" );
 
+	/* load custom icons */
 
-	GtkWidget *superscriptImg = gtk_image_new_from_file ( "./superscript.png" );
-	superscript = gtk_tool_button_new  ( superscriptImg, "" );
-	gtk_tool_button_set_icon_widget ( superscript, superscriptImg );
+	/* A) ToolButtons */
+	GtkWidget *superscriptImg;
+	GdkPixbuf *pb;
 
-	GtkWidget *subscriptImg = gtk_image_new_from_file ( "./subscript.png" );
-	subscript = gtk_tool_button_new  ( subscriptImg, "" );
-	gtk_tool_button_set_icon_widget ( subscript, subscriptImg );
+	pb = gdk_pixbuf_new_from_inline ( -1, superscript_in_line, FALSE, NULL );
+	superscript = gtk_tool_button_new  ( gtk_image_new_from_pixbuf ( pb ), "" );
 
-	GtkWidget *biggerImg = gtk_image_new_from_file ( "./bigger.png" );
-	bigger = gtk_tool_button_new  ( biggerImg, "" );
-	gtk_tool_button_set_icon_widget ( bigger, biggerImg );
+	pb = gdk_pixbuf_new_from_inline ( -1, subscript_in_line, FALSE, NULL );
+	subscript = gtk_tool_button_new  ( gtk_image_new_from_pixbuf ( pb ), "" );
 
-	GtkWidget *smallerImg = gtk_image_new_from_file ( "./smaller.png" );
-	smaller = gtk_tool_button_new  ( smallerImg, "" );
-	gtk_tool_button_set_icon_widget ( smaller, smallerImg );
+	pb = gdk_pixbuf_new_from_inline ( -1, bigger_in_line, FALSE, NULL );
+	bigger = gtk_tool_button_new  ( gtk_image_new_from_pixbuf ( pb ), "" );
 
-	para->bgImg = gtk_image_new_from_file ( "./background.png" );
-	para->bg =  gtk_menu_tool_button_new ( para->bgImg, "" );
-	gtk_tool_button_set_icon_widget ( para->bg, para->bgImg );
+	pb = gdk_pixbuf_new_from_inline ( -1, smaller_in_line, FALSE, NULL );
+	smaller = gtk_tool_button_new  ( gtk_image_new_from_pixbuf ( pb ), "" );
 
-	para->fgImg = gtk_image_new_from_file ( "./foreground.png" );
-	para->fg =  gtk_menu_tool_button_new   ( para->fgImg, "" );
-	gtk_tool_button_set_icon_widget ( para->fg, para->fgImg );
+	pb = gdk_pixbuf_new_from_inline ( -1, bigger_in_line, FALSE, NULL );
+	bigger = gtk_tool_button_new  ( gtk_image_new_from_pixbuf ( pb ), "" );
 
-	GtkWidget *spellCheckImg = gtk_image_new_from_icon_name ( "tools-check-spelling", GTK_ICON_SIZE_BUTTON );
-	spellcheck = gtk_toggle_tool_button_new  ();
-	gtk_tool_button_set_icon_widget ( spellcheck, spellCheckImg );
-
-	GtkWidget *htmlImg = gtk_image_new_from_icon_name ( "text-html", GTK_ICON_SIZE_BUTTON );
 	showsource = gtk_toggle_tool_button_new  ();
-	gtk_tool_button_set_icon_widget ( showsource, htmlImg );
+	gtk_tool_button_set_icon_widget ( showsource, gtk_image_new_from_icon_name ( "text-html", GTK_ICON_SIZE_BUTTON ) );
 
+
+	/* B) Menus */
+	pb = gdk_pixbuf_new_from_inline ( -1, background_in_line, FALSE, NULL );
+	para->bgImg =  gtk_image_new_from_pixbuf ( pb );
+	para->bg =  gtk_menu_tool_button_new ( para->bgImg, "" );
+
+	pb = gdk_pixbuf_new_from_inline ( -1, foreground_in_line, FALSE, NULL );
+	para->fgImg =  gtk_image_new_from_pixbuf ( pb );
+	para->fg =  gtk_menu_tool_button_new ( para->fgImg, "" );
 
 
 	group = gtk_accel_group_new();
@@ -981,23 +1058,24 @@ int gnoclRichTextToolBarCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl
 	g_signal_connect ( G_OBJECT ( n1 ), "activate", G_CALLBACK ( doClearBg ), ( gpointer ) para );
 
 	/* load image for 'a' */
-	GtkWidget *imageA = gtk_image_new_from_file ( "./yellow.png" );
-	gtk_image_menu_item_set_image ( a1, imageA );
+	pb = gdk_pixbuf_new_from_inline ( -1, yellow_in_line, FALSE, NULL );
+	gtk_image_menu_item_set_image ( a1, gtk_image_new_from_pixbuf ( pb ) );
 	gtk_image_menu_item_set_always_show_image ( a1, TRUE );
 	g_signal_connect ( G_OBJECT ( a1 ), "activate", G_CALLBACK ( doYellowBg ), ( gpointer ) para );
 
-	GtkWidget *imageB = gtk_image_new_from_file ( "./cyan.png" );
-	gtk_image_menu_item_set_image ( b1, imageB );
+	pb = gdk_pixbuf_new_from_inline ( -1, cyan_in_line, FALSE, NULL );
+	gtk_image_menu_item_set_image ( b1,  gtk_image_new_from_pixbuf ( pb ) );
 	gtk_image_menu_item_set_always_show_image ( b1, TRUE );
 	g_signal_connect ( G_OBJECT ( b1 ), "activate", G_CALLBACK ( doCyanBg ), ( gpointer ) para );
 
-	GtkWidget *imageC = gtk_image_new_from_file ( "./magenta.png" );
-	gtk_image_menu_item_set_image ( c1, imageC );
+	pb = gdk_pixbuf_new_from_inline ( -1, magenta_in_line, FALSE, NULL );
+	gtk_image_menu_item_set_image ( c1,  gtk_image_new_from_pixbuf ( pb ) );
 	gtk_image_menu_item_set_always_show_image ( c1, TRUE );
 	g_signal_connect ( G_OBJECT ( c1 ), "activate", G_CALLBACK ( doMagentaBg ), ( gpointer ) para );
 
-	GtkWidget *imageD = gtk_image_new_from_file ( "./orange.png" );
-	gtk_image_menu_item_set_image ( d1, imageD );
+
+	pb = gdk_pixbuf_new_from_inline ( -1, orange_in_line, FALSE, NULL );
+	gtk_image_menu_item_set_image ( d1,  gtk_image_new_from_pixbuf ( pb ) );
 	gtk_image_menu_item_set_always_show_image ( d1, TRUE );
 	g_signal_connect ( G_OBJECT ( d1 ), "activate", G_CALLBACK ( doOrangeBg ), ( gpointer ) para );
 
@@ -1011,24 +1089,26 @@ int gnoclRichTextToolBarCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl
 
 	g_signal_connect ( G_OBJECT ( n1 ), "activate", G_CALLBACK ( doClearFg ), ( gpointer ) para );
 
-	/* load image for 'a' */
-	GtkWidget *imageE = gtk_image_new_from_file ( "./red.png" );
-	gtk_image_menu_item_set_image ( a2, imageE );
+	/* load images for 'a' */
+
+	pb = gdk_pixbuf_new_from_inline ( -1, red_in_line, FALSE, NULL );
+	gtk_image_menu_item_set_image ( a2,  gtk_image_new_from_pixbuf ( pb ) );
 	gtk_image_menu_item_set_always_show_image ( a2, TRUE );
 	g_signal_connect ( G_OBJECT ( a2 ), "activate", G_CALLBACK ( doRedFg ), ( gpointer ) para );
 
-	GtkWidget *imageF = gtk_image_new_from_file ( "./green.png" );
-	gtk_image_menu_item_set_image ( b2, imageF );
+
+	pb = gdk_pixbuf_new_from_inline ( -1, green_in_line, FALSE, NULL );
+	gtk_image_menu_item_set_image ( b2,  gtk_image_new_from_pixbuf ( pb ) );
 	gtk_image_menu_item_set_always_show_image ( b2, TRUE );
 	g_signal_connect ( G_OBJECT ( b2 ), "activate", G_CALLBACK ( doGreenFg ), ( gpointer ) para );
 
-	GtkWidget *imageG = gtk_image_new_from_file ( "./blue.png" );
-	gtk_image_menu_item_set_image ( c2, imageG );
+	pb = gdk_pixbuf_new_from_inline ( -1, blue_in_line, FALSE, NULL );
+	gtk_image_menu_item_set_image ( c2,  gtk_image_new_from_pixbuf ( pb ) );
 	gtk_image_menu_item_set_always_show_image ( c2, TRUE );
 	g_signal_connect ( G_OBJECT ( c2 ), "activate", G_CALLBACK ( doBlueFg ), ( gpointer ) para );
 
-	GtkWidget *imageH = gtk_image_new_from_file ( "./gray.png" );
-	gtk_image_menu_item_set_image ( d2, imageH );
+	pb = gdk_pixbuf_new_from_inline ( -1, gray_in_line, FALSE, NULL );
+	gtk_image_menu_item_set_image ( d2,  gtk_image_new_from_pixbuf ( pb ) );
 	gtk_image_menu_item_set_always_show_image ( d2, TRUE );
 	g_signal_connect ( G_OBJECT ( d2 ), "activate", G_CALLBACK ( doGrayFg ), ( gpointer ) para );
 
@@ -1043,6 +1123,9 @@ int gnoclRichTextToolBarCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl
 
 	para->toolBar = GTK_TOOLBAR ( gtk_toolbar_new() );
 	gtk_toolbar_set_show_arrow ( para->toolBar, TRUE );
+
+	/* relese pixbuf use to create widget icons */
+	g_object_unref ( pb );
 
 	/*
 		 GTK_ICON_SIZE_INVALID
@@ -1080,7 +1163,7 @@ int gnoclRichTextToolBarCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl
 	gtk_toolbar_insert ( GTK_TOOLBAR ( para->toolBar ), para->fg, -1 );
 
 	gtk_toolbar_insert ( GTK_TOOLBAR ( para->toolBar ), gtk_separator_tool_item_new(), -1 );
-	gtk_toolbar_insert ( GTK_TOOLBAR ( para->toolBar ), spellcheck, -1 );
+
 	gtk_toolbar_insert ( GTK_TOOLBAR ( para->toolBar ), showsource, -1 );
 
 	/* event handlers */
@@ -1098,7 +1181,6 @@ int gnoclRichTextToolBarCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl
 	g_signal_connect ( G_OBJECT ( para->bg ), "clicked", G_CALLBACK ( doBg ), ( gpointer ) para );
 	g_signal_connect ( G_OBJECT ( para->fg ), "clicked", G_CALLBACK ( doFg ), ( gpointer ) para );
 
-	g_signal_connect ( G_OBJECT ( spellcheck ), "clicked", G_CALLBACK ( doSpellCheck ), ( gpointer ) para );
 	g_signal_connect ( G_OBJECT ( showsource ), "clicked", G_CALLBACK ( doShowsource ), ( gpointer ) para );
 
 	gtk_widget_show_all ( GTK_WIDGET ( para->toolBar ) );
@@ -1127,6 +1209,9 @@ int gnoclRichTextToolBarCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl
 	sourceview = GTK_TEXT_VIEW ( gtk_text_view_new () );
 
 	gtk_text_view_set_editable ( sourceview, FALSE );
+	gtk_text_buffer_create_tag ( gtk_text_view_get_buffer ( sourceview ), "mark_up", "foreground", "maroon", NULL );
+
+
 	/*
 	typedef struct {
 	  guint32 pixel;
@@ -1138,13 +1223,12 @@ int gnoclRichTextToolBarCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl
 	This is a value between 0 and 65535, with 65535 indicating full intensitiy.
 	*/
 
-	gdk_color_parse ( "#F5F5FA", &color ) ;
+	gdk_color_parse ( para->SVBaseClr, &color ) ;
 	gtk_widget_modify_base ( sourceview, GTK_STATE_NORMAL, &color );
 
-	font_desc = pango_font_description_from_string ( "Monospace 10" );
+	font_desc = pango_font_description_from_string ( para->SVBaseFont  );
 
 	gtk_widget_modify_font ( sourceview, font_desc );
-
 
 	gtk_text_view_set_wrap_mode ( sourceview, GTK_WRAP_WORD );
 
@@ -1169,11 +1253,8 @@ int gnoclRichTextToolBarCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl
 		return TCL_ERROR;
 	}
 
-
 	/* TODO: if not -visible == 0 */
 	gtk_widget_show ( GTK_WIDGET ( para->toolBar ) );
-
-//	return gnoclRegisterWidget ( interp, GTK_WIDGET ( para->toolBar ), richTextToolBarFunc );
 
 	para->name = gnoclGetAutoWidgetId();
 	g_signal_connect ( G_OBJECT ( para->toolBar ), "destroy", G_CALLBACK ( destroyFunc ), para );

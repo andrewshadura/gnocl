@@ -25,6 +25,8 @@
 */
 /*
    History:
+   2014-01: load/save & serialize/deserialize commands will now set
+			result in emission of 'modified' signal.
    2013-11: added some error checking to function applyTag
    2013-10: added -rollOverFgColor and tag option -rollover
    2013-09: added -length (chars) option to lorem command.
@@ -674,9 +676,9 @@ static getAttributes ( Tcl_Interp *interp, GtkTextAttributes *values )
 
 
 /**
-\brief     Search through the GtkTextBuffer from startPos to endPos.
-If a match is found, add it to a list of row col indices.
-When search complete, return the list to the calling function.
+\brief  Search through the GtkTextBuffer from startPos to endPos.
+		If a match is found, add it to a list of row col indices.
+		When search complete, return the list to the calling function.
 **/
 static int searchWord ( GtkTextBuffer *buffer, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[], int cmdNo, int isTextWidget )
 {
@@ -1423,7 +1425,7 @@ static GnoclOption textOptions[] =
 	{ "-data", GNOCL_OBJ, "", gnoclOptData },
 	{ "-baseColor", GNOCL_OBJ, "normal", gnoclOptGdkColorBase },
 	{ "-variable", GNOCL_STRING, NULL },
-	{ "-onChanged", GNOCL_STRING, NULL },
+	{ "-onChanged_", GNOCL_STRING, NULL },
 	{ "-baseFont", GNOCL_OBJ, "Sans 14", gnoclOptGdkBaseFont },
 	{ "-tooltip", GNOCL_OBJ, "", gnoclOptTooltip },
 	{ "-rollOverFgColor", GNOCL_OBJ, "fg", gnoclOptGdkColorRollOver},
@@ -1995,7 +1997,7 @@ static void deleteTag  ( GtkTextTag * tag, gpointer data )
 **/
 static int removeTag ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, Tcl_Obj *  const objv[], int cmdNo )
 {
-#if 1
+#if 0
 	g_print ( "%s\n", __FUNCTION__ );
 #endif
 
@@ -3958,8 +3960,9 @@ int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl
 
 		case GetMarkupIdx:
 			{
+#if 0
 				g_print ( "%s getMarkup\n", __FUNCTION__ );
-
+#endif
 				GtkTextIter startIter, endIter;
 
 				posToIter ( interp, objv[cmdNo+1], buffer, &startIter );
@@ -4122,6 +4125,7 @@ int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl
 				g_string_free ( buf, 1 );
 
 #endif
+				gtk_text_buffer_set_modified ( buffer, FALSE );
 
 				return TCL_OK;
 
@@ -4168,6 +4172,7 @@ int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl
 				gtk_text_buffer_get_iter_at_offset ( buffer, &iter, 0 );
 				gtk_text_buffer_deserialize ( buffer, buffer, de_format, &iter, Tcl_GetString ( objv[cmdNo+1] ), strlen ( Tcl_GetString ( objv[cmdNo+1] ) ), NULL );
 #endif
+				gtk_text_buffer_set_modified ( buffer, TRUE );
 
 				return TCL_OK;
 			}
@@ -4291,8 +4296,7 @@ int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl
 			{
 
 				int row1, col1, row2, col2;
-				GtkTextIter start;
-				GtkTextIter begin, end;
+				GtkTextIter start, begin, end;
 				Tcl_Obj *resList;
 				gint applyTags;
 				char *  pch;

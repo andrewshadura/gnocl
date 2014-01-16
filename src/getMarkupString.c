@@ -21,7 +21,7 @@ Error on line 1 char 30: Element 'b' was closed, but the currently open element 
 **/
 Tcl_Obj *getMarkUpString ( Tcl_Interp *interp, GtkTextBuffer *buffer, GtkTextIter *start, GtkTextIter *end )
 {
-#if 1
+#if 0
 	g_print ( "%s\n", __FUNCTION__ );
 #endif
 

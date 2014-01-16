@@ -5015,7 +5015,6 @@ static gboolean doOnVisibility ( GtkWidget *widget, GdkEventVisibility *event, g
 		{ 0 }
 	};
 
-
 	ps[0].val.str = gnoclGetNameFromWidget ( widget );
 	ps[2].val.str = gtk_widget_get_name ( widget );
 
@@ -5047,14 +5046,12 @@ static gboolean doOnVisibility ( GtkWidget *widget, GdkEventVisibility *event, g
 }
 
 /**
-\brief
+\brief	Respon to the modified signal emitted by the GtkTextBuffer.
 \author
 \date
 \note
 **/
-static void doOnModified (
-	GtkTextBuffer *textbuffer,
-	gpointer user_data )
+static void doOnModified ( GtkTextBuffer *textbuffer, gpointer user_data )
 {
 
 	GnoclCommandData *cs = ( GnoclCommandData * ) user_data;
@@ -5065,7 +5062,7 @@ static void doOnModified (
 		{ 0 }
 	};
 
-	ps[0].val.i = 1;
+	ps[1].val.i = 1;
 
 	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
 }
