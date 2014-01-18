@@ -1,6 +1,48 @@
 #include "gnocl.h"
 //#include "gnoclparams.h"
 
+
+/**
+\brief	Determine wether tagName begins with < and ends with >.
+***/
+static int is_pango_tag ( char *tagName )
+{
+
+	int i = strlen ( tagName ) ;
+
+	if ( tagName[0] == '<' && tagName[--i] == '>' )
+	{
+		return TRUE;
+	}
+
+	g_print ( "tag = %s\n", tagName );
+
+	return FALSE;
+}
+
+/**
+\brief	Remove unwanted tags from the list.
+***/
+GList *strip_bad_tags ( GList *list )
+{
+	GList *link = NULL, *myList = NULL;
+	gchar *tagName = NULL;
+
+	for ( link = list ; link != NULL; link = link->next )
+	{
+
+		tagName = ( GTK_TEXT_TAG ( link->data )->name );
+
+		if ( is_pango_tag ( tagName ) )
+		{
+			myList = g_list_append (myList, link->data);
+		}
+
+	}
+
+	return myList;
+}
+
 /**
 \brief	Return text with Pango markup
 \notes	Pango has a weight markup format compared to HTML or the textBuff
@@ -19,6 +61,17 @@ Lorem <b><i><u>ips</b></i></u>u<u><i><b>m</u></i></b> dol
                   ^
 Error on line 1 char 30: Element 'b' was closed, but the currently open element is 'u'
 **/
+
+
+/* these characters need replacing with escape sequences for conversion into markup strings */
+static	gchar *map[] =
+{
+	"&", "&amp;",	/* MUST BE FIRST ITEM IN THE LIST */
+	"<", "&lt;",
+	">", "&gt;",
+	NULL
+};
+
 Tcl_Obj *getMarkUpString ( Tcl_Interp *interp, GtkTextBuffer *buffer, GtkTextIter *start, GtkTextIter *end )
 {
 #if 0
@@ -28,7 +81,13 @@ Tcl_Obj *getMarkUpString ( Tcl_Interp *interp, GtkTextBuffer *buffer, GtkTextIte
 	Tcl_Obj *res;
 
 	GtkTextIter *iter;
+
+#if 1
 	gunichar ch;
+#else
+	gchar ch;
+#endif
+
 	GList *q;
 	GList *onList = NULL, *offList = NULL, *revList = NULL;
 	gchar *tagName = NULL;
@@ -39,11 +98,12 @@ Tcl_Obj *getMarkUpString ( Tcl_Interp *interp, GtkTextBuffer *buffer, GtkTextIte
 	/* parse each position in the selection */
 	while ( gtk_text_iter_equal ( iter, end ) == 0 )
 	{
-
 		/* process tagOff before any subsequent tagOn */
+		offList = gtk_text_iter_get_toggled_tags ( iter, 0 ) ;
+		onList = gtk_text_iter_get_toggled_tags ( iter, 1 ) ;
 
-		offList = gtk_text_iter_get_toggled_tags ( iter, 0 );
-		onList = gtk_text_iter_get_toggled_tags ( iter, 1 );
+		offList = strip_bad_tags ( offList );
+		onList = strip_bad_tags ( onList );
 
 		/* handle tags toggled on */
 		if ( onList != NULL )
@@ -52,7 +112,9 @@ Tcl_Obj *getMarkUpString ( Tcl_Interp *interp, GtkTextBuffer *buffer, GtkTextIte
 			for ( q = onList ; q != NULL; q = q->next )
 			{
 				tagName = ( GTK_TEXT_TAG ( q->data )->name );
+
 				Tcl_AppendStringsToObj ( res, tagName, ( char * ) NULL );
+
 			}
 		}
 
@@ -65,6 +127,7 @@ Tcl_Obj *getMarkUpString ( Tcl_Interp *interp, GtkTextBuffer *buffer, GtkTextIte
 			for ( q = onList ; q != NULL; q = q->next )
 			{
 				tagName = ( GTK_TEXT_TAG ( q->data )->name );
+
 				//revList = g_slist_prepend ( revList, tagName );
 				revList = g_slist_append ( revList, tagName );
 			}
@@ -72,6 +135,8 @@ Tcl_Obj *getMarkUpString ( Tcl_Interp *interp, GtkTextBuffer *buffer, GtkTextIte
 			for ( q = revList ; q != NULL; q = q->next )
 			{
 				tagName = q->data ;
+
+
 
 				if ( strncmp ( tagName, "<span", 5 ) == 0 )
 				{
@@ -97,7 +162,6 @@ Tcl_Obj *getMarkUpString ( Tcl_Interp *interp, GtkTextBuffer *buffer, GtkTextIte
 
 				else
 				{
-
 					Tcl_AppendStringsToObj ( res, str_replace ( tagName, "<", "</" ), ( char * ) NULL );
 				}
 			}
@@ -118,7 +182,13 @@ Tcl_Obj *getMarkUpString ( Tcl_Interp *interp, GtkTextBuffer *buffer, GtkTextIte
 
 		/* append chracter at position */
 		ch = gtk_text_iter_get_char ( iter );
-		Tcl_AppendStringsToObj ( res, &ch, ( char * ) NULL );
+
+		/* convert character utf8 to prevent problem with the £-sign */
+		g_unichar_to_utf8  ( ch, &ch );
+
+
+		Tcl_AppendStringsToObj ( res, string_map ( &ch, map ),  NULL );
+
 
 		/* move onto next position in text */
 		gtk_text_iter_forward_cursor_position ( iter ); //OK
@@ -135,7 +205,6 @@ Tcl_Obj *getMarkUpString ( Tcl_Interp *interp, GtkTextBuffer *buffer, GtkTextIte
 			revList = g_slist_prepend ( revList, tagName );
 		}
 
-
 		for ( q = revList ; q != NULL; q = q->next )
 		{
 			tagName = q->data ;
@@ -147,7 +216,6 @@ Tcl_Obj *getMarkUpString ( Tcl_Interp *interp, GtkTextBuffer *buffer, GtkTextIte
 
 			else
 			{
-
 				Tcl_AppendStringsToObj ( res, str_replace ( tagName, "<", "</" ), ( char * ) NULL );
 			}
 		}

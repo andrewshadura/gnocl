@@ -61,7 +61,6 @@ static void markup_sourceview ( GtkTextBuffer *buffer, gchar *str )
 		col2 = gtk_text_iter_get_line_offset ( &end );
 
 		/*  check if there is a taglist to apply */
-
 		gtk_text_buffer_apply_tag_by_name ( buffer, "mark_up", &begin, &end );
 
 		start = end;
@@ -260,7 +259,7 @@ static void doShowsource ( GtkToggleToolButton *toggle_button, gpointer user_dat
 	//buffer = gtk_text_view_get_buffer (para->textView);
 	//gtk_text_buffer_insert_at_cursor (buffer,"HIDIHI", -1);
 
-	if (  gtk_toggle_tool_button_get_active ( GTK_TOGGLE_BUTTON ( toggle_button ) ) )
+	if (  gtk_toggle_tool_button_get_active ( toggle_button  ) )
 	{
 
 		gtk_box_pack_end  ( container, para->source, 1, 1, 0 );
@@ -795,19 +794,17 @@ static int configure ( Tcl_Interp *interp, RichTextToolbarParams *para, GnoclOpt
 	return TCL_OK;
 }
 
-static const char *cmds[] =
-{
-	"delete", "configure",
-	"class", "set", "cget",
-	"updateSV",
-	NULL
-};
-
 /**
 \brief	Update the contents of the sourcecode view widget.
+		<> or [] in the text will cause a pango error, these need to be
+		converted without destroying the markup. Copy the contenst of
+		view buffer to a second buffer from which the change can be applied.
 **/
 static void updateSV ( RichTextToolbarParams *para )
 {
+#if 0
+	g_print ( "%s\n", __FUNCTION__ );
+#endif
 
 	GtkTextIter start, end;
 	GtkTextBuffer  *buffer;
@@ -855,18 +852,25 @@ static void updateSV ( RichTextToolbarParams *para )
 	}
 }
 
+static const char *cmds[] =
+{
+	"delete", "configure",
+	"class", "set", "cget",
+	"updateSV", "add",
+	NULL
+};
+
 /**
 \brief
 **/
 int richTextToolBarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
 
-
 	enum cmdIdx
 	{
 		DeleteIdx, ConfigureIdx,
 		ClassIdx, SetIdx, CgetIdx,
-		UpdateSVIdx
+		UpdateSVIdx, AddIdx
 	};
 
 	RichTextToolbarParams *para = ( RichTextToolbarParams * ) data;
@@ -881,9 +885,9 @@ int richTextToolBarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj
 
 	switch ( idx )
 	{
+
 		case UpdateSVIdx:
 			{
-
 
 #if 0
 				GtkTextIter start, end;
@@ -948,6 +952,11 @@ int richTextToolBarFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj
 				return ret;
 			}
 
+			break;
+		default:
+			{
+				return toolBarFunc ( para->toolBar, interp, objc, objv );
+			}
 			break;
 	}
 

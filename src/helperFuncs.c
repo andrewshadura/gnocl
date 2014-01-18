@@ -386,6 +386,44 @@ char *str_replace ( const char *string, const char *substr, const char *replacem
 }
 
 /**
+\brief	Replace string substrings (vix. Tcl "string map" command).
+\args	str	the string to process
+		map null terminated array containing target substring and their replacements
+
+		Example:
+
+		gchar *map[] = {
+			"<", "&lt;",
+			">", "&gt;",
+			NULL
+			};
+
+		g_print ("%s -> %s\n",tmp, string_map ("<sub>", map));
+**/
+char *string_map ( char *str, char *map[] )
+{
+
+	gint i = 0;
+	gchar *newstr;
+
+	newstr = str;
+
+	while ( map[i] != NULL )
+	{
+		newstr = str_replace ( newstr, map[i], map[i+1] );
+
+		if ( newstr == NULL )
+		{
+			return str;
+		}
+
+		i += 2;
+	}
+
+	return newstr;
+}
+
+/**
 \brief      Get index of matched string in an NULL terminated array of strings.
 \author     William J Giddings
 \date       05/05/09
@@ -397,8 +435,8 @@ char *str_replace ( const char *string, const char *substr, const char *replacem
 **/
 int getIdx ( gchar *opts[], gchar *str, gint *idx )
 {
-#ifdef DEBUG_HELPERFUNCS
-	g_print ( "helperFuncs getIdx\n" );
+#if 0
+	g_print ( "$s\n", __FUNCTION__ );
 	g_printf ( "\topts = %s\n", opts );
 	g_printf ( "\tstr = %s\n", str );
 	g_printf ( "\tidx = %s\n", *idx );
