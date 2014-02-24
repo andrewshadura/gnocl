@@ -35,7 +35,7 @@ GList *strip_bad_tags ( GList *list )
 
 		if ( is_pango_tag ( tagName ) )
 		{
-			myList = g_list_append (myList, link->data);
+			myList = g_list_append ( myList, link->data );
 		}
 
 	}

@@ -1494,3 +1494,307 @@ int getTextAndIcon ( Tcl_Interp *interp, GtkToolbar *toolbar,
 	return TCL_OK;
 }
 
+
+
+/**
+    search for first occurance of p in s, starting from i
+    done
+**/
+int strnfrst ( char *s, char *p, int i )
+{
+#if 0
+	g_print ( "FUNC: %s\n", __FUNCTION__ );
+#endif
+
+	char *f;
+	int l;
+
+	l = strlen ( p ); /* length of search string */
+	f = s + i;
+
+	/* search through string till match found */
+	while ( *f != '\0' )
+	{
+		if ( !strncmp ( f, p, l ) )
+			return f - s;
+
+		f++;
+	}
+
+	return -1;
+}
+
+/**
+\brief
+**/
+int strip_chars ( char * string, char * chars )
+{
+#if 0
+	g_print ( "FUNC: %s\n", __FUNCTION__ );
+#endif
+	int i = 0;
+	int j = strlen ( string );
+	int l = strlen ( chars );
+
+	char newstr[strlen ( string ) ];
+	int c = 0;
+	int k = 0;
+
+	strcpy ( newstr, string );
+
+	char *f;
+	f = string;
+
+	/* search through string till match found */
+	while ( i < j )
+	{
+
+		/* check for chars, in string */
+		if ( strncmp ( f + i, chars, l ) != -1 )
+		{
+			//g_print ( "got tag %s\n", chars );
+			i += l - 1;
+			/* remove matching tag */
+		}
+
+		else
+		{
+			/*
+			newstr[c] = string[i];
+			g_print ( "plain text %c\n", newstr[c] );
+			newstr[c+1] = '\0';
+			g_print ( "      string = %s\n", newstr );
+			*/
+			c++;
+			i++;
+
+		}
+
+	}
+
+	//g_print ( "string = %s : newstr = %s\n", string, newstr );
+
+	strcpy ( string, newstr );
+
+	string[j] = '\0';
+
+	return c;
+}
+
+
+/**
+    extract a range of characters from string s starting from position a to position b
+    done
+**/
+char *strrng ( char *dest, const char *src, int a, int b )
+{
+#if 0
+	g_print ( "FUNC: %s\n", __FUNCTION__ );
+#endif
+
+	unsigned i, j;
+
+	j = 0;
+
+	for ( i = a; i < b; i++ )
+	{
+		dest[j++] = src[i];
+	}
+
+	dest[j] = '\0';
+	return dest;
+
+}
+
+
+
+/* insert character in string, return new string */
+char * strcinsert ( char *str, char *dest, char *c, int i )
+{
+#if 0
+	g_print ( "FUNC: %s\n", __FUNCTION__ );
+#endif
+
+	//g_print ( "%s 1\n", __FUNCTION__ );
+
+	int j = 0;
+
+	while ( j < i )
+	{
+		*dest++ = *str++;
+		j++;
+	}
+
+	//g_print ( "%s 2\n", __FUNCTION__ );
+
+	*dest++ = c;
+
+	//g_print ( "%s 3\n", __FUNCTION__ );
+
+	while ( j < strlen ( str ) )
+	{
+		*dest++ = *str++;
+		j++;
+	}
+
+	//g_print ( "%s 4\n", __FUNCTION__ );
+
+	*dest = '/0';
+
+	//g_print ( "%s 5\n", __FUNCTION__ );
+
+	return dest;
+}
+
+
+/**
+\brief  delete substring
+        http://www.timeflash.net/tutorials/cc/16-how-to-remove-a-substring-from-a-string-in-c-and-c.html
+**/
+char* strdstr ( char* str, char* substr )
+{
+#if 0
+	g_print ( "FUNC: %s\n", __FUNCTION__ );
+#endif
+
+
+	int i, j, p, match;
+
+	char newstr [strlen ( str ) ];
+
+	for ( i = 0 ; i < strlen ( str ) ; ++i )
+	{
+		if ( str[i] == substr[j] )
+		{
+			match = 1;
+
+			for ( j = 1; j < strlen ( substr ); ++j )
+			{
+				if ( str[i+j] != substr[j] )
+				{
+					j = 0;
+					match = 0;
+				}
+			}
+
+			if ( match )
+			{
+				i += strlen ( substr ) - 1;
+				j = 0;
+			}
+		}
+
+		else
+		{
+			newstr[p] = str[i];
+			++p;
+		}
+	}
+
+	newstr[p] = '\0';
+
+	return newstr;
+}
+
+
+/**
+    String concatenation
+    http://rosettacode.org/wiki/String_concatenation#C
+**/
+char *sconcat ( const char *s1, const char *s2 )
+{
+#if 0
+	g_print ( "FUNC: %s\n", __FUNCTION__ );
+#endif
+
+	char *s0 = ( char * ) malloc ( strlen ( s1 ) + strlen ( s2 ) + 1 );
+	strcpy ( s0, s1 );
+	strcat ( s0, s2 );
+	return s0;
+}
+
+/**
+    Strip a set of characters from a string
+    http://rosettacode.org/wiki/Strip_a_set_of_characters_from_a_string#C
+    done
+**/
+/* checks if character exists in list */
+int contains ( char character, char * list )
+{
+#if 0
+	g_print ( "FUNC: %s\n", __FUNCTION__ );
+#endif
+
+	while ( *list )
+	{
+		if ( character == *list )
+			return 1;
+
+		++list;
+	}
+
+	return 0;
+}
+
+
+/**
+\brief
+**/
+char * removeChar ( char *str, char garbage )
+{
+
+#if 0
+	g_print ( "FUNC: %s\n", __FUNCTION__ );
+#endif
+
+	char *src, *dst;
+
+	for ( src = dst = str; *src != '\0'; src++ )
+	{
+		*dst = *src;
+
+		if ( *dst != garbage ) dst++;
+	}
+
+	*dst = '\0';
+
+	//g_print ( "%s\n", dst );
+
+	return dst;
+}
+
+
+/* remove range of characters from string */
+char * strcremove ( char *str, char *dest, int first, int last )
+{
+#if 1
+	g_print ( "%s 1 first = %d ; last = %d\n", __FUNCTION__, first, last );
+#endif
+	int j = 0;
+	char *ptr;
+	ptr = str;
+
+	while ( j < strlen ( str ) )
+	{
+		//g_print ( "j = %d\n", j );
+
+		if ( j >= first && j <= last )
+		{
+			//g_print ( "remove %c\n", *str + j );
+			//*str++;
+		}
+
+		else
+		{
+			//*dest++ =
+			//*ptr++;
+		}
+
+		j++;
+
+	}
+
+	*dest = '/0';
+
+	return dest;
+}

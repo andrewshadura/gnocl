@@ -325,18 +325,33 @@ static void onResponse ( GtkDialog *dialog, gint arg1, gpointer data )
 **/
 static void destroyFunc ( GtkWidget *widget, gpointer data )
 {
+#if 1
+	g_print("%s\n",__FUNCTION__);
+#endif	
+	
 	DialogParams *para = ( DialogParams * ) data;
-	g_ptr_array_free ( para->butRes, 1 );
-	g_free ( para->onResponse );
+	//g_ptr_array_free ( para->butRes, 1 );
+	//g_free ( para->onResponse );
+
+#if 1
+	g_print("%s 1\n",__FUNCTION__);
+#endif
 
 	if ( para->name )
 	{
-		gnoclForgetWidgetFromName ( para->name );
-		Tcl_DeleteCommand ( para->interp, para->name );
-		g_free ( para->name );
+		//gnoclForgetWidgetFromName ( para->name );
+		//Tcl_DeleteCommand ( para->interp, para->name );
+		//g_free ( para->name );
 	}
 
+#if 1
+	g_print("%s 2\n",__FUNCTION__);
+#endif
 	g_free ( para );
+
+#if 1
+	g_print("%s 3\n",__FUNCTION__);
+#endif
 }
 
 static const char *cmds[] = { "delete", "configure", "class", "hide", "show", NULL };
@@ -545,22 +560,24 @@ int gnoclDialogCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * co
 		return TCL_OK;
 	}
 
-
 	int          ret;
 	int          type;
 	DialogParams *para;
+	GtkWidget *child;
 
 	if ( gnoclParseOptions ( interp, objc, objv, dialogOptions ) != TCL_OK )
+	{
 		goto clearError1;
+	}
 
 	if ( getType ( interp, &dialogOptions[typeIdx], &type ) != TCL_OK )
-		goto clearError1;
-
-	if ( ! ( ( dialogOptions[textIdx].status == GNOCL_STATUS_CHANGED )
-			 ^ ( dialogOptions[childIdx].status == GNOCL_STATUS_CHANGED ) ) )
 	{
-		Tcl_SetResult ( interp, "Either option -text or -child must be given.",
-						TCL_STATIC );
+		goto clearError1;
+	}
+
+	if ( ! ( ( dialogOptions[textIdx].status == GNOCL_STATUS_CHANGED ) ^ ( dialogOptions[childIdx].status == GNOCL_STATUS_CHANGED ) ) )
+	{
+		Tcl_SetResult ( interp, "Either option -text or -child must be given.", TCL_STATIC );
 		goto clearError1;
 	}
 
@@ -568,233 +585,257 @@ int gnoclDialogCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * co
 
 	if ( dialogOptions[textIdx].status == GNOCL_STATUS_CHANGED )
 	{
-		para->dialog = GTK_DIALOG ( gtk_message_dialog_new ( NULL,
-									0, type, GTK_BUTTONS_NONE, "%s",
-									dialogOptions[textIdx].val.str ) );
+		para->dialog = GTK_DIALOG ( gtk_message_dialog_new ( NULL, 0, type, GTK_BUTTONS_NONE, "%s", dialogOptions[textIdx].val.str ) );
 	}
 
 	else
 	{
-		GtkWidget *child = gnoclChildNotPacked ( dialogOptions[childIdx].val.str,
-						   interp );
+		child = gnoclChildNotPacked ( dialogOptions[childIdx].val.str,   interp );
+	}
 
-		if ( child == NULL )
-			goto clearError1;
+	if ( child == NULL )
+	{
+		goto clearError1;
+	}
 
-		para->dialog = GTK_DIALOG ( gtk_dialog_new( ) );
+	para->dialog = GTK_DIALOG ( gtk_dialog_new( ) );
 
-		if ( dialogOptions[typeIdx].status == GNOCL_STATUS_CHANGED )
+	if ( dialogOptions[typeIdx].status == GNOCL_STATUS_CHANGED )
+	{
+		GtkWidget  *stock;
+		const char *sId;
+		GtkWidget  *box = gtk_hbox_new ( 0, 8 );
+
+		gtk_container_set_border_width ( GTK_CONTAINER ( box ), 8 );
+
+		switch ( type )
 		{
-			GtkWidget  *stock;
-			const char *sId;
-			GtkWidget  *box = gtk_hbox_new ( 0, 8 );
-
-			gtk_container_set_border_width ( GTK_CONTAINER ( box ), 8 );
-
-			switch ( type )
-			{
-				case GTK_MESSAGE_INFO:     sId = GTK_STOCK_DIALOG_INFO; break;
-				case GTK_MESSAGE_WARNING:  sId = GTK_STOCK_DIALOG_WARNING; break;
-				case GTK_MESSAGE_QUESTION: sId = GTK_STOCK_DIALOG_QUESTION; break;
-				case GTK_MESSAGE_ERROR:    sId = GTK_STOCK_DIALOG_ERROR; break;
-			}
-
-			stock = gtk_image_new_from_stock ( sId, GTK_ICON_SIZE_DIALOG );
-
-			gtk_misc_set_alignment ( GTK_MISC ( stock ), 0.5, 0.0 );
-			gtk_box_pack_start ( GTK_BOX ( box ), stock, 0, 0, 0 );
-			gtk_box_pack_start ( GTK_BOX ( box ), child, 1, 1, 0 );
-			gtk_widget_show_all ( box );
-			gtk_box_pack_start (  gtk_dialog_get_content_area ( para->dialog ), box, 1, 1, 0 );
+			case GTK_MESSAGE_INFO:
+				{
+					sId = GTK_STOCK_DIALOG_INFO;
+				}
+				break;
+			case GTK_MESSAGE_WARNING:
+				{
+					sId = GTK_STOCK_DIALOG_WARNING;
+				}
+				break;
+			case GTK_MESSAGE_QUESTION:
+				{
+					sId = GTK_STOCK_DIALOG_QUESTION;
+				}
+				break;
+			case GTK_MESSAGE_ERROR:
+				{
+					sId = GTK_STOCK_DIALOG_ERROR;
+				}
+				break;
 		}
 
-		else
-			gtk_container_add ( gtk_dialog_get_content_area ( para->dialog ), child );
+		stock = gtk_image_new_from_stock ( sId, GTK_ICON_SIZE_DIALOG );
+
+		gtk_misc_set_alignment ( GTK_MISC ( stock ), 0.5, 0.0 );
+		gtk_box_pack_start ( GTK_BOX ( box ), stock, 0, 0, 0 );
+		gtk_box_pack_start ( GTK_BOX ( box ), child, 1, 1, 0 );
+		gtk_widget_show_all ( box );
+		gtk_box_pack_start (  gtk_dialog_get_content_area ( para->dialog ), box, 1, 1, 0 );
+	}
+
+	else {
+		gtk_container_add ( gtk_dialog_get_content_area ( para->dialog ), child );
 	}
 
 
-	/* resize window in proportion to the screen */
-	if ( dialogOptions[setSizeIdx].status == GNOCL_STATUS_CHANGED )
+/* resize window in proportion to the screen */
+if ( dialogOptions[setSizeIdx].status == GNOCL_STATUS_CHANGED )
+{
+
+	gint width = 0;
+	gint height = 0;
+	GdkScreen *screen;
+
+	screen = gdk_screen_get_default();
+
+	width = gdk_screen_get_width ( screen );
+	height = gdk_screen_get_height ( screen );
+
+	float w, h;
+
+	w = dialogOptions[setSizeIdx].val.d * ( float ) width;
+	h =  dialogOptions[setSizeIdx].val.d * ( float ) height;
+
+	width = ( gint ) w;
+	height = ( gint ) h;
+
+	gtk_window_set_default_size ( GTK_WINDOW ( para->dialog ), width, height );
+
+}
+
+
+
+// set width and height
+if ( dialogOptions[widthIdx].status == GNOCL_STATUS_CHANGED && dialogOptions[heightIdx].status == GNOCL_STATUS_CHANGED )
+{
+	gtk_window_resize ( GTK_WINDOW ( para->dialog ), dialogOptions[widthIdx].val.i,	dialogOptions[heightIdx].val.i );
+}
+
+else if ( dialogOptions[widthIdx].status == GNOCL_STATUS_CHANGED || dialogOptions[heightIdx].status == GNOCL_STATUS_CHANGED )
+{
+	int width, height;
+	gtk_window_get_size ( GTK_WINDOW ( para->dialog ), &width, &height );
+
+	if ( dialogOptions[widthIdx].status == GNOCL_STATUS_CHANGED )
 	{
-
-		gint width = 0;
-		gint height = 0;
-		GdkScreen *screen;
-
-		screen = gdk_screen_get_default();
-
-		width = gdk_screen_get_width ( screen );
-		height = gdk_screen_get_height ( screen );
-
-		float w, h;
-
-		w = dialogOptions[setSizeIdx].val.d * ( float ) width;
-		h =  dialogOptions[setSizeIdx].val.d * ( float ) height;
-
-		width = ( gint ) w;
-		height = ( gint ) h;
-
-		gtk_window_set_default_size ( GTK_WINDOW ( para->dialog ), width, height );
-
+		width = dialogOptions[widthIdx].val.i;
 	}
-
-
-
-	// set width and height
-	if ( dialogOptions[widthIdx].status == GNOCL_STATUS_CHANGED
-			&& dialogOptions[heightIdx].status == GNOCL_STATUS_CHANGED )
-	{
-		gtk_window_resize ( GTK_WINDOW ( para->dialog ), dialogOptions[widthIdx].val.i,
-							dialogOptions[heightIdx].val.i );
-	}
-
-	else if ( dialogOptions[widthIdx].status == GNOCL_STATUS_CHANGED
-			  || dialogOptions[heightIdx].status == GNOCL_STATUS_CHANGED )
-	{
-		int width, height;
-		gtk_window_get_size ( GTK_WINDOW ( para->dialog ), &width, &height );
-
-		if ( dialogOptions[widthIdx].status == GNOCL_STATUS_CHANGED )
-			width = dialogOptions[widthIdx].val.i;
-		else
-			height = dialogOptions[heightIdx].val.i;
-
-		gtk_window_resize ( GTK_WINDOW ( para->dialog ), width, height );
-	}
-
-
-
-	// make only one move if x and y are set
-	if ( dialogOptions[xIdx].status == GNOCL_STATUS_CHANGED
-			&& dialogOptions[xIdx].status == GNOCL_STATUS_CHANGED )
-	{
-		gtk_window_move ( GTK_WINDOW ( para->dialog ), dialogOptions[xIdx].val.i, dialogOptions[yIdx].val.i );
-	}
-
-	else if ( dialogOptions[xIdx].status == GNOCL_STATUS_CHANGED
-			  || dialogOptions[yIdx].status == GNOCL_STATUS_CHANGED )
-	{
-		int x, y;
-		gtk_window_get_position ( GTK_WINDOW ( para->dialog ), &x, &y );
-
-		if ( dialogOptions[xIdx].status == GNOCL_STATUS_CHANGED )
-			x = dialogOptions[xIdx].val.i;
-		else
-			y = dialogOptions[yIdx].val.i;
-
-		gtk_window_move ( GTK_WINDOW ( para->dialog ), x, y );
-	}
-
-
-
-	para->interp = interp;
-
-	para->name = NULL;
-	para->butRes = g_ptr_array_new();
-	para->isModal = 1;
-
-	if ( dialogOptions[modalIdx].status == GNOCL_STATUS_CHANGED )
-		para->isModal = dialogOptions[modalIdx].val.b;
-
-	if ( dialogOptions[onResponseIdx].status == GNOCL_STATUS_CHANGED )
-		para->onResponse = g_strdup ( dialogOptions[onResponseIdx].val.str );
-	else
-		para->onResponse = g_strdup ( "break" );
-
-	g_signal_connect ( G_OBJECT ( para->dialog ), "response", G_CALLBACK ( onResponse ), para );
-
-	if ( dialogOptions[buttonsIdx].status == GNOCL_STATUS_CHANGED )
-	{
-		if ( handleButtons ( interp, para->dialog, para, dialogOptions[buttonsIdx].val.obj ) != TCL_OK )
-		{
-			goto clearError3;
-		}
-	}
-
 	else
 	{
-		g_ptr_array_add ( para->butRes, g_strdup ( "Ok" ) );
-		gtk_dialog_add_button ( para->dialog, GTK_STOCK_OK, 0 );
+		height = dialogOptions[heightIdx].val.i;
 	}
 
-	/* hmm, this works only if gtk_widget_show is before
-	   gtk_dialog_add_button.  It can't be reassigned and gives errors
-	   on buttons added via gtk_dialog_add_button */
+	gtk_window_resize ( GTK_WINDOW ( para->dialog ), width, height );
+}
 
-	if ( dialogOptions[defaultButtonIdx].status == GNOCL_STATUS_CHANGED )
+
+
+// make only one move if x and y are set
+if ( dialogOptions[xIdx].status == GNOCL_STATUS_CHANGED && dialogOptions[xIdx].status == GNOCL_STATUS_CHANGED )
+{
+	gtk_window_move ( GTK_WINDOW ( para->dialog ), dialogOptions[xIdx].val.i, dialogOptions[yIdx].val.i );
+}
+
+else if ( dialogOptions[xIdx].status == GNOCL_STATUS_CHANGED || dialogOptions[yIdx].status == GNOCL_STATUS_CHANGED )
+{
+	int x, y;
+	gtk_window_get_position ( GTK_WINDOW ( para->dialog ), &x, &y );
+
+	if ( dialogOptions[xIdx].status == GNOCL_STATUS_CHANGED )
 	{
-		gtk_dialog_set_default_response ( para->dialog, dialogOptions[defaultButtonIdx].val.i );
+		x = dialogOptions[xIdx].val.i;
 	}
-
 	else
 	{
-		/* default should be always the last one */
-		gtk_dialog_set_default_response ( para->dialog, para->butRes->len - 1 );
+		y = dialogOptions[yIdx].val.i;
 	}
 
-	ret = gnoclSetOptions ( interp, dialogOptions, G_OBJECT ( para->dialog ), -1 );
+	gtk_window_move ( GTK_WINDOW ( para->dialog ), x, y );
+}
 
+para->interp = interp;
+para->name = NULL;
+para->butRes = g_ptr_array_new();
+para->isModal = 1;
 
-	/* no icon if -child option is set */
-	/* GtkDialog has not property nameed 'message-type'.
-	/*
+if ( dialogOptions[modalIdx].status == GNOCL_STATUS_CHANGED )
+{
+	para->isModal = dialogOptions[modalIdx].val.b;
+}
 
-		if ( dialogOptions[childIdx].status == GNOCL_STATUS_CHANGED )
-		{
-			g_object_set ( G_OBJECT ( para->dialog ), "message-type", GTK_MESSAGE_OTHER, NULL );
-		}
-	*/
+if ( dialogOptions[onResponseIdx].status == GNOCL_STATUS_CHANGED )
+{
+	para->onResponse = g_strdup ( dialogOptions[onResponseIdx].val.str );
+}
+else
+{
+	para->onResponse = g_strdup ( "break" );
+}
 
-	gtk_widget_show ( GTK_WIDGET ( para->dialog ) );
-	/* gnoclClearOptions must be called before we enter the
-	   gtk event loop: we can't be called recursively! */
-	gnoclClearOptions ( dialogOptions );
+g_signal_connect ( G_OBJECT ( para->dialog ), "response", G_CALLBACK ( onResponse ), para );
 
-	if ( ret != TCL_OK )
-		goto clearError2;
-
-	g_signal_connect ( G_OBJECT ( para->dialog ), "destroy", G_CALLBACK ( destroyFunc ), para );
-
-	if ( para->isModal )
+if ( dialogOptions[buttonsIdx].status == GNOCL_STATUS_CHANGED )
+{
+	if ( handleButtons ( interp, para->dialog, para, dialogOptions[buttonsIdx].val.obj ) != TCL_OK )
 	{
-		gtk_window_set_modal ( GTK_WINDOW ( para->dialog ), 1 );
-
-		do
-		{
-			ret = gtk_dialog_run ( GTK_WINDOW ( para->dialog ) );
-			/* exit if no button exit, or onResponse returned break */
-		}
-
-		while ( ret >= 0 && para->ret == TCL_OK );
-
-		Tcl_SetObjResult ( interp, getObjFromRet ( para, ret ) );
-
-		/* removed, because it causes warnings when the dialog is closed */
-		/* reenabled to make return value work -ag */
-		gtk_widget_destroy ( GTK_WIDGET ( GTK_WINDOW ( para->dialog ) ) );
+		goto clearError3;
 	}
+}
 
-	else
+else
+{
+	g_ptr_array_add ( para->butRes, g_strdup ( "Ok" ) );
+	gtk_dialog_add_button ( para->dialog, GTK_STOCK_OK, 0 );
+}
+
+/* hmm, this works only if gtk_widget_show is before
+   gtk_dialog_add_button.  It can't be reassigned and gives errors
+   on buttons added via gtk_dialog_add_button */
+
+if ( dialogOptions[defaultButtonIdx].status == GNOCL_STATUS_CHANGED )
+{
+	gtk_dialog_set_default_response ( para->dialog, dialogOptions[defaultButtonIdx].val.i );
+}
+
+else
+{
+	/* default should be always the last one */
+	gtk_dialog_set_default_response ( para->dialog, para->butRes->len - 1 );
+}
+
+ret = gnoclSetOptions ( interp, dialogOptions, G_OBJECT ( para->dialog ), -1 );
+
+
+/* no icon if -child option is set */
+/* GtkDialog has not property nameed 'message-type'.
+/*
+
+	if ( dialogOptions[childIdx].status == GNOCL_STATUS_CHANGED )
 	{
-		para->name = gnoclGetAutoWidgetId();
-		gnoclMemNameAndWidget ( para->name, GTK_WIDGET ( para->dialog ) );
-		Tcl_CreateObjCommand ( interp, para->name, dialogFunc, para, NULL );
-		Tcl_SetObjResult ( interp, Tcl_NewStringObj ( para->name, -1 ) );
+		g_object_set ( G_OBJECT ( para->dialog ), "message-type", GTK_MESSAGE_OTHER, NULL );
+	}
+*/
+
+gtk_widget_show ( GTK_WIDGET ( para->dialog ) );
+/* gnoclClearOptions must be called before we enter the
+   gtk event loop: we can't be called recursively! */
+gnoclClearOptions ( dialogOptions );
+
+if ( ret != TCL_OK )
+{
+	goto clearError2;
+}
+
+// g_signal_connect ( G_OBJECT ( para->dialog ), "destroy", G_CALLBACK ( destroyFunc ), para );
+
+if ( para->isModal )
+{
+	gtk_window_set_modal ( GTK_WINDOW ( para->dialog ), 1 );
+
+	do
+	{
+		ret = gtk_dialog_run ( GTK_WINDOW ( para->dialog ) );
+		/* exit if no button exit, or onResponse returned break */
 	}
 
-	return TCL_OK;
+	while ( ret >= 0 && para->ret == TCL_OK );
+
+	Tcl_SetObjResult ( interp, getObjFromRet ( para, ret ) );
+
+	/* removed, because it causes warnings when the dialog is closed */
+	/* reenabled to make return value work -ag */
+	gtk_widget_destroy ( GTK_WIDGET ( GTK_WINDOW ( para->dialog ) ) );
+}
+
+else
+{
+	para->name = gnoclGetAutoWidgetId();
+	gnoclMemNameAndWidget ( para->name, GTK_WIDGET ( para->dialog ) );
+	Tcl_CreateObjCommand ( interp, para->name, dialogFunc, para, NULL );
+	Tcl_SetObjResult ( interp, Tcl_NewStringObj ( para->name, -1 ) );
+}
+
+return TCL_OK;
 
 clearError3:
-	g_ptr_array_free ( para->butRes, 1 );
-	g_free ( para->onResponse );
-	g_free ( para );
+g_ptr_array_free ( para->butRes, 1 );
+g_free ( para->onResponse );
+g_free ( para );
 
 clearError2:
-	gtk_widget_destroy ( GTK_WIDGET ( para->dialog ) );
-	return ret;
+gtk_widget_destroy ( GTK_WIDGET ( para->dialog ) );
+return ret;
 
 clearError1:
-	gnoclClearOptions ( dialogOptions );
-	return TCL_ERROR;
+gnoclClearOptions ( dialogOptions );
+return TCL_ERROR;
 }
 

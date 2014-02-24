@@ -15,6 +15,10 @@
 #include "rttbar_icons.h"
 
 static void updateSV ( RichTextToolbarParams *para );
+static void toggleBgTag ( RichTextToolbarParams *para );
+static void toggleFgTag ( RichTextToolbarParams *para );
+static void removeBgTags ( GtkTextBuffer *buffer );
+static void removeFgTags ( GtkTextBuffer *buffer );
 
 static const int textIdx = 0;
 static const int textAcceleratorsIdx = 1;
@@ -154,6 +158,124 @@ static void toggleTag ( GtkTextBuffer *buffer, gchar *name )
 	}
 
 	applyTag ( buffer, name );
+}
+
+/**
+\brief	Toggle application of bag tag in buffer. When applied, all other
+		background tags in the selection will be removed.
+**/
+static void toggleBgTag ( RichTextToolbarParams *para )
+{
+
+	GtkTextBuffer  *buffer = gtk_text_view_get_buffer ( GTK_TEXT_VIEW ( para->textView ) );
+
+	if (  selectionHasTag ( buffer, para->bgClr )  )
+	{
+		removeTag ( buffer, para->bgClr );
+		return;
+	}
+
+	removeBgTags ( buffer );
+	applyTag ( buffer, para->bgClr );
+
+}
+
+/**
+\brief	Toggle application of bag tag in buffer. When applied, all other
+		background tags in the selection will be removed.
+**/
+static void toggleFgTag ( RichTextToolbarParams *para )
+{
+
+	GtkTextBuffer  *buffer = gtk_text_view_get_buffer ( GTK_TEXT_VIEW ( para->textView ) );
+
+	if (  selectionHasTag ( buffer, para->fgClr )  )
+	{
+		removeTag ( buffer, para->fgClr );
+		return;
+	}
+
+	removeFgTags ( buffer );
+	applyTag ( buffer, para->fgClr );
+
+}
+/**
+\brief	Toggle application of tag in buffer. If tag is only partially
+ 		applied to the selection then the selection will be completed tagged.
+		Only if entire selection is tagged will any of the tag be removed.
+**/
+static void toggleFgBgTag ( GtkTextBuffer *buffer, gchar *name )
+{
+
+	/*
+	 * 1) check all tags at in range
+	 * 2) foreach tag in range,
+	 * 3)	does the name contain background or foreground?
+	 * 4)		if yes,
+	 * 5)			if eq name set AAA TRUE
+	 * 6)			remove tag
+	 * 7) if AAA == TRUE, return,
+	 * 8) apply name to range
+	 */
+
+	GList *q;
+	GList *tagList = NULL;
+	gchar *tagName = NULL;
+	GtkTextIter start, end, *iter;
+
+	gint i = FALSE;
+
+	gtk_text_buffer_get_selection_bounds ( buffer, &start, &end );
+
+	iter = gtk_text_iter_copy ( &start );
+
+	g_print ( "%s 1\n", __FUNCTION__ );
+
+	/* parse each position in the selection */
+	while ( gtk_text_iter_equal ( iter, &end ) == 0 )
+	{
+
+		tagList =  gtk_text_iter_get_tags ( iter );
+
+		/* handle tags toggled on */
+		if ( tagList != NULL )
+		{
+			/* get a reverse list */
+			for ( q = tagList ; q != NULL; q = q->next )
+			{
+				tagName = ( GTK_TEXT_TAG ( q->data )->name );
+
+				g_print ( "\ttagName = %s\n", tagName );
+
+				if ( strcmp ( tagName, "background" ) == 0 || strcmp ( tagName, "foreground" ) == 0 )
+				{
+					g_print ( "%s 2\n", __FUNCTION__ );
+
+					if ( strcmp ( tagName, name ) != -1  )
+					{
+						i = TRUE;
+						g_print ( "%s 3\n", __FUNCTION__ );
+
+					}
+
+					gtk_text_buffer_remove_tag  ( buffer, q->data, &start, &end );
+				}
+
+			}
+		}
+
+		gtk_text_iter_forward_cursor_position ( iter );
+	}
+
+	if ( i )
+	{
+		gtk_text_buffer_apply_tag_by_name ( buffer, name, &start, &end ) ;
+	}
+
+	g_list_free ( tagList );
+
+
+
 }
 
 
@@ -562,6 +684,7 @@ static void doSmaller ( GtkToolButton *toolbutton, gpointer user_data )
 	GtkTextBuffer  *buffer = gtk_text_view_get_buffer ( GTK_TEXT_VIEW ( para->textView ) );
 
 	toggleTag ( buffer, "<small>" );
+
 	g_signal_emit_by_name (  gtk_text_view_get_buffer ( para->textView ), "changed", NULL );
 	updateSV ( para );
 }
@@ -574,12 +697,7 @@ static void doBg ( GtkToolButton *toolbutton, gpointer user_data )
 
 	RichTextToolbarParams *para = ( RichTextToolbarParams * ) user_data;
 
-	if ( para->bgClr != "" )
-	{
-		GtkTextBuffer  *buffer = gtk_text_view_get_buffer ( GTK_TEXT_VIEW ( para->textView ) );
-		removeBgTags ( buffer );
-		applyTag ( buffer, para->bgClr );
-	}
+	toggleBgTag ( para );
 
 	g_signal_emit_by_name (  gtk_text_view_get_buffer ( para->textView ), "changed", NULL );
 	updateSV ( para );
@@ -593,12 +711,7 @@ static void doFg ( GtkToolButton *toolbutton, gpointer user_data )
 {
 	RichTextToolbarParams *para = ( RichTextToolbarParams * ) user_data;
 
-	if ( para->fgClr != "" )
-	{
-		GtkTextBuffer  *buffer = gtk_text_view_get_buffer ( GTK_TEXT_VIEW ( para->textView ) );
-		removeFgTags ( buffer );
-		applyTag ( buffer, para->fgClr );
-	}
+	toggleFgTag ( para );
 
 	g_signal_emit_by_name (  gtk_text_view_get_buffer ( para->textView ), "changed", NULL );
 	updateSV ( para );

@@ -1192,8 +1192,8 @@ static int gnoclOptMarkupTags ( Tcl_Interp * interp, GnoclOption * opt, GObject 
 	gtk_text_buffer_create_tag ( buffer, "<s>", "strikethrough", 1, NULL );
 	gtk_text_buffer_create_tag ( buffer, "<u>", "underline", PANGO_UNDERLINE_SINGLE, NULL );
 	gtk_text_buffer_create_tag ( buffer, "<tt>", "font", "Monospace", NULL );
-	gtk_text_buffer_create_tag ( buffer, "<sub>", "scale", PANGO_SCALE_SMALL, "rise", -10, NULL );
-	gtk_text_buffer_create_tag ( buffer, "<sup>", "scale", PANGO_SCALE_SMALL, "rise",  +10, NULL );
+	gtk_text_buffer_create_tag ( buffer, "<sub>", "scale", PANGO_SCALE_SMALL, "rise", -5000, NULL );
+	gtk_text_buffer_create_tag ( buffer, "<sup>", "scale", PANGO_SCALE_SMALL, "rise", +5000, NULL );
 	gtk_text_buffer_create_tag ( buffer, "<small>", "scale", PANGO_SCALE_SMALL, NULL );
 	gtk_text_buffer_create_tag ( buffer, "<big>", "scale", PANGO_SCALE_LARGE, NULL );
 
@@ -3889,8 +3889,7 @@ int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl
 				g_print ( "n_targets = %d\n", n_targets );
 				g_print ( "targets  %s\n", gdk_atom_name ( targets ) );
 
-
-//GtkSelectionData *  gtk_clipboard_wait_for_contents     (clipboard, targets);
+				//GtkSelectionData *  gtk_clipboard_wait_for_contents     (clipboard, targets);
 
 			}
 			break;
@@ -3898,8 +3897,10 @@ int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl
 			/* these are GtkTextBuffer operations */
 		case InsertMarkupIdx:
 			{
-				GtkTextIter iter;
+#if 1
 				g_print ( "InsertMarkupIdx %s\n", Tcl_GetString ( objv[cmdNo+2] ) );
+#endif
+				GtkTextIter iter;
 
 				if ( posToIter ( interp, objv[cmdNo+1], buffer, &iter ) != TCL_OK )
 				{
