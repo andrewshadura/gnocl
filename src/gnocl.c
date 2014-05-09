@@ -15,6 +15,10 @@
  *
  */
 
+/*
+   History:
+   2014-05:	Added GtkTextView pseudo-styles: "rollover-fg" and "rollover-bg".
+*/
 
 /* doc pages commands created within this module */
 
@@ -33,6 +37,16 @@
 
 static GHashTable *name2widgetList;
 static const char idPrefix[] = "::gnocl::_WID";
+
+
+/* defined in text.c */
+extern rollOverTags;
+extern lastRollOverTag;
+extern lastRollOverTagFgClr;
+extern lastRollOverTagBgClr;
+extern rollOverTagFgClr;
+extern rollOverTagBgClr;
+/* add to parseOptions */
 
 
 /**
@@ -56,9 +70,7 @@ gint sorter ( gconstpointer a, gconstpointer b )
 /**
 \brief
 */
-static void simpleDestroyFunc (
-	GtkWidget *widget,
-	gpointer data )
+static void simpleDestroyFunc (	GtkWidget *widget, 	gpointer data )
 {
 	const char *name = gnoclGetNameFromWidget ( widget );
 	gnoclForgetWidgetFromName ( name );
@@ -1321,6 +1333,10 @@ int Gnocl_Init ( Tcl_Interp *interp )
 	/*        use gtk_idle_add( tclTimerFunc, NULL ); ? */
 	g_timeout_add ( 100, tclTimerFunc, NULL );
 	Tcl_SetMainLoop ( gtk_main );
+
+	/* set default values for GtkTextView pseudo-styles: "rollover-bg" and "rollover-fg" */
+	gdk_color_parse ( "#FF0000", &rollOverTagFgClr );
+	gdk_color_parse ( "#E5E5E5", &rollOverTagBgClr );
 
 	return TCL_OK;
 }

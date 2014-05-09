@@ -152,6 +152,7 @@ static int menuButtonConfigure ( Tcl_Interp *interp, ToolButtonMenuParams *para,
 	}
 
 #if 0
+
 	if ( options[menuButtonIconWidgetIdx].status == GNOCL_STATUS_CHANGED )
 	{
 		/* change the button clicked option */

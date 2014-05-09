@@ -223,7 +223,6 @@ gnoclOptFunc gnoclOptOnKeyPress;
 gnoclOptFunc gnoclOptOnKeyRelease;
 gnoclOptFunc gnoclOptOnMotion;
 void doOnMotion ( GtkWidget *widget, GdkEventMotion *event, gpointer data );
-
 gnoclOptFunc gnoclOptOnButtonMotion;
 gnoclOptFunc gnoclOptCharWidth;
 gnoclOptFunc gnoclOptOnBackSpace;

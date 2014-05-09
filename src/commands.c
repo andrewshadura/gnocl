@@ -2181,7 +2181,9 @@ int gnoclStockItemCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj 
 \brief 	Set style for specified widget.
 	usage: gnocl::setStyle class style value
 	notes: must be declared before widget shown
+	Added pseudo-styles for GtkTextWidget, "rollover-fg" and "rollover-bg".
 **/
+
 int gnoclSetStyleCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * const objv[] )
 {
 	/*--------------------------------------*/
@@ -2203,6 +2205,28 @@ int gnoclSetStyleCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * 
 	char *id = Tcl_GetString ( objv[1] );
 	char *style = Tcl_GetString ( objv[2] );
 	char *val = Tcl_GetString ( objv[3] );
+
+	if ( strcmp ( id, "GtkTextView" ) == 0 )
+	{
+		extern rollOverTagFgClr;
+		extern rollOverTagBgClr;
+
+
+
+
+		if ( strcmp ( style, "rollover-fg" ) == 0 )
+		{
+			gdk_color_parse ( val, &rollOverTagFgClr );
+			return TCL_OK;
+		}
+
+		if ( strcmp ( style, "rollover-bg" ) == 0 )
+		{
+			gdk_color_parse ( val, &rollOverTagBgClr );
+			return TCL_OK;
+		}
+	}
+
 
 	GtkWidget *widget = gnoclGetWidgetFromName ( id, interp ) ;
 

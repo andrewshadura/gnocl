@@ -39,8 +39,6 @@ extern rollOverTagFgClr;
 extern rollOverTagBgClr;
 /* add to parseOptions */
 
-
-
 /**
 \brief
 \author
@@ -1551,14 +1549,12 @@ static int addSizeGroup (   GtkWidget *widget,  GtkSizeGroupMode mode,  const ch
 
 	if ( group == NULL )
 	{
-		GWeakNotify destroyFunc[3] = { destroySizeGroup,
-									   destroyWidthGroup, destroyHeightGroup
+		GWeakNotify destroyFunc[3] = { destroySizeGroup, destroyWidthGroup, destroyHeightGroup
 									 };
 		char *str = g_strdup ( name );
 		group = gtk_size_group_new ( mode );
 		g_hash_table_insert ( table, str, ( gpointer ) group );
-		g_object_weak_ref ( G_OBJECT ( group ),
-							destroyFunc[groupToIdx ( mode ) ], str );
+		g_object_weak_ref ( G_OBJECT ( group ),	destroyFunc[groupToIdx ( mode ) ], str );
 		new = 1;
 	}
 
@@ -2631,6 +2627,52 @@ int gnoclOptOnShowHelp ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl
 	return gnoclConnectOptCmd ( interp, obj, "show-help", G_CALLBACK ( doOnShowHelp ), opt, NULL, ret );
 }
 
+
+/**
+\brief
+**/
+static void doOnMotionRollover ( GtkWidget *widget, GtkTextIter iter )
+{
+
+	GSList *q = NULL, *p = NULL;
+
+	p = gtk_text_iter_get_tags ( &iter );
+
+	for ( ; p != NULL; p = p->next )
+	{
+		for ( q = rollOverTags; q != NULL; q = q->next )
+		{
+			if ( strcmp ( GTK_TEXT_TAG ( q->data )->name, GTK_TEXT_TAG ( p->data )->name ) == 0 )
+			{
+				if ( lastRollOverTag == GTK_TEXT_TAG ( q->data )  )
+				{
+					return;
+				}
+				else
+				{
+					/* change colour of last tag, set colour of new tag */
+					g_object_set ( lastRollOverTag, "background-gdk", NULL, NULL );
+
+					/* change colours to new active rollover colours*/
+					g_object_get ( q->data, "background-gdk", &lastRollOverTagBgClr, NULL );
+					g_object_set ( q->data, "background-gdk", &rollOverTagBgClr, NULL );
+
+					lastRollOverTag = GTK_TEXT_TAG ( q->data );
+					return;
+				}
+			}
+		}
+	}
+
+	if ( lastRollOverTag != NULL  )
+	{
+		/* rollover activity ended, restore default colours */
+		g_object_set ( lastRollOverTag, "background-gdk", NULL, NULL );
+		lastRollOverTagBgClr = NULL;
+		lastRollOverTag = NULL;
+	}
+}
+
 /**
 \brief
 \todo    gnocl::buttonStateToList -> {MOD1 MOD3 BUTTON2...}
@@ -2656,6 +2698,7 @@ void doOnMotion ( GtkWidget *widget, GdkEventMotion *event, gpointer data )
 	gint bx, by; /* buffer coordinates */
 	gint line, row;
 	GSList *q = NULL, *p = NULL;
+	gchar *type =  G_OBJECT_TYPE_NAME ( widget );
 
 	GnoclCommandData *cs = ( GnoclCommandData * ) data;
 
@@ -2675,7 +2718,6 @@ void doOnMotion ( GtkWidget *widget, GdkEventMotion *event, gpointer data )
 		{ 0 }
 	};
 
-
 #if 0
 	g_print ( "%s\n", __FUNCTION__ );
 #endif
@@ -2693,70 +2735,6 @@ void doOnMotion ( GtkWidget *widget, GdkEventMotion *event, gpointer data )
 	gtk_text_view_window_to_buffer_coords ( widget, GTK_TEXT_WINDOW_WIDGET, event->x, event->y, &bx, &by );
 	gtk_text_view_get_iter_at_location ( widget, &iter, bx, by );
 
-	p = gtk_text_iter_get_tags ( &iter );
-
-	for ( ; p != NULL; p = p->next )
-	{
-		for ( q = rollOverTags; q != NULL; q = q->next )
-		{
-			if ( strcmp ( GTK_TEXT_TAG ( q->data )->name, GTK_TEXT_TAG ( p->data )->name ) == 0 )
-			{
-				if ( lastRollOverTag == GTK_TEXT_TAG ( q->data )  )
-				{
-					goto skip;
-				}
-				else
-				{
-					/* change colour of last tag, set colour of new tag */
-					if ( lastRollOverTag == NULL )
-					{
-						/* first entry, get copy of existing colour settings */
-						//g_object_get ( q->data, "foreground-gdk", &lastRollOverTagFgClr, NULL );
-
-						//g_object_get ( q->data, "background-gdk", &lastRollOverTagBgClr, NULL );
-						g_object_set ( lastRollOverTag, "background-gdk", NULL, NULL );
-					}
-					else
-					{
-						/* change colours as required */
-						//g_object_set ( lastRollOverTag, "foreground-gdk", lastRollOverTagFgClr, NULL );
-
-						//g_object_set ( lastRollOverTag, "background-gdk", lastRollOverTagBgClr, NULL );
-						g_object_set ( lastRollOverTag, "background-gdk", NULL, NULL );
-					}
-
-					/* change colours to new active rollover colours*/
-					//g_object_get ( q->data, "foreground-gdk", &lastRollOverTagFgClr, NULL );
-					//g_object_set ( q->data, "foreground-gdk", &rollOverTagFgClr, NULL );
-
-
-					g_object_get ( q->data, "background-gdk", &lastRollOverTagBgClr, NULL );
-					g_object_set ( q->data, "background-gdk", &rollOverTagBgClr, NULL );
-
-					lastRollOverTag = GTK_TEXT_TAG ( q->data );
-					//g_print ( "\t GOTIT! MATCH ROLLOVER tag = %s\n", GTK_TEXT_TAG ( q->data )->name );
-					goto skip;
-				}
-			}
-
-		}
-	}
-
-	if ( lastRollOverTag != NULL  )
-	{
-		/* rollover activity ended, restore default colours */
-		//g_object_set ( lastRollOverTag, "foreground-gdk", lastRollOverTagFgClr, NULL );
-		//lastRollOverTagFgClr = NULL;
-
-		//g_object_set ( lastRollOverTag, "background-gdk", lastRollOverTagBgClr, NULL );
-		g_object_set ( lastRollOverTag, "background-gdk", NULL, NULL );
-		lastRollOverTagBgClr = NULL;
-
-		lastRollOverTag = NULL;
-	}
-
-skip:
-
 	ps[0].val.str = gnoclGetNameFromWidget ( widget );
 	ps[1].val.i = event->x;
 	ps[2].val.i = event->y;
@@ -2767,16 +2745,18 @@ skip:
 	ps[7].val.i = -1;
 	ps[8].val.i = -1;
 
-	gchar *type =  G_OBJECT_TYPE_NAME ( widget );
-
 	//g_print ( "Widget type: %s\n", type );
 
 	if ( strcmp ( type, "GtkUndoView" ) == 0 || strcmp ( type, "GtkTextView" ) == 0 )
 	{
 		//gtk_text_view_window_to_buffer_coords ( widget, GTK_TEXT_WINDOW_WIDGET, event->x, event->y, &bx, &by );
 		//gtk_text_view_get_iter_at_location ( widget, &iter, bx, by );
+
+		doOnMotionRollover ( widget, iter );
+
 		ps[7].val.i = gtk_text_iter_get_line ( &iter );
 		ps[8].val.i = gtk_text_iter_get_line_offset ( &iter );
+
 	}
 
 	/* TODO: gnocl::buttonStateToList -> {MOD1 MOD3 BUTTON2...} */
@@ -3541,6 +3521,7 @@ int gnoclOptOnMotion ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_O
 	return gnoclConnectOptCmd ( interp, obj, "motion-notify-event", G_CALLBACK ( doOnMotion ), opt, NULL, ret );
 }
 
+
 /**
 \brief      Yet to be annotated
 \author     William J Giddings
@@ -3899,7 +3880,8 @@ static void doOnClicked   ( GtkWidget *button, gpointer user_data )
 	ButtonParams *para = g_object_get_data ( G_OBJECT ( button ), dataID );
 
 	ps[0].val.str = gnoclGetNameFromWidget ( button );
-	ps[1].val.str = gnoclGetNameFromWidget ( gtk_widget_get_parent ( button ) );
+	/* gnocl button objects are boxed within its own container, so get grandparent! */
+	ps[1].val.str = gnoclGetNameFromWidget ( gtk_widget_get_parent ( gtk_widget_get_parent ( button ) )  );
 	ps[2].val.str = gtk_widget_get_name ( button );
 	ps[3].val.str = g_object_get_data ( button, "gnocl::data" );
 

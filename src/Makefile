@@ -119,6 +119,7 @@ GTK_OBJ := \
 	text.o \
 	textBuffer.o \
 	./textPango/gtktextviewpango.o \
+	text-rollover-tags.o \
 	parseMarkup.o \
 	./textUndo/undo_manager.o \
 	./textUndo/undo_view.o \

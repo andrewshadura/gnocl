@@ -25,6 +25,7 @@
 */
 /*
    History:
+   2014-05:	Added GtkTextView pseudo-styles: "rollover-fg" and "rollover-bg".
    2014-01: load/save & serialize/deserialize commands will now set
 			result in emission of 'modified' signal.
    2013-11: added some error checking to function applyTag
@@ -119,7 +120,6 @@
 //#include "gnoclparams.h"
 #include "./textUndo/undo_manager.h"
 
-
 static int textFunc ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *  const objv[] );
 static int cget ( Tcl_Interp *interp, GtkTextView *text, GnoclOption options[], int idx );
 static void gnoclGetTagRanges ( Tcl_Interp * interp, GtkTextBuffer * buffer, gchar * tagName );
@@ -135,15 +135,24 @@ static int doCommand ( TextParams *para, const char *val, int background );
 /* static variables */
 static gint usemarkup = 0;
 
-/* tag rollover variables */
+/* tag rollover variables, application wide use */
 GList *rollOverTags = NULL;
 GtkTextTag *lastRollOverTag = NULL;
-
 GdkColor lastRollOverTagFgClr;
 GdkColor lastRollOverTagBgClr;
-
 GdkColor rollOverTagFgClr;
 GdkColor rollOverTagBgClr;
+
+
+
+
+/* create glist to hold parameters for each textwidget */
+GList *rolloverParams = NULL;
+
+/*
+ *  NOTE: ****** doOnMotion in parseOptions.c handles drawing/refresh of rollover actions.
+ */
+
 
 /***********************************************************************
  * trace funcs
@@ -519,8 +528,6 @@ static Tcl_Obj *dumpAll ( Tcl_Interp *interp, GtkTextBuffer *buffer, GtkTextIter
 }
 
 
-
-
 /**
 \brief	Return a Tcl list of text attributes.
 GtkJustification justification;
@@ -882,12 +889,15 @@ static int gnoclOptTagBackgroundStipple ( Tcl_Interp *interp, GnoclOption *opt, 
             values substituted into % values for further processing by Tcl scripts.
 \author     William J Giddings
 \date       01/11/2009
-\note		Events only apply to windows and not object such as tags. <--- WRONG
+\note		Events only apply to windows and not object such as tags. <--- WRONG!!!
 **/
+
+GtkTextTag *lastTag = NULL;
+
 static void doOnEvent (	GtkTextTag *texttag, GObject *widget, GdkEvent *event, GtkTextIter *arg2, gpointer data )
 {
 
-#if 0
+#if 1
 	g_print ( "event = %d\n", event->type );
 #endif
 
@@ -913,7 +923,7 @@ static void doOnEvent (	GtkTextTag *texttag, GObject *widget, GdkEvent *event, G
 	/* initialize with default values */
 	ps[0].val.str = gnoclGetNameFromWidget ( widget );
 	ps[6].val.str = texttag->name;
-	ps[9].val.str = gtk_widget_get_name ( GTK_WIDGET ( widget ) );
+	ps[9].val.str = gtk_widget_get_name ( GTK_WIDGET ( widget ) ); // i.e. glade name
 	ps[10].val.str = g_object_get_data ( texttag, "gnocl::data" );
 
 	/* most of these events are not reported by the tag */
@@ -929,6 +939,7 @@ static void doOnEvent (	GtkTextTag *texttag, GObject *widget, GdkEvent *event, G
 		case GDK_ENTER_NOTIFY:
 			{
 				ps[1].val.str = "enterNotify";
+
 			}
 			break;
 		case GDK_LEAVE_NOTIFY:
@@ -945,6 +956,14 @@ static void doOnEvent (	GtkTextTag *texttag, GObject *widget, GdkEvent *event, G
 				ps[4].val.i = event->motion.state;
 				ps[7].val.i = event->motion.x_root;
 				ps[8].val.i = event->motion.y_root;
+
+				if ( lastTag != NULL && lastTag != texttag )
+				{
+					g_print ( "lastTag = %s activeTag = %s\n", lastTag->name, texttag->name );
+				}
+
+				lastTag = texttag;
+
 			}
 			break;
 		case GDK_BUTTON_PRESS:
@@ -986,8 +1005,6 @@ static void doOnEvent (	GtkTextTag *texttag, GObject *widget, GdkEvent *event, G
 	ps[7].val.i = event->button.x_root;
 	ps[8].val.i = event->button.y_root;
 
-
-
 	/* other settings, mouse pointer etc can be obtained from the window structure */
 	gnoclPercentSubstAndEval ( cs->interp, ps, cs->command, 1 );
 }
@@ -1001,12 +1018,12 @@ static void doOnEvent (	GtkTextTag *texttag, GObject *widget, GdkEvent *event, G
 static int gnoclOptOnEvent ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
 	assert ( strcmp ( opt->optName, "-onEvent" ) == 0 );
+
 	return gnoclConnectOptCmd ( interp, obj, "event", G_CALLBACK ( doOnEvent ), opt, NULL, ret );
 }
 
-
 /**
-\brief	Set text tag attribute.
+\brief	Set text tag attribute, add tag name to list of rollovertags
 **/
 static int gnoclOptTagRollOver ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
 {
@@ -2310,6 +2327,39 @@ static int markCmd ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, Tcl_
 }
 
 /**
+\brief	Remove roll-over tags from tagTable and global rollover list.
+**/
+static void clear_rollover_tags ( GtkTextTagTable *tagtable )
+{
+#if 0
+	g_print ( "%s\n", __FUNCTION__ );
+#endif
+
+	GList *p = NULL;
+	GtkTextTag *tag;
+
+	p = rollOverTags;
+
+	/* iterate through tagList */
+	while ( p != NULL )
+	{
+		tag = p->data;
+
+		if ( gtk_text_tag_table_lookup ( tagtable, tag->name ) != NULL )
+		{
+#if 1
+			g_print ( "got it! %s\n", tag->name );
+#endif
+			rollOverTags = g_slist_remove_all ( rollOverTags, p );
+			gtk_text_tag_table_remove ( tagtable, tag );
+		}
+
+		p = p->next;
+	}
+
+}
+
+/**
 \brief
 
     pathName tag add tagName index1 ?index2 index1 index2 ...?
@@ -2591,6 +2641,17 @@ int tagCmd ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, Tcl_Obj *  c
 		case ClearIdx:
 			{
 				GtkTextTagTable *tagtable = gtk_text_buffer_get_tag_table ( buffer );
+				GList *p = NULL;
+				GtkTextTag *tag;
+
+				/* clear rollover tags */
+				if ( strcmp ( Tcl_GetString ( objv[3] ), "rollover" ) == 0 )
+				{
+					clear_rollover_tags ( tagtable );
+					break;
+				}
+
+
 
 				/*  get the settings of each tag in the buffer*/
 				/*  note, pass the address of the pointer to the data assigned by the called function */
@@ -2798,6 +2859,8 @@ int tagCmd ( GtkTextBuffer * buffer, Tcl_Interp * interp, int objc, Tcl_Obj *  c
 				{
 
 					gtk_text_tag_table_remove ( tagtable, tag );
+					/* remove tag from rolloverlist */
+					rollOverTags = g_slist_remove_all ( rollOverTags, tag );
 				}
 
 				break;
@@ -3783,9 +3846,12 @@ static	const char *cmds[] =
 
 /**
 \brief
+\note	change for  GtkTextView *textView to TextParams *para will break glade implemented interfaces.
 **/
+
 int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl_Obj *  const objv[], int cmdNo, int isTextWidget )
 {
+
 #if 0
 	g_print ( "gnoclTextCommand %s %s\n", Tcl_GetString ( objv[cmdNo] ), Tcl_GetString ( objv[cmdNo+1] ) );
 #endif
@@ -5295,11 +5361,15 @@ int gnoclTextCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj *  co
 	para->inSetVar = 0;
 	para->useMarkup = FALSE;
 
-	/* set default rollover colours */
-	gdk_color_parse ( "red", &rollOverTagFgClr );
-	gdk_color_parse ( "yellow", &rollOverTagBgClr );
 
 
+	/* allocate memory for a GtkTextView widget with rollover implementation */
+
+	/* set default rollover colours, moved to gnocl.c Gnocl_Init */
+/*
+	gdk_color_parse ( "#FF0000", &rollOverTagFgClr );
+	gdk_color_parse ( "#E5E5E5", &rollOverTagBgClr );
+*/
 	if ( gnoclParseOptions ( interp, objc, objv, textOptions ) != TCL_OK )
 	{
 		gnoclClearOptions ( textOptions );
@@ -5310,6 +5380,8 @@ int gnoclTextCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj *  co
 
 	// implement new undo/redo buffer
 	textView = gtk_undo_view_new ( gtk_text_buffer_new  ( NULL ) );
+
+	/* add to hashlist for rollover effects */
 
 	para->scrolled =  GTK_SCROLLED_WINDOW ( gtk_scrolled_window_new ( NULL, NULL ) );
 
