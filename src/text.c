@@ -23,9 +23,13 @@
 			-acceptTab
 			-tabs
 */
+
 /*
    History:
-   2014-05:	Added GtkTextView pseudo-styles: "rollover-fg" and "rollover-bg".
+   2014-05: TODO: add styles "rollover-mode" foreground|background|both|none
+			options -rollOverFgColor and -rollOverBgColor removed
+			Added GtkTextView pseudo-styles: "rollover-fg" and "rollover-bg".
+			e.g. gnocl::setStyle GtkTextView "rollover-bg" yellow
    2014-01: load/save & serialize/deserialize commands will now set
 			result in emission of 'modified' signal.
    2013-11: added some error checking to function applyTag
@@ -143,8 +147,8 @@ GdkColor lastRollOverTagBgClr;
 GdkColor rollOverTagFgClr;
 GdkColor rollOverTagBgClr;
 
-
-
+/* modes 0 = none, 1 = foreground, 2 = background, 3 = both */
+gint rollOverMode = GNOCL_ROLLOVER_BG;
 
 /* create glist to hold parameters for each textwidget */
 GList *rolloverParams = NULL;
@@ -330,7 +334,8 @@ gchar *stripMarkup ( GtkTextBuffer *buffer, GtkTextIter *start, GtkTextIter *end
 
 
 /**
-\brief	Return text with Pango markup -WORKING VERSION
+\brief	USE VERSION FOUND IN MODULE getMarkupString.c
+\note	obsolete - can be removed after JULY, 2014
 **/
 Tcl_Obj *getMarkUpString_ ( Tcl_Interp *interp, GtkTextBuffer *buffer, GtkTextIter *start, GtkTextIter *end )
 {
@@ -1445,8 +1450,8 @@ static GnoclOption textOptions[] =
 	{ "-onChanged_", GNOCL_STRING, NULL },
 	{ "-baseFont", GNOCL_OBJ, "Sans 14", gnoclOptGdkBaseFont },
 	{ "-tooltip", GNOCL_OBJ, "", gnoclOptTooltip },
-	{ "-rollOverFgColor", GNOCL_OBJ, "fg", gnoclOptGdkColorRollOver},
-	{ "-rollOverBgColor", GNOCL_OBJ, "bg", gnoclOptGdkColorRollOver},
+//	{ "-rollOverFgColor", GNOCL_OBJ, "fg", gnoclOptGdkColorRollOver},
+//	{ "-rollOverBgColor", GNOCL_OBJ, "bg", gnoclOptGdkColorRollOver},
 
 	/* GtkTextView properties
 	"accepts-tab"              gboolean              : Read / Write
@@ -4027,7 +4032,7 @@ int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl
 
 		case GetMarkupIdx:
 			{
-#if 0
+#if 1
 				g_print ( "%s getMarkup\n", __FUNCTION__ );
 #endif
 				GtkTextIter startIter, endIter;
@@ -4035,7 +4040,9 @@ int gnoclTextCommand ( GtkTextView *textView, Tcl_Interp * interp, int objc, Tcl
 				posToIter ( interp, objv[cmdNo+1], buffer, &startIter );
 				posToIter ( interp, objv[cmdNo+2], buffer, &endIter );
 				//g_print ( "getMarkup 1\n" );
+
 				Tcl_Obj *res = getMarkUpString ( interp, buffer, &startIter, &endIter );
+
 				//g_print ( "getMarkup 2\n" );
 				//char *txt = gtk_text_buffer_get_text ( buffer, &startIter, &endIter, 1 );
 				Tcl_SetObjResult ( interp, res );
@@ -5366,10 +5373,10 @@ int gnoclTextCmd ( ClientData data, Tcl_Interp * interp, int objc, Tcl_Obj *  co
 	/* allocate memory for a GtkTextView widget with rollover implementation */
 
 	/* set default rollover colours, moved to gnocl.c Gnocl_Init */
-/*
-	gdk_color_parse ( "#FF0000", &rollOverTagFgClr );
-	gdk_color_parse ( "#E5E5E5", &rollOverTagBgClr );
-*/
+	/*
+		gdk_color_parse ( "#FF0000", &rollOverTagFgClr );
+		gdk_color_parse ( "#E5E5E5", &rollOverTagBgClr );
+	*/
 	if ( gnoclParseOptions ( interp, objc, objv, textOptions ) != TCL_OK )
 	{
 		gnoclClearOptions ( textOptions );

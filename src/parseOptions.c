@@ -1425,29 +1425,6 @@ int gnoclOptGdkColorText ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, T
 	return modifyWidgetGdkColor ( interp, opt, obj, gtk_widget_modify_text, G_STRUCT_OFFSET ( GtkStyle, text ), ret );
 }
 
-/**
-\brief	Change the gnocl::text widget rollover foreground colour.
-\todo 	Allow background colour change.
-**/
-int gnoclOptGdkColorRollOver ( Tcl_Interp *interp, GnoclOption *opt, GObject *obj, Tcl_Obj **ret )
-{
-
-#if 0
-	g_print ( "%s type %s %s\n", __FUNCTION__, Tcl_GetString ( opt->val.obj ), opt->propName );
-#endif
-
-	if ( strcmp ( opt->propName, "fg" ) == 0 )
-	{
-		gdk_color_parse ( Tcl_GetStringFromObj ( opt->val.obj, NULL ), &rollOverTagFgClr );
-	}
-
-	if ( strcmp ( opt->propName, "bg" ) == 0 )
-	{
-		gdk_color_parse ( Tcl_GetStringFromObj ( opt->val.obj, NULL ), &rollOverTagBgClr );
-	}
-
-	return TCL_OK;
-}
 
 /**
 \brief	Modify widget base colour, i.e. GtlTextView.

@@ -12,6 +12,8 @@
 
 /*
    History:
+   2014-05: Added GtkTextView pseudo-styles: "rollover-fg" and "rollover-bg".
+			e.g. gnocl::setStyle GtkTextView "rollover-bg" yellow
    2014-01: added gnocl::iconTheme
    2013-09: added gnocl::pango
 				validate markup strings
@@ -2210,8 +2212,31 @@ int gnoclSetStyleCmd ( ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj * 
 	{
 		extern rollOverTagFgClr;
 		extern rollOverTagBgClr;
+		extern rollOverMode;
 
+		if ( strcmp ( style, "rollover-mode" ) == 0 )
+		{
+			if ( strcmp ( val, "none" ) == 0 )
+			{
+				rollOverMode = GNOCL_ROLLOVER_NONE;
+			}
 
+			if ( strcmp ( val, "foreground" ) == 0  || strcmp ( val, "fg" ) == 0 )
+			{
+				rollOverMode = GNOCL_ROLLOVER_FG;
+			}
+
+			if ( strcmp ( val, "background" ) == 0  || strcmp ( val, "bg" ) == 0 )
+			{
+				rollOverMode = GNOCL_ROLLOVER_BG;
+			}
+
+			if ( strcmp ( val, "none" ) == 0 )
+			{
+				rollOverMode = GNOCL_ROLLOVER_BOTH;
+			}
+
+		}
 
 
 		if ( strcmp ( style, "rollover-fg" ) == 0 )

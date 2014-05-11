@@ -17,7 +17,7 @@
 
 /*
    History:
-   2014-05:	Added GtkTextView pseudo-styles: "rollover-fg" and "rollover-bg".
+   2014-05:	Initialize GtkTextView pseudo-styles: "rollover-fg" and "rollover-bg" on startup.
 */
 
 /* doc pages commands created within this module */

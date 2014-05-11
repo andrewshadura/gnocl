@@ -42,6 +42,9 @@
 #define GNOCL_PAD       8
 #define GNOCL_PAD_BIG  12
 
+/* set some values */
+enum rolloverModes { GNOCL_ROLLOVER_NONE, GNOCL_ROLLOVER_FG, GNOCL_ROLLOVER_BG, GNOCL_ROLLOVER_BOTH };
+
 /* string prefix to mark stock items */
 #define GNOCL_STOCK_PREFIX "%#"
 /* transfer string ownership */

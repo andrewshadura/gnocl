@@ -125,21 +125,6 @@ typedef struct
 	gboolean          useMarkup;
 } TextParams;
 
-/*
- * keep list of rollovers, for each new text GtkTextView object, not para!
- *
- */
-typedef struct
-{
-	GdkColor lastRollOverTagFgClr;
-	GdkColor lastRollOverTagBgClr;
-
-	char *rollOverTagFgClr;
-	char *rollOverTagBgClr;
-
-} TextRollOverParams;
-
-
 typedef struct
 {
 	GtkLabel    *label;
