@@ -60,6 +60,7 @@ GTK_OBJ := \
 	fontSelection.o \
 	fontSelectionDialog.o \
 	gammaCurve.o \
+	getMarkupString.o \
 	gnocl.o \
 	handleBox.o \
 	helperFuncs.o \
@@ -119,7 +120,6 @@ GTK_OBJ := \
 	text.o \
 	textBuffer.o \
 	./textPango/gtktextviewpango.o \
-	text-rollover-tags.o \
 	parseMarkup.o \
 	./textUndo/undo_manager.o \
 	./textUndo/undo_view.o \
